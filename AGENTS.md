@@ -16,6 +16,8 @@ asistente de programación) pueda entrar y avanzar sin romper nada.
 
 - Para **instalar y levantar** el proyecto: [`README.md`](./README.md).
 - Para **decisiones y avances**: [`docs/`](./docs/).
+- Para el **detalle del día a día** (ramas, commits, PR, etiquetas y reporte de
+  vulnerabilidades): [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md).
 
 Si una regla de este archivo y una costumbre tuya se contradicen, gana este archivo.
 
@@ -114,6 +116,8 @@ Reglas de ubicación:
   credenciales. Además corren `lint`, verificación de tipos y `build`.
 - `.github/`, `compose.yml`, `Dockerfile` y migraciones requieren revisión del responsable
   definido en `.github/CODEOWNERS`.
+- El detalle operativo (nombres de rama, plantillas de incidencia, catálogo de etiquetas y
+  checklist de PR) está en [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md).
 
 ### 4.3 Todo cambio importante se documenta en `docs/`
 
@@ -134,6 +138,8 @@ Reglas de ubicación:
   solo lleva valores de ejemplo.
 - Si una llave se filtra: se revoca en Supabase, se genera otra, se avisa al equipo y se
   documenta en `docs/`.
+- Para reportar una vulnerabilidad **sin abrir un issue público**, seguir el procedimiento
+  de [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md) (sección "Seguridad").
 
 ### 4.5 Consultas y datos sensibles
 
@@ -283,6 +289,7 @@ cambios de estado de reservas y leads.
 | Instalación y arranque | [`README.md`](./README.md) |
 | Decisiones técnicas | [`docs/01-decisiones-tecnicas.md`](./docs/01-decisiones-tecnicas.md) |
 | Índice de documentación | [`docs/README.md`](./docs/README.md) |
+| Guía de contribución y seguridad | [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md) |
 | Reglas de commits | [`.gitmessage`](./.gitmessage) |
 | Plantilla de PR | [`.github/pull_request_template.md`](./.github/pull_request_template.md) |
 | Etiquetas disponibles | [`.github/labels.yml`](./.github/labels.yml) |
