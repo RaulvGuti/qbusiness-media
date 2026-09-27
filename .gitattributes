@@ -1,0 +1,22 @@
+# Normalizar finales de línea a LF en todo el repositorio
+* text=auto eol=lf
+
+# Binarios e imágenes (evitar corrupción al versionar assets)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+
+# SVG es XML: mantener diff legible
+*.svg text
+
+# Archivos de bloqueo y generados: colapsar en diffs
+package-lock.json linguist-generated=true
+pnpm-lock.yaml linguist-generated=true

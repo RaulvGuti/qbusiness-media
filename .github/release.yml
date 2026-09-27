@@ -1,0 +1,24 @@
+# Generador automático de notas de versión categorizadas por etiquetas
+changelog:
+  exclude:
+    labels:
+      - "type:chore"
+      - "status:bloqueado"
+      - "status:no-se-hara"
+  categories:
+    - title: "⚠️ Cambios que rompen compatibilidad"
+      labels: ["breaking-change"]
+    - title: "✨ Nuevas funcionalidades"
+      labels: ["type:feature"]
+    - title: "🐛 Correcciones de errores"
+      labels: ["type:bug"]
+    - title: "🔒 Seguridad"
+      labels: ["type:security"]
+    - title: "⚡ Rendimiento"
+      labels: ["type:perf"]
+    - title: "📝 Documentación"
+      labels: ["type:docs"]
+    - title: "📦 Dependencias"
+      labels: ["dependencies"]
+    - title: "🔨 Otros cambios"
+      labels: ["*"]

@@ -1,0 +1,22 @@
+# Revisores globales por defecto
+* @usuario_lider
+
+# Infraestructura, Docker y CI/CD
+/.github/           @usuario_lider
+/compose*.yml       @usuario_lider
+/Dockerfile*        @usuario_lider
+
+# Base de datos y migraciones (Prisma / Supabase)
+/prisma/            @usuario_lider
+
+# Módulo de Portafolio y multimedia
+/src/app/**/portfolio/   @usuario_integrante1
+/src/components/**/portfolio/ @usuario_integrante1
+
+# Módulo de Renta de Estudio y Reservas
+/src/app/**/studio/      @usuario_integrante2
+/src/components/**/studio/ @usuario_integrante2
+
+# Captación de Leads y Notificaciones
+/src/app/api/leads/      @usuario_integrante3
+/src/lib/resend*         @usuario_integrante3

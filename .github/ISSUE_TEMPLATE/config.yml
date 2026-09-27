@@ -1,0 +1,2 @@
+# Desactiva la issue en blanco: obliga a elegir una plantilla predefinida.
+blank_issues_enabled: false

@@ -1,0 +1,24 @@
+# Reglas de validación previa al commit (pre-commit)
+# Instalar en Windows con: pip install pre-commit && pre-commit install
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+      # Bloquea hacer commits directamente sobre la rama principal de producción
+      - id: no-commit-to-branch
+        args: ["--branch", "main"]
+
+  # Detección de llaves, tokens y credenciales filtradas
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks

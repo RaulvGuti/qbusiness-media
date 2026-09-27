@@ -1,0 +1,81 @@
+name: Bug / Error
+description: Reportar un fallo o comportamiento inesperado
+title: "fix(<alcance>): "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción del problema
+      description: Qué ocurrió de forma puntual y clara.
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamiento esperado
+      description: Qué debería haber pasado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducir
+    attributes:
+      label: Pasos para reproducir
+      value: |
+        1. Ir a la pestaña o formulario...
+        2. Ingresar los datos...
+        3. Hacer clic en...
+    validations:
+      required: true
+
+  - type: textarea
+    id: entorno
+    attributes:
+      label: Diagnóstico de entorno local
+      description: "Pega la salida de: node -v && npm -v"
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: ubicacion
+    attributes:
+      label: Ubicación estimada en el código
+      description: "Ejemplo: src/components/StudioBooking.tsx:45"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: modulo
+    attributes:
+      label: Módulo afectado
+      options:
+        - module:portafolio
+        - module:estudio
+        - module:leads
+        - module:social
+        - module:infra
+    validations:
+      required: true
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Nivel de prioridad
+      options:
+        - critica
+        - alta
+        - media
+        - baja
+    validations:
+      required: true
+
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Capturas de pantalla o logs
+      description: "Pega errores de consola de Node o del navegador. NUNCA incluyas credenciales ni datos reales."
+    validations:
+      required: false

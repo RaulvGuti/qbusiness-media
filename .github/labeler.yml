@@ -1,0 +1,61 @@
+# Etiquetado automático de Pull Requests según carpetas tocadas
+# Requiere que las etiquetas existan previamente en labels.yml
+
+"module:portafolio":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/app/**/portfolio/**"
+          - "src/components/**/portfolio/**"
+          - "src/components/**/Portfolio*"
+          - "src/types/**/portfolio*"
+
+"module:estudio":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/app/**/studio/**"
+          - "src/app/**/booking/**"
+          - "src/components/**/studio/**"
+          - "src/components/**/Studio*"
+          - "src/components/**/Booking*"
+
+"module:leads":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/app/**/contact/**"
+          - "src/app/api/leads/**"
+          - "src/components/**/Contact*"
+          - "src/lib/resend*"
+          - "src/lib/notifications*"
+
+"module:social":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/app/**/social/**"
+          - "src/components/**/Social*"
+          - "src/app/api/social/**"
+
+"module:infra":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - "prisma/**"
+          - "docker/**"
+          - "compose*.yml"
+          - "Dockerfile*"
+          - "*.config.*"
+          - "package*.json"
+          - ".env*"
+
+"type:docs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "**/*.md"
+
+"type:test":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/__tests__/**"
+          - "**/*.test.*"
+          - "**/*.spec.*"
+          - "tests/**"

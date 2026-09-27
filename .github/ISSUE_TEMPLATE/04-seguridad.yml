@@ -1,0 +1,59 @@
+name: Seguridad
+description: Vulnerabilidad, fallo de autorización o riesgo de exposición de datos
+title: "security(<alcance>): "
+labels: ["type:security", "priority:alta"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        ADVERTENCIA: Nunca incluyas contraseñas reales, tokens de producción ni datos personales reales de clientes.
+        Documenta el vector de fallo sin comprometer secretos.
+
+  - type: textarea
+    id: riesgo
+    attributes:
+      label: Descripción del riesgo
+      description: Qué puede hacer un usuario no autorizado o qué datos quedan expuestos.
+    validations:
+      required: true
+
+  - type: input
+    id: ubicacion
+    attributes:
+      label: Ubicación en el código
+      description: Archivo o ruta involucrada (ej. src/app/api/leads/route.ts)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: clase
+    attributes:
+      label: Clase de vulnerabilidad
+      options:
+        - Exposición de clave de base de datos o secretos de entorno
+        - Falta de validación en Server Action / API Route
+        - Acceso o modificación no autorizada de reservas (IDOR)
+        - Exposición de datos de clientes en el bundle del cliente
+        - Dependencia vulnerable reportada
+        - Otro
+    validations:
+      required: true
+
+  - type: textarea
+    id: correccion
+    attributes:
+      label: Corrección propuesta
+      description: Medidas necesarias para mitigar y sellar la vulnerabilidad.
+    validations:
+      required: true
+
+  - type: textarea
+    id: verificacion
+    attributes:
+      label: Criterios de verificación
+      value: |
+        - [ ] Las variables sensibles se mantienen exclusivamente del lado del servidor
+        - [ ] Las consultas a base de datos están protegidas contra inyecciones y accesos directos
+        - [ ] Los datos devueltos al cliente están sanitizados
+    validations:
+      required: true

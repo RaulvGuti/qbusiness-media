@@ -1,0 +1,54 @@
+name: Deuda Técnica y Refactor
+description: Propuesta de limpieza, refactorización, rendimiento o mantenimiento
+title: "refactor(<alcance>): "
+labels: ["type:refactor"]
+body:
+  - type: textarea
+    id: situacion
+    attributes:
+      label: Situación actual
+      description: Qué hay actualmente en el código y por qué genera fricción o lentitud.
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta de mejora
+      description: Cómo se propone reestructurar o resolver el punto.
+    validations:
+      required: true
+
+  - type: textarea
+    id: terminado
+    attributes:
+      label: Definición de terminado (DoD)
+      value: |
+        - [ ] Código refactorizado sin romper contratos existentes
+        - [ ] Pruebas locales completadas
+    validations:
+      required: true
+
+  - type: input
+    id: ubicacion
+    attributes:
+      label: Ubicación en el proyecto
+      description: Archivo o carpeta afectada (ej. src/lib/prisma.ts o src/app/api/bookings/)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options: [critica, alta, media, baja]
+    validations:
+      required: true
+
+  - type: input
+    id: depende
+    attributes:
+      label: Dependencias
+      description: "Issues que deben resolverse antes (ejemplo: #4, #8)"
+    validations:
+      required: false

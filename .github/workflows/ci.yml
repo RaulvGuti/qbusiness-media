@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Lint, tipos y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias limpias
+        run: npm ci
+
+      - name: Generar cliente de Prisma
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Comprobar linting
+        run: npm run lint
+
+      - name: Validación de tipos estáticos
+        run: npx tsc --noEmit
+
+      - name: Compilación de producción (Build)
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: "https://dummy.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy-anon-key"
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Auditoría de vulnerabilidades de paquetes
+        run: npm audit --audit-level high
+        continue-on-error: true
+
+  # Job agregador para proteger las ramas con un único check requerido
+  ci-completo:
+    name: CI Completo
+    needs: [verificar]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.value.result)\t\(.key)"'
+          fallidos="$(echo "$NEEDS" | jq -r '
+            to_entries[]
+            | select(.value.result != "success" and .value.result != "skipped")
+            | .key')"
+          if [ -n "$fallidos" ]; then
+            echo "::error::Jobs con fallos: $(echo "$fallidos" | tr '\n' ' ')"
+            exit 1
+          fi

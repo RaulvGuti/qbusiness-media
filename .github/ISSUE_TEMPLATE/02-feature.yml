@@ -1,0 +1,64 @@
+name: Requerimiento / Funcionalidad
+description: Proponer o detallar una funcionalidad nueva
+title: "feat(<alcance>): "
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción de la funcionalidad
+      description: Qué debe permitir hacer a la persona usuaria y qué valor aporta a QBusiness Media.
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Condiciones verificables para considerar la tarea como completada.
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: fuera
+    attributes:
+      label: Fuera de alcance
+      description: Qué NO entra en esta tarea para evitar sobredimensionar el alcance.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: modulo
+    attributes:
+      label: Módulo del dominio
+      options:
+        - module:portafolio
+        - module:estudio
+        - module:leads
+        - module:social
+        - module:infra
+    validations:
+      required: true
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options:
+        - critica
+        - alta
+        - media
+        - baja
+    validations:
+      required: true
+
+  - type: textarea
+    id: notas
+    attributes:
+      label: Notas técnicas
+      description: Modificaciones en schema de Prisma, nuevos componentes o endpoints requeridos.
+    validations:
+      required: false

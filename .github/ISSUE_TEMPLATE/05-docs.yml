@@ -1,0 +1,36 @@
+name: Documentación
+description: Corregir o ampliar la documentación técnica o de usuario
+title: "docs(<alcance>): "
+labels: ["type:docs"]
+body:
+  - type: input
+    id: archivo
+    attributes:
+      label: Archivo o sección afectada
+      description: "Ejemplo: README.md, docs/manual-cliente.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué está desactualizado, incompleto o erróneo
+      description: Explica qué información falta o contradice el comportamiento real de la aplicación.
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta de contenido
+      description: Texto, pasos o diagramas sugeridos para incluir.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Nivel de prioridad
+      options: [alta, media, baja]
+    validations:
+      required: true

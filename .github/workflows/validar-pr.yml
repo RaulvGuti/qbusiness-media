@@ -1,0 +1,84 @@
+name: Validar PR
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validar-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    name: Convención de título y archivos prohibidos
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Validar formato Conventional Commits en el título
+        env:
+          TITULO: ${{ github.event.pull_request.title }}
+        run: |
+          patron='^(feat|fix|perf|refactor|test|docs|chore|build|ci|style|security)(\([a-z0-9,._/-]+\))?!?: .+'
+          if [[ ! "$TITULO" =~ $patron ]]; then
+            echo "::error::El título no sigue Conventional Commits: '$TITULO'"
+            echo "Formato esperado: tipo(alcance): descripción"
+            echo "Ejemplo:          feat(estudio): selector de horarios para reservas"
+            exit 1
+          fi
+          echo "Título válido: $TITULO"
+
+      - name: Comprobar que no existan archivos prohibidos en el diff
+        run: |
+          git fetch --no-tags origin "$GITHUB_BASE_REF"
+          base="$(git merge-base "origin/$GITHUB_BASE_REF" HEAD)"
+
+          archivos="$(git diff --name-only --diff-filter=AM "$base" HEAD)"
+
+          # Extensiones y nombres que nunca deben llegar al repositorio remoto
+          prohibidos='(^|/)\.env($|\.)|\.(db|sqlite3?|sql|dump|pem|key|p12|pfx|crt|keystore|jks)$|(secret|credential|password|backup)'
+
+          # Excepciones válidas del proyecto
+          excepciones='\.env\.example$|\.env\.template$|\.secrets\.baseline$|gitleaks\.toml$'
+
+          encontrados=""
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            if echo "$f" | grep -qiE "$prohibidos" && ! echo "$f" | grep -qiE "$excepciones"; then
+              encontrados="$encontrados  $f"$'\n'
+            fi
+          done <<< "$archivos"
+
+          if [ -n "$encontrados" ]; then
+            echo "::error::El PR incluye archivos sensibles o prohibidos:"
+            echo "$encontrados"
+            {
+              echo "## ⚠️ Archivos prohibidos detectados"
+              echo
+              echo '```'
+              echo "$encontrados"
+              echo '```'
+              echo
+              echo "Estos archivos suelen contener credenciales de base de datos o secretos."
+              echo "Remuévelos del commit y asegúrate de agregarlos al .gitignore."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Sin archivos prohibidos."
+
+      - name: Advertencia por volumen de cambios
+        env:
+          ADD: ${{ github.event.pull_request.additions }}
+          DEL: ${{ github.event.pull_request.deletions }}
+        run: |
+          total=$((ADD + DEL))
+          if [ "$total" -gt 1500 ]; then
+            echo "::warning::El PR modifica $total líneas. Considera dividirlo para facilitar la revisión."
+          fi
+          echo "Total de líneas modificadas: $total" >> "$GITHUB_STEP_SUMMARY"

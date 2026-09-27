@@ -1,0 +1,47 @@
+name: Build de contenedores
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "compose*.yml"
+      - "**/Dockerfile"
+      - "docker/**"
+      - "package*.json"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar-compose:
+    name: Validar sintaxis y build de Compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Preparar archivo de entorno temporal
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/qbusiness" > .env
+          fi
+
+      - name: Validar configuración de docker-compose
+        run: docker compose config
+
+      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Construir imágenes del proyecto
+        run: docker compose build
+
+      - name: Limpiar contenedores y volúmenes residuales
+        if: always()
+        run: docker compose down -v --remove-orphans

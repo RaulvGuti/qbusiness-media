@@ -1,0 +1,35 @@
+version: 2
+updates:
+  # Actualizaciones de GitHub Actions (mantiene los SHA fijos al día)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["type:chore", "dependencies", "module:infra"]
+    groups:
+      acciones:
+        patterns: ["*"]
+
+  # Actualizaciones del stack Node / Next.js
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["type:chore", "dependencies"]
+    open-pull-requests-limit: 3
+    groups:
+      npm-dependencias:
+        dependency-type: "production"
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+      npm-desarrollo:
+        dependency-type: "development"
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+
+  # Actualizaciones de dependencias de Docker / Compose
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["type:chore", "dependencies", "module:infra"]
