@@ -34,6 +34,11 @@ jobs:
       - name: Comprobar linting
         run: npm run lint
 
+      - name: Generar los tipos de Next.js
+        # LayoutProps, PageProps y RouteContext los genera Next.js. Sin este paso
+        # `tsc --noEmit` falla en un clon nuevo, porque .next/types no existe todavia.
+        run: npx next typegen
+
       - name: Validación de tipos estáticos
         run: npx tsc --noEmit
 
