@@ -200,6 +200,9 @@ que habla con la base de datos va en `src/server`.**
 
 ## 5. Cómo trabajamos en el equipo
 
+El detalle completo —ramas, commits, checklist de PR, catálogo de etiquetas y cómo reportar
+una vulnerabilidad— está en [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md).
+
 ### 5.1 Ramas
 
 - `develop` → la rama de trabajo del día a día. **Todo lo entra aquí.**
