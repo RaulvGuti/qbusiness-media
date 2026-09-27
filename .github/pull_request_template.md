@@ -18,28 +18,29 @@ Closes #
 - [ ] Refactor (sin cambio funcional ni de comportamiento)
 - [ ] Perf (optimización y rendimiento)
 - [ ] Docs (documentación técnica o de usuario)
-- [ ] Chore (dependencias, Prisma, Supabase o configuración de CI/CD)
+- [ ] Chore (dependencias, Supabase, migraciones o configuración de CI/CD)
 
 ## Cómo probar localmente (Windows / Node)
 
-1. Ejecutar migraciones o cliente si hubo cambios en Prisma: `npx prisma generate`
+1. Si hubo cambios de base de datos, incluir el archivo nuevo en `supabase/migrations/` y decir cuál es
 2. Levantar el proyecto: `npm run dev`
 3. Probar el flujo:
 
 ## Checklist de calidad
 
-- [ ] Las comprobaciones locales pasan (`npm run build`)
+- [ ] Las comprobaciones locales pasan (`npm run check`)
 - [ ] No se dejaron `console.log` residuales con datos sensibles
 - [ ] Se documentaron nuevas variables en `.env.example` si aplica
 - [ ] No se subieron archivos prohibidos (`.env`, `.env.local`, llaves privadas)
+- [ ] Si el cambio es importante, hay documento en `docs/` y el enlace en `docs/README.md`
 
 ## Checklist de seguridad (Server Actions / APIs)
 
 - [ ] Toda mutación o consulta a la base de datos corre del lado del servidor
 - [ ] No se exponen llaves de servicio (`SUPABASE_SERVICE_ROLE_KEY` o credenciales directas de Postgres) al bundle del cliente
-- [ ] Las consultas usan Prisma u operaciones parametrizadas, sin concatenaciones crudas
+- [ ] Las consultas se construyen con el cliente de Supabase, sin concatenar SQL a mano
 - [ ] Se validaron los tipos de entrada mediante esquemas o tipado estricto
 
 ## Notas de despliegue o base de datos
 
-<!-- Si agregaste campos a schema.prisma, ejecutaste npx prisma db push o requieres variables nuevas -->
+<!-- ¿Hay migración nueva en supabase/migrations/? ¿Requiere variables nuevas? ¿Ya se aplicó en la nube? -->

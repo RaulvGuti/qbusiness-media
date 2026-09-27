@@ -5,8 +5,11 @@
   - changed-files:
       - any-glob-to-any-file:
           - "src/app/**/portfolio/**"
+          - "src/app/**/portafolio/**"
           - "src/components/**/portfolio/**"
           - "src/components/**/Portfolio*"
+          - "src/server/repositories/portafolio*"
+          - "src/server/services/portafolio*"
           - "src/types/**/portfolio*"
 
 "module:estudio":
@@ -14,9 +17,15 @@
       - any-glob-to-any-file:
           - "src/app/**/studio/**"
           - "src/app/**/booking/**"
+          - "src/app/**/reservas/**"
           - "src/components/**/studio/**"
           - "src/components/**/Studio*"
           - "src/components/**/Booking*"
+          - "src/server/repositories/reservas*"
+          - "src/server/repositories/servicios*"
+          - "src/server/repositories/inventario*"
+          - "src/server/services/reservas*"
+          - "src/types/**/reserva*"
 
 "module:leads":
   - changed-files:
@@ -24,8 +33,9 @@
           - "src/app/**/contact/**"
           - "src/app/api/leads/**"
           - "src/components/**/Contact*"
-          - "src/lib/resend*"
-          - "src/lib/notifications*"
+          - "src/server/repositories/leads*"
+          - "src/server/services/leads*"
+          - "src/server/notifications/**"
 
 "module:social":
   - changed-files:
@@ -33,18 +43,23 @@
           - "src/app/**/social/**"
           - "src/components/**/Social*"
           - "src/app/api/social/**"
+          - "src/server/repositories/solicitudes*"
+          - "src/server/services/solicitudes*"
 
 "module:infra":
   - changed-files:
       - any-glob-to-any-file:
           - ".github/**"
-          - "prisma/**"
+          - "supabase/**"
+          - "docs/**"
           - "docker/**"
           - "compose*.yml"
           - "Dockerfile*"
           - "*.config.*"
           - "package*.json"
           - ".env*"
+          - "src/server/supabase/**"
+          - "src/lib/**"
 
 "type:docs":
   - changed-files:

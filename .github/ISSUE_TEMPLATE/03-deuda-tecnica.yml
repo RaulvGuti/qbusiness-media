@@ -33,7 +33,7 @@ body:
     id: ubicacion
     attributes:
       label: Ubicación en el proyecto
-      description: Archivo o carpeta afectada (ej. src/lib/prisma.ts o src/app/api/bookings/)
+      description: Archivo o carpeta afectada (ej. src/server/repositories/leads.ts o src/app/api/leads/)
     validations:
       required: true
 

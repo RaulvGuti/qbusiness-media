@@ -44,8 +44,11 @@ jobs:
           # Extensiones y nombres que nunca deben llegar al repositorio remoto
           prohibidos='(^|/)\.env($|\.)|\.(db|sqlite3?|sql|dump|pem|key|p12|pfx|crt|keystore|jks)$|(secret|credential|password|backup)'
 
-          # Excepciones válidas del proyecto
-          excepciones='\.env\.example$|\.env\.template$|\.secrets\.baseline$|gitleaks\.toml$'
+          # Excepciones válidas del proyecto.
+          # `supabase/migrations/*.sql` es la única forma de cambiar la base de
+          # datos (ver AGENTS.md 4.1), asi que esos archivos SI deben versionarse.
+          # Un .sql en cualquier otra ruta sigue bloqueado: eso si es un dump.
+          excepciones='\.env\.example$|\.env\.template$|\.secrets\.baseline$|gitleaks\.toml$|^supabase/migrations/[^/]+\.sql$'
 
           encontrados=""
           while IFS= read -r f; do

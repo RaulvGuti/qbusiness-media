@@ -32,9 +32,19 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# La plantilla SI se versiona: sin ella nadie puede arrancar el proyecto,
+# y la CI (workflows/build.yml) la necesita para validar docker compose.
+!.env.example
+!.env.template
 
 # vercel
 .vercel
+
+# Configuracion local de asistentes de IA (solo del proyecto, no del equipo)
+.agents/
+.claude/
+.cursor/
+.devin/
 
 # typescript
 *.tsbuildinfo
