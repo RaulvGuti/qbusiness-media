@@ -147,6 +147,74 @@ estos tres datos y ponlos en tu `.env.local`:
 ### 3.5 Levantar el sitio
 
 ```bash
+git clone https://github.com/RaulvGuti/qbusiness-media.git
+cd qbusiness-media
+git checkout develop
+npm install
+```
+
+Ojo: se trabaja en la rama **`develop`**, no en `main`. `main` es la versión ya publicada
+y nadie hace commits ahí.
+
+### 3.3 Configurar el proyecto
+
+```bash
+npm run setup
+```
+
+Este comando hace todo lo necesario:
+
+1. Revisa que tu versión de Node sea suficiente.
+2. Activa la plantilla de mensajes de commit (`.gitmessage`).
+3. Crea tu archivo personal `.env.local` a partir de `.env.example`.
+4. Intenta instalar los hooks que revisan el commit antes de aceptarlo.
+
+Los hooks (paso 4) necesitan Python. Si no lo tienes, el comando avisa y sigue: puedes
+trabajar sin ellos, pero conviene instalarlos para que Git rechace solos los archivos con
+llaves privadas y los commits directos en `main`:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+### 3.4 Conectar la base de datos
+
+El sitio usa el proyecto de Supabase del equipo. Pide en el grupo de WhatsApp del equipo
+estos tres datos y ponlos en tu `.env.local`:
+
+| Variable | Dónde se saca |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → *anon public* |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → *service_role* (**privada**) |
+
+> Las tres empiezan con `https://` y con `eyJ...`. La `service_role` es una contraseña:
+> nunca se sube a Git ni se manda por WhatsApp. Si se filtra, se revoca en Supabase y se
+> genera una nueva.
+
+### 3.5 Levantar el sitio
+
+```bash
+npm run dev
+```
+
+Abre <http://localhost:3000>. Listo.
+
+Opción alternativa con contenedores (útil para replicar cómo se entrega al cliente):
+
+```bash
+docker compose up -d
+```
+
+### 3.6 Pasos completos, en una lista
+
+```bash
+git clone https://github.com/RaulvGuti/qbusiness-media.git
+cd qbusiness-media
+git checkout develop
+npm install
+npm run setup
 npm run dev
 ```
 
