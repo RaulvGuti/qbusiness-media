@@ -1,0 +1,120 @@
+/* Reglas generales del sitio público (botones, inputs). Solo aplican dentro de .sitio. */
+
+.sitio {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+.sitio button,
+.sitio .nav-btn,
+.sitio .port-filter-btn,
+.sitio .bs-filter-btn,
+.sitio .subproj-btn,
+.sitio a[class*="bg-"],
+.sitio a[class*="btn"],
+.sitio a.inline-flex,
+.sitio input[type="submit"],
+.sitio input[type="button"] {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 1px solid #ffffff !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.sitio button *,
+.sitio .nav-btn *,
+.sitio .port-filter-btn *,
+.sitio .bs-filter-btn *,
+.sitio .subproj-btn *,
+.sitio a[class*="bg-"] *,
+.sitio a[class*="btn"] *,
+.sitio a.inline-flex * {
+    color: #ffffff !important;
+}
+
+.sitio button:hover,
+.sitio .nav-btn:hover,
+.sitio .port-filter-btn:hover,
+.sitio .bs-filter-btn:hover,
+.sitio .subproj-btn:hover,
+.sitio a[class*="bg-"]:hover,
+.sitio a[class*="btn"]:hover,
+.sitio a.inline-flex:hover,
+.sitio input[type="submit"]:hover,
+.sitio input[type="button"]:hover {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #ffffff !important;
+}
+
+.sitio button:hover *,
+.sitio .nav-btn:hover *,
+.sitio .port-filter-btn:hover *,
+.sitio .bs-filter-btn:hover *,
+.sitio .subproj-btn:hover *,
+.sitio a[class*="bg-"]:hover *,
+.sitio a[class*="btn"]:hover *,
+.sitio a.inline-flex:hover * {
+    color: #000000 !important;
+}
+
+.sitio .nav-btn.active,
+.sitio .port-filter-btn.active,
+.sitio .bs-filter-btn.active,
+.sitio .subproj-btn.active,
+.sitio button.bg-qbTerracotta,
+.sitio button.bg-qbSage,
+.sitio .nav-btn.bg-qbTerracotta,
+.sitio .port-filter-btn.bg-qbTerracotta,
+.sitio .bs-filter-btn.bg-qbTerracotta,
+.sitio .subproj-btn.bg-qbTerracotta,
+.sitio a.bg-qbTerracotta,
+.sitio a.bg-qbSage {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #ffffff !important;
+}
+
+.sitio .nav-btn.active *,
+.sitio .port-filter-btn.active *,
+.sitio .bs-filter-btn.active *,
+.sitio .subproj-btn.active *,
+.sitio button.bg-qbTerracotta *,
+.sitio button.bg-qbSage *,
+.sitio .nav-btn.bg-qbTerracotta *,
+.sitio .port-filter-btn.bg-qbTerracotta *,
+.sitio .bs-filter-btn.bg-qbTerracotta *,
+.sitio .subproj-btn.bg-qbTerracotta *,
+.sitio a.bg-qbTerracotta *,
+.sitio a.bg-qbSage * {
+    color: #000000 !important;
+}
+
+.sitio input[type="text"],
+.sitio input[type="email"],
+.sitio input[type="tel"],
+.sitio input[type="password"],
+.sitio input[type="file"],
+.sitio select,
+.sitio textarea {
+    background-color: #0d0d0d !important;
+    color: #ffffff !important;
+    border-color: #333333 !important;
+}
+
+.sitio input::placeholder,
+.sitio textarea::placeholder {
+    color: #bbbbbb !important;
+}
+
+.sitio .text-qbTerracotta,
+.sitio .text-qbSage,
+.sitio .text-qbIndigo,
+.sitio .text-qbChalk,
+.sitio .text-qbBorder,
+.sitio .text-qbBorderDark {
+    color: #E4E4E7 !important;
+}
