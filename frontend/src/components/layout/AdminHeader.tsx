@@ -5,16 +5,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./AdminHeader.module.css";
 
+
 const SECCIONES = [
   { href: "/admin/dashboard", texto: "Dashboard" },
   { href: "/admin/textos", texto: "Textos y configuración" },
   { href: "/admin/destacados", texto: "Destacados" },
   { href: "/admin/resenas", texto: "Reseñas" },
-  { href: null, texto: "Galería" },
-  { href: null, texto: "Contactos" },
-  { href: null, texto: "Reservas del estudio" },
-  { href: null, texto: "Perfil y usuarios" },
+  { href: "/admin/galeria", texto: "Galería" },
+  { href: "/admin/contactos", texto: "Contactos" },
+  { href: "/admin/apoyo-social", texto: "Apoyo social" },
+  { href: "/admin/reservas", texto: "Reservas del estudio" },
+  { href: "/admin/usuarios", texto: "Perfil y usuarios" },
 ] as const;
+
 
 export function AdminHeader() {
   const ruta = usePathname();
