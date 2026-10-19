@@ -5,44 +5,51 @@ import { Icon } from '@/components/ui/Icon';
 import ReviewsList from '@/components/leads/ReviewsList';
 import ReviewModal from '@/components/leads/ReviewModal';
 import type { FormularioResena } from '@/components/leads/ReviewModal';
+import type { ResenaCliente } from '@/types/leads';
 
-// Mock temporal con la estructura exacta de la tabla public.resenas
-const resenasMock = [
+// Mock temporal con la estructura del tipo ResenaCliente
+const resenasMock: ResenaCliente[] = [
   {
     id: 'r1',
-    autor: 'María González',
-    empresa_autor: 'Agencia Creativa',
-    texto: 'Excelente trabajo, muy profesional y cumplieron con todos los plazos. El resultado superó nuestras expectativas.',
+    nombreCliente: 'María González',
+    empresa: 'Agencia Creativa',
+    cargo: 'Directora de Marketing',
+    testimonio:
+      'Excelente trabajo, muy profesional y cumplieron con todos los plazos. El resultado superó nuestras expectativas.',
     calificacion: 5,
-    estado: 'APROBADA',
-    origen: 'VISITANTE',
-    created_at: '2025-09-10',
+    estado: 'publicada',
+    fechaCreacion: '2025-09-10',
+    fechaPublicacion: '2025-09-12',
   },
   {
     id: 'r2',
-    autor: 'Carlos López',
-    empresa_autor: 'Startup Tech',
-    texto: 'Gran calidad de producción y atención al detalle. Recomendados al 100%.',
+    nombreCliente: 'Carlos López',
+    empresa: 'Startup Tech',
+    testimonio:
+      'Gran calidad de producción y atención al detalle. Recomendados al 100%.',
     calificacion: 5,
-    estado: 'APROBADA',
-    origen: 'VISITANTE',
-    created_at: '2025-08-15',
+    estado: 'publicada',
+    fechaCreacion: '2025-08-15',
+    fechaPublicacion: '2025-08-16',
   },
 ];
 
 export default function ResenasPage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [resenas, setResenas] = useState(resenasMock);
+  const [resenas, setResenas] = useState<ResenaCliente[]>(resenasMock);
 
   const handleSubmitReview = async (form: FormularioResena) => {
     // Cuando integres Supabase harás:
     // const { error } = await supabase.from('resenas').insert([form]);
 
-    const nuevaResena = {
+    const nuevaResena: ResenaCliente = {
       id: `r-${Date.now()}`,
-      ...form,
-      estado: 'PENDIENTE',
-      created_at: new Date().toISOString().split('T')[0],
+      nombreCliente: form.autor,
+      empresa: form.empresa_autor,
+      testimonio: form.texto,
+      calificacion: form.calificacion,
+      estado: 'borrador',
+      fechaCreacion: new Date().toISOString().split('T')[0],
     };
 
     setResenas((prev) => [nuevaResena, ...prev]);
