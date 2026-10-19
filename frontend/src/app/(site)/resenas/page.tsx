@@ -1,95 +1,86 @@
 'use client';
 
-import { useState } from "react";
-import { Icon } from "@/components/ui/Icon";
+import { useState } from 'react';
+import { Icon } from '@/components/ui/Icon';
 import ReviewsList from '@/components/leads/ReviewsList';
 import ReviewModal from '@/components/leads/ReviewModal';
-import type { ResenaCliente } from '@/types/leads';
+import type { FormularioResena } from '@/components/leads/ReviewModal';
 
-const resenasMock: ResenaCliente[] = [
+// Mock temporal con la estructura exacta de la tabla public.resenas
+const resenasMock = [
   {
     id: 'r1',
-    nombreCliente: 'María González',
-    empresa: 'Agencia Creativa',
-    cargo: 'Directora de Marketing',
+    autor: 'María González',
+    empresa_autor: 'Agencia Creativa',
+    texto: 'Excelente trabajo, muy profesional y cumplieron con todos los plazos. El resultado superó nuestras expectativas.',
     calificacion: 5,
-    testimonio:
-      'Excelente trabajo, muy profesional y cumplieron con todos los plazos. El resultado superó nuestras expectativas.',
-    proyectoRelacionado: 'Video Corporativo',
-    estado: 'publicada',
-    fechaCreacion: '2025-09-10',
-    fechaPublicacion: '2025-09-12',
+    estado: 'APROBADA',
+    origen: 'VISITANTE',
+    created_at: '2025-09-10',
   },
   {
     id: 'r2',
-    nombreCliente: 'Carlos López',
-    empresa: 'Startup Tech',
-    cargo: 'CEO',
+    autor: 'Carlos López',
+    empresa_autor: 'Startup Tech',
+    texto: 'Gran calidad de producción y atención al detalle. Recomendados al 100%.',
     calificacion: 5,
-    testimonio:
-      'Gran calidad de producción y atención al detalle. Recomendados al 100%.',
-    proyectoRelacionado: 'Campaña Lanzamiento',
-    estado: 'publicada',
-    fechaCreacion: '2025-08-15',
-    fechaPublicacion: '2025-08-18',
-  },
-  {
-    id: 'r3',
-    nombreCliente: 'Ana Rodríguez',
-    empresa: 'Fundación Social',
-    cargo: 'Coordinadora',
-    calificacion: 5,
-    testimonio:
-      'Nos apoyaron con mucho compromiso en nuestra causa. Muy agradecidos por su labor social.',
-    proyectoRelacionado: 'Apoyo Social',
-    estado: 'publicada',
-    fechaCreacion: '2025-07-20',
-    fechaPublicacion: '2025-07-22',
+    estado: 'APROBADA',
+    origen: 'VISITANTE',
+    created_at: '2025-08-15',
   },
 ];
 
 export default function ResenasPage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [resenas, setResenas] = useState<ResenaCliente[]>(resenasMock);
+  const [resenas, setResenas] = useState(resenasMock);
 
-  const handleSubmitReview = (form: {
-    nombreCliente: string;
-    empresa: string;
-    cargo: string;
-    calificacion: number;
-    testimonio: string;
-    proyectoRelacionado: string;
-  }) => {
-    const nueva: ResenaCliente = {
+  const handleSubmitReview = async (form: FormularioResena) => {
+    // Cuando integres Supabase harás:
+    // const { error } = await supabase.from('resenas').insert([form]);
+
+    const nuevaResena = {
       id: `r-${Date.now()}`,
       ...form,
-      estado: 'borrador',
-      fechaCreacion: new Date().toISOString().split('T')[0],
+      estado: 'PENDIENTE',
+      created_at: new Date().toISOString().split('T')[0],
     };
-    setResenas((prev) => [nueva, ...prev]);
+
+    setResenas((prev) => [nuevaResena, ...prev]);
     setModalOpen(false);
   };
 
   return (
     <section className="page-stack">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-qbBorder pb-6">
         <div>
-          <span className="text-xs font-bold text-qbTerracotta uppercase tracking-widest">Testimonios</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">Reseñas de Clientes</h2>
-          <p className="text-sm text-qbMuted">La opinión de quienes ya confiaron en nosotros.</p>
+          <span className="text-xs font-bold text-qbTerracotta uppercase tracking-widest">
+            Testimonios
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">
+            Reseñas de Clientes
+          </h2>
+          <p className="text-sm text-qbMuted mt-1">
+            La opinión de quienes ya confiaron en nosotros.
+          </p>
         </div>
+
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center"
+          className="px-4 py-2.5 bg-qbTerracotta text-white hover:bg-qbTerracotta/90 rounded-xl text-xs font-bold transition flex items-center shadow-sm"
         >
-          <Icon name="check-circle" className="mr-2" />
+          <Icon name="star" className="mr-2" />
           Publicar testimonio
         </button>
       </div>
 
-      <ReviewsList resenas={resenas} />
+      {/* Lista de Reseñas */}
+      <div className="mt-6">
+        <ReviewsList resenas={resenas} />
+      </div>
 
+      {/* Modal de Registro */}
       <ReviewModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

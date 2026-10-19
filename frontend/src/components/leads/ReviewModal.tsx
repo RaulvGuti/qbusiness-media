@@ -1,26 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '@/components/ui/Icon';
 
-const initialForm = {
-  nombreCliente: '',
-  empresa: '',
-  cargo: '',
+export interface FormularioResena {
+  autor: string;
+  empresa_autor: string;
+  texto: string;
+  calificacion: number;
+  carpeta_id?: string;
+  video_url: string;
+  video_proporcion: '16/9' | '9/16';
+  origen: 'VISITANTE' | 'ADMIN';
+}
+
+const initialForm: FormularioResena = {
+  autor: '',
+  empresa_autor: '',
+  texto: '',
   calificacion: 5,
-  testimonio: '',
-  proyectoRelacionado: '',
+  carpeta_id: '',
+  video_url: '',
+  video_proporcion: '16/9',
+  origen: 'VISITANTE',
 };
 
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (form: typeof initialForm) => void;
+  onSubmit?: (form: FormularioResena) => Promise<void> | void;
 }
 
 export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalProps) {
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState<FormularioResena>(initialForm);
   const [enviando, setEnviando] = useState(false);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+
+  // Bloquea el scroll del fondo cuando el modal está abierto para evitar lag y saltos
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -30,16 +57,21 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === 'calificacion' ? Number(value) : value,
+      [name]: value,
     }));
+  };
+
+  const handleRatingChange = (stars: number) => {
+    setForm((prev) => ({ ...prev, calificacion: stars }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEnviando(true);
     try {
-      onSubmit?.(form);
+      await onSubmit?.(form);
       setForm(initialForm);
+      onClose();
     } finally {
       setEnviando(false);
     }
@@ -51,119 +83,175 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+      {/* Fondo oscuro con Blur y eventos táctiles/scroll bloqueados */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity touch-none"
         onClick={handleClose}
-        aria-hidden
+        aria-hidden="true"
       />
-      <div className="relative w-full max-w-xl bg-qbChalk rounded-3xl shadow-xl border border-qbBorder overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="flex items-start justify-between p-6 border-b border-qbBorder">
+
+      {/* Contenedor del Modal con scroll y animaciones independientes */}
+      <div className="relative w-full max-w-xl bg-qbChalk rounded-3xl shadow-2xl border border-qbBorder overflow-hidden max-h-[85vh] flex flex-col z-10 animate-in fade-in zoom-in-95 duration-150">
+        {/* Cabecera Fija */}
+        <div className="flex items-start justify-between p-6 border-b border-qbBorder bg-qbChalk shrink-0">
           <div className="space-y-1">
-            <h2 className="text-lg sm:text-xl font-bold text-qbInk">
-              Publicar testimonio
+            <span className="text-xs font-bold text-qbTerracotta uppercase tracking-widest">
+              Tu Opinión Importa
+            </span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-qbInk">
+              Publicar Testimonio
             </h2>
-            <p className="text-sm text-qbMuted">
-              Comparte tu experiencia con QBusiness Media.
+            <p className="text-xs sm:text-sm text-qbMuted">
+              Cuéntanos tu experiencia trabajando con QBusiness Media.
             </p>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-lg hover:bg-white/10 text-qbMuted hover:text-qbInk transition"
+            className="p-2 rounded-xl bg-qbLinen hover:bg-qbChalkHover text-qbMuted hover:text-qbInk border border-qbBorder transition"
             aria-label="Cerrar modal"
           >
             <Icon name="xmark" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        {/* Cuerpo del Formulario con scroll contenido */}
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 overscroll-contain">
+          {/* Selector interactivo de estrellas */}
+          <div className="bg-qbLinen/50 border border-qbBorder p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 text-center">
+            <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
+              ¿Cómo calificarías nuestro servicio? *
+            </label>
+            <div className="flex items-center gap-1.5">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const activeStar = (hoverRating ?? form.calificacion) >= star;
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => handleRatingChange(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(null)}
+                    className={`p-1.5 text-2xl transition-transform hover:scale-110 focus:outline-none ${
+                      activeStar ? 'text-amber-400' : 'text-qbMuted/30'
+                    }`}
+                  >
+                    <Icon name="star" />
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-xs font-semibold text-qbMuted">
+              {form.calificacion} de 5 Estrellas
+            </span>
+          </div>
+
           <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-qbInk">Nombre *</label>
+            {/* Campo Autor */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-qbInk uppercase tracking-wider flex items-center gap-1">
+                Tu Nombre / Representante <span className="text-qbTerracotta">*</span>
+              </label>
               <input
-                name="nombreCliente"
+                type="text"
+                name="autor"
                 required
-                value={form.nombreCliente}
+                placeholder="Ej. Carlos Mendoza"
+                value={form.autor}
                 onChange={handleChange}
+                className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50"
               />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-qbInk">Empresa</label>
-                <input
-                  name="empresa"
-                  value={form.empresa}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-qbInk">Cargo</label>
-                <input
-                  name="cargo"
-                  value={form.cargo}
-                  onChange={handleChange}
-                />
-              </div>
+
+            {/* Campo Empresa (Opcional) */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
+                Empresa u Organización <span className="text-qbMuted font-normal">(Opcional)</span>
+              </label>
+              <input
+                type="text"
+                name="empresa_autor"
+                placeholder="Ej. Corporación Xela"
+                value={form.empresa_autor}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50"
+              />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-qbInk">Calificación *</label>
-                <select
-                  name="calificacion"
-                  required
-                  value={form.calificacion}
-                  onChange={handleChange}
-                >
-                  {[5, 4, 3, 2, 1].map((n) => (
-                    <option key={n} value={n}>
-                      {n} estrella{n !== 1 ? 's' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-qbInk">Proyecto relacionado</label>
-                <input
-                  name="proyectoRelacionado"
-                  value={form.proyectoRelacionado}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-qbInk">Testimonio *</label>
+
+            {/* Campo Testimonio / Texto */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-qbInk uppercase tracking-wider flex items-center gap-1">
+                Tu Reseña / Comentario <span className="text-qbTerracotta">*</span>
+              </label>
               <textarea
-                name="testimonio"
+                name="texto"
                 required
                 rows={4}
-                value={form.testimonio}
+                placeholder="Escribe aquí los detalles de tu experiencia con la calidad del trabajo, atención y entregables..."
+                value={form.texto}
                 onChange={handleChange}
-                placeholder="Cuéntanos tu experiencia..."
+                className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50 resize-none"
               />
+            </div>
+
+            {/* Video adjunto (Opcional) */}
+            <div className="pt-2 border-t border-qbBorder/60 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
+                  Enlace de Video Reseña <span className="text-qbMuted font-normal">(Opcional)</span>
+                </label>
+                <input
+                  type="url"
+                  name="video_url"
+                  placeholder="Ej. https://youtube.com/watch?v=... o Vimeo"
+                  value={form.video_url}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50"
+                />
+              </div>
+
+              {/* Proporción de video */}
+              {form.video_url && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
+                    Formato de Video
+                  </label>
+                  <select
+                    name="video_proporcion"
+                    value={form.video_proporcion}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition"
+                  >
+                    <option value="16/9">Horizontal (16:9 - YouTube/Vimeo)</option>
+                    <option value="9/16">Vertical (9:16 - Reels/TikTok/Shorts)</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-end gap-3 pt-2">
+          {/* Botones de Acción */}
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-qbBorder">
             <button
               type="button"
               onClick={handleClose}
-              className="px-5 py-2.5 rounded-xl border border-qbBorder bg-qbChalk text-qbInk font-semibold hover:bg-qbChalkHover transition"
               disabled={enviando}
+              className="px-5 py-2.5 rounded-xl border border-qbBorder bg-qbChalk text-qbInk text-xs font-bold hover:bg-qbChalkHover transition disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-qbChalk border border-qbBorder text-qbInk font-semibold hover:bg-qbChalkHover transition flex items-center disabled:opacity-60"
               disabled={enviando}
+              className="px-6 py-2.5 rounded-xl bg-qbTerracotta text-white text-xs font-bold hover:bg-qbTerracotta/90 transition flex items-center gap-2 shadow-sm disabled:opacity-50"
             >
               {enviando ? (
                 <>Enviando...</>
               ) : (
                 <>
-                  <Icon name="check-circle" className="mr-2" />
-                  Enviar testimonio
+                  <Icon name="paper-plane" />
+                  Enviar Testimonio
                 </>
               )}
             </button>
