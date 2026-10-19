@@ -48,7 +48,7 @@ export function AdminHeader() {
             ),
           )}
         </nav>
-        <Link href="/admin/login" className={styles.logout}>
+        <Link href="/login" className={styles.logout}>
           Cerrar sesión
         </Link>
       </div>

@@ -73,7 +73,7 @@ export function SiteHeader() {
               <Icon name="whatsapp" className="mr-1.5 text-base" /> Cotizar WhatsApp
             </a>
             <Link
-              href="/admin/login"
+              href="/login"
               aria-label="Acceso administrativo"
               className="nav-btn inline-flex rounded-xl p-2.5 text-sm"
             >

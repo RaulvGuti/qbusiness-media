@@ -97,12 +97,28 @@
 .sitio input[type="email"],
 .sitio input[type="tel"],
 .sitio input[type="password"],
+.sitio input[type="date"],
 .sitio input[type="file"],
 .sitio select,
 .sitio textarea {
     background-color: #0d0d0d !important;
     color: #ffffff !important;
-    border-color: #333333 !important;
+    border: 1px solid #52525b !important;
+    border-radius: 0.75rem !important;
+    padding: 0.625rem 0.875rem !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+    transition: border-color 0.2s ease-in-out !important;
+}
+
+.sitio input[type="text"]:focus,
+.sitio input[type="email"]:focus,
+.sitio input[type="tel"]:focus,
+.sitio input[type="password"]:focus,
+.sitio input[type="date"]:focus,
+.sitio select:focus,
+.sitio textarea:focus {
+    border-color: #ffffff !important;
+    outline: none !important;
 }
 
 .sitio input::placeholder,
