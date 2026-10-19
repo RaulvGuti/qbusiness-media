@@ -34,9 +34,8 @@ interface ReviewModalProps {
 export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalProps) {
   const [form, setForm] = useState<FormularioResena>(initialForm);
   const [enviando, setEnviando] = useState(false);
-  const [hoverRating, setHoverRating] = useState<number | null>(null);
 
-  // Bloquea el scroll del fondo cuando el modal está abierto para evitar lag y saltos
+  // Bloquear el scroll del fondo únicamente cuando el modal está abierto
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -61,8 +60,8 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
     }));
   };
 
-  const handleRatingChange = (stars: number) => {
-    setForm((prev) => ({ ...prev, calificacion: stars }));
+  const handleRatingSelect = (val: number) => {
+    setForm((prev) => ({ ...prev, calificacion: val }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,16 +83,17 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-      {/* Fondo oscuro con Blur y eventos táctiles/scroll bloqueados */}
+      {/* Fondo oscuro sin efectos de renderizado pesados */}
       <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity touch-none"
+        className="fixed inset-0 bg-black/80 transition-opacity"
         onClick={handleClose}
         aria-hidden="true"
       />
 
-      {/* Contenedor del Modal con scroll y animaciones independientes */}
-      <div className="relative w-full max-w-xl bg-qbChalk rounded-3xl shadow-2xl border border-qbBorder overflow-hidden max-h-[85vh] flex flex-col z-10 animate-in fade-in zoom-in-95 duration-150">
-        {/* Cabecera Fija */}
+      {/* Contenedor Modal */}
+      <div className="relative w-full max-w-xl bg-qbChalk rounded-3xl shadow-2xl border border-qbBorder overflow-hidden max-h-[85vh] flex flex-col z-10">
+        
+        {/* Cabecera */}
         <div className="flex items-start justify-between p-6 border-b border-qbBorder bg-qbChalk shrink-0">
           <div className="space-y-1">
             <span className="text-xs font-bold text-qbTerracotta uppercase tracking-widest">
@@ -116,39 +116,38 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
           </button>
         </div>
 
-        {/* Cuerpo del Formulario con scroll contenido */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 overscroll-contain">
-          {/* Selector interactivo de estrellas */}
-          <div className="bg-qbLinen/50 border border-qbBorder p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 text-center">
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6">
+          
+          {/* Selector simplificado de calificación por Chips/Botones */}
+          <div className="bg-qbLinen/50 border border-qbBorder p-4 rounded-2xl flex flex-col items-center justify-center space-y-3 text-center">
             <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
-              ¿Cómo calificarías nuestro servicio? *
+              Calificación general *
             </label>
-            <div className="flex items-center gap-1.5">
-              {[1, 2, 3, 4, 5].map((star) => {
-                const activeStar = (hoverRating ?? form.calificacion) >= star;
+            <div className="flex flex-wrap justify-center gap-2">
+              {[5, 4, 3, 2, 1].map((val) => {
+                const isSelected = form.calificacion === val;
                 return (
                   <button
-                    key={star}
+                    key={val}
                     type="button"
-                    onClick={() => handleRatingChange(star)}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(null)}
-                    className={`p-1.5 text-2xl transition-transform hover:scale-110 focus:outline-none ${
-                      activeStar ? 'text-amber-400' : 'text-qbMuted/30'
+                    onClick={() => handleRatingSelect(val)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
+                      isSelected
+                        ? 'bg-qbTerracotta text-white border-qbTerracotta shadow-sm'
+                        : 'bg-qbChalk text-qbInk border-qbBorder hover:bg-qbChalkHover'
                     }`}
                   >
-                    <Icon name="star" />
+                    <span>{val}</span>
+                    <Icon name="star" className={isSelected ? 'text-white' : 'text-amber-400'} />
                   </button>
                 );
               })}
             </div>
-            <span className="text-xs font-semibold text-qbMuted">
-              {form.calificacion} de 5 Estrellas
-            </span>
           </div>
 
           <div className="space-y-4">
-            {/* Campo Autor */}
+            {/* Nombre del Autor */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-qbInk uppercase tracking-wider flex items-center gap-1">
                 Tu Nombre / Representante <span className="text-qbTerracotta">*</span>
@@ -164,7 +163,7 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
               />
             </div>
 
-            {/* Campo Empresa (Opcional) */}
+            {/* Empresa */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
                 Empresa u Organización <span className="text-qbMuted font-normal">(Opcional)</span>
@@ -179,7 +178,7 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
               />
             </div>
 
-            {/* Campo Testimonio / Texto */}
+            {/* Testimonio */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-qbInk uppercase tracking-wider flex items-center gap-1">
                 Tu Reseña / Comentario <span className="text-qbTerracotta">*</span>
@@ -188,14 +187,14 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
                 name="texto"
                 required
                 rows={4}
-                placeholder="Escribe aquí los detalles de tu experiencia con la calidad del trabajo, atención y entregables..."
+                placeholder="Escribe aquí los detalles de tu experiencia..."
                 value={form.texto}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50 resize-none"
               />
             </div>
 
-            {/* Video adjunto (Opcional) */}
+            {/* Enlace de Video (Opcional) */}
             <div className="pt-2 border-t border-qbBorder/60 space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
@@ -211,7 +210,6 @@ export default function ReviewModal({ isOpen, onClose, onSubmit }: ReviewModalPr
                 />
               </div>
 
-              {/* Proporción de video */}
               {form.video_url && (
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
