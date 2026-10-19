@@ -48,7 +48,9 @@ difusión y ausencia de un canal para apoyo social.
   datos ni otro servicio de archivos.
 - **Resend** para correos y enlaces `wa.me` para WhatsApp (aún sin activar).
 - **Docker** (`Dockerfile` + `compose.yml`) como forma alternativa de levantar y entregar.
-- **Rutas de importación**: `@/` apunta a `src/`.
+- **La aplicación Next.js vive en `frontend/`**: ahí están `package.json`, `next.config.ts`,
+  `src/` y `public/`, y ahí se corren los comandos de `npm`.
+- **Rutas de importación**: `@/` apunta a `frontend/src/`.
 - **Salida de Next.js**: `output: "standalone"`, pensado para contenedor.
 
 Decisiones y su porqué: `docs/01-decisiones-tecnicas.md`.
@@ -58,30 +60,35 @@ Decisiones y su porqué: `docs/01-decisiones-tecnicas.md`.
 ## 3. Estructura y dónde tocar
 
 ```
-src/app/            Páginas y rutas. App Router. Server Components por defecto.
-src/components/     Piezas visuales reutilizables. "layout/" chrome del sitio, "ui/" básicos.
-src/lib/            Utilidades puras y el cliente de Supabase del navegador.
-src/server/
-  ├─ supabase/      Tres clientes: navegador, servidor (con sesión) y admin (service role).
-  ├─ repositories/  Consultas a la base de datos. Sin lógica de negocio.
-  └─ services/      Reglas de negocio: validar una reserva, notificar un lead, calcular precio.
-src/types/          Tipos compartidos entre servidor y cliente.
-src/proxy.ts        Renueva la sesión en cada petición. Único lugar donde se refrescan cookies.
+frontend/           La aplicación Next.js. Aquí se corre `npm`.
+  src/app/          Páginas y rutas. App Router. Server Components por defecto.
+  src/components/   Piezas visuales reutilizables. "layout/" chrome del sitio, "ui/" básicos.
+  src/lib/          Utilidades puras y el cliente de Supabase del navegador.
+  src/server/
+    ├─ supabase/    Tres clientes: navegador, servidor (con sesión) y admin (service role).
+    ├─ repositories/ Consultas a la base de datos. Sin lógica de negocio.
+    └─ services/    Reglas de negocio: validar una reserva, notificar un lead, calcular precio.
+  src/types/        Tipos compartidos entre servidor y cliente.
+  src/proxy.ts      Renueva la sesión en cada petición. Único lugar donde se refrescan cookies.
+  Package.json      Dependencias y comandos npm (dev, build, check, setup).
+  .env.local        Variables locales (no se versiona).
 supabase/migrations/ Archivos .sql numerados. La única forma de cambiar la base de datos.
 docs/               Decisiones, avances y manuales de este proyecto.
 .github/            Issues, plantillas, etiquetas y automatizaciones.
-scripts/setup.mjs   Lo que ejecuta `npm run setup`.
+Dockerfile          Imagen del sitio (build desde la raíz, app en frontend/).
+compose.yml         Sitio + PostgreSQL en contenedores.
+scripts/setup.mjs   Lo que ejecuta `npm run setup` (desde frontend/).
 ```
 
 Reglas de ubicación:
 
-- Un componente que se usa en más de una página va a `src/components/`.
-- Toda consulta a la base de datos va en `src/server/repositories/`, nunca dentro de un
-  componente.
+- Un componente que se usa en más de una página va a `frontend/src/components/`.
+- Toda consulta a la base de datos va en `frontend/src/server/repositories/`, nunca dentro
+  de un componente.
 - Toda regla de negocio (no se solapan horarios, no se reserva un equipo cancelado, no se
-  publica una reseña sin reserva completada) va en `src/server/services/`.
-- Nada de lógica de datos dentro de `src/app/`: la página coordina, el repositorio consulta,
-  el servicio decide.
+  publica una reseña sin reserva completada) va en `frontend/src/server/services/`.
+- Nada de lógica de datos dentro de `frontend/src/app/`: la página coordina, el repositorio
+  consulta, el servicio decide.
 
 ---
 
@@ -134,8 +141,8 @@ Reglas de ubicación:
   Component, nunca a Git, nunca a un canal de chat.
 - Las variables con prefijo `NEXT_PUBLIC_` viajan al navegador: ahí solo va la URL y la
   clave pública (`anon`).
-- Los valores reales viven en `.env.local`, que Git ignora. `.env.example` sí se versiona y
-  solo lleva valores de ejemplo.
+- Los valores reales viven en `frontend/.env.local`, que Git ignora. `.env.example` sí se
+  versiona y solo lleva valores de ejemplo.
 - Si una llave se filtra: se revoca en Supabase, se genera otra, se avisa al equipo y se
   documenta en `docs/`.
 - Para reportar una vulnerabilidad **sin abrir un issue público**, seguir el procedimiento
@@ -145,9 +152,9 @@ Reglas de ubicación:
 
 - Toda lectura o escritura de datos va del lado del servidor (Server Components, Server
   Actions o Route Handlers). Los Client Components piden datos, no los consultan.
-- El cliente de `src/lib/supabase/client.ts` usa la clave pública y está sujeto a RLS. El
-  cliente admin de `src/server/supabase/admin.ts` se reserva para servidor y salta RLS:
-  usarlo solo con justificación.
+- El cliente de `frontend/src/lib/supabase/client.ts` usa la clave pública y está sujeto a
+  RLS. El cliente admin de `frontend/src/server/supabase/admin.ts` se reserva para servidor y
+  salta RLS: usarlo solo con justificación.
 - Los datos de un cliente (nombre, teléfono, correo) no se exponen en listados públicos ni
   se registran en la consola del navegador.
 - Nada de `console.log` con datos de personas. Los errores se reportan con un identificador,
@@ -156,11 +163,11 @@ Reglas de ubicación:
 ### 4.6 Next.js
 
 - La versión instalada es la 16 y cambia respecto a lo conocido. Antes de escribir código de
-  Next.js, leer la guía correspondiente en `node_modules/next/dist/docs/`.
-- La renovación de sesión vive en `src/proxy.ts`. No reimplementarla en otro lado ni borrar
-  ese archivo.
+  Next.js, leer la guía correspondiente en `frontend/node_modules/next/dist/docs/`.
+- La renovación de sesión vive en `frontend/src/proxy.ts`. No reimplementarla en otro lado ni
+  borrar ese archivo.
 - Imágenes y videos del portafolio van por el servicio de archivos de Supabase; no se
-  versionan en `public/` ni se suben al repositorio.
+  versionan en `frontend/public/` ni se suben al repositorio.
 
 ---
 
@@ -207,6 +214,8 @@ final, archivos grandes, llaves privadas y commits directos en `main`.
 
 ## 6. Comandos de verificación
 
+Los comandos se corren **dentro de `frontend/`** (ahí vive `package.json`):
+
 ```bash
 npm run lint        # estilo del código
 npm run typecheck   # tipos
@@ -223,10 +232,10 @@ cambio, se documenta en el PR; no se salta la verificación.
 
 1. Buscar o crear la tarea en las incidencias de GitHub (`.github/ISSUE_TEMPLATE`).
 2. Actualizar `develop` y crear la rama: `git checkout -b feat/mi-tarea`.
-3. Leer `node_modules/next/dist/docs/` si el trabajo toca Next.js.
+3. Leer `frontend/node_modules/next/dist/docs/` si el trabajo toca Next.js.
 4. Escribir código y, si hay base de datos, la migración nueva en `supabase/migrations/`.
 5. Documentar en `docs/` si el cambio es importante, y agregar el enlace al índice.
-6. Verificar: `npm run check`.
+6. Verificar: `npm run check` (desde `frontend/`).
 7. Commit con el formato del punto 5.
 8. Subir la rama y abrir el PR a `develop`, llenando la plantilla.
 9. Resolver los comentarios de revisión y responder preguntas de los compañeros.

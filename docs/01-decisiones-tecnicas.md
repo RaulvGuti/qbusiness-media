@@ -45,9 +45,10 @@ Poco, y por dos decisiones que ya tomamos a propósito:
    máquina propia o el servicio de pago que se elija después. No usamos campos propios de
    Supabase en el esquema.
 2. El código no habla SQL crudo con la base de datos: usa el cliente de Supabase, que está
-   aislado en **tres archivos** (`src/lib/supabase/client.ts`, `src/server/supabase/server.ts`
-   y `src/server/supabase/admin.ts`) y las consultas viven en `src/server/repositories/`.
-   Cambiar de backend es reescribir esos archivos, no el sitio completo.
+   aislado en **tres archivos** (`frontend/src/lib/supabase/client.ts`,
+   `frontend/src/server/supabase/server.ts` y `frontend/src/server/supabase/admin.ts`) y las
+   consultas viven en `frontend/src/server/repositories/`. Cambiar de backend es reescribir
+   esos archivos, no el sitio completo.
 
 **Riesgos que sí hay que aceptar:** con Neon o con Postgres pago se pierde el
 almacenamiento de archivos (habría que contratar otro servicio), la autenticación lista y el
@@ -107,10 +108,10 @@ se tratan: casi todas cobran una cuota mensual más una comisión por transacci�
 
 **Decisión: un solo comando para trabajar; Docker como alternativa, no como obligación.**
 
-- `npm run dev` es la forma normal de trabajar. Quien integrate necesita Node 20.9 o
-  superior, nada más.
-- `npm run setup` deja el equipo listo la primera vez: plantilla de commit, `.env.local` y
-  hooks de revisión.
+- `npm run dev` (desde `frontend/`) es la forma normal de trabajar. Quien integrate necesita
+  Node 20.9 o superior, nada más.
+- `npm run setup` deja el equipo listo la primera vez: plantilla de commit,
+  `frontend/.env.local` y hooks de revisión.
 - `compose.yml` + `Dockerfile` existen para **replicar la entrega**: el sitio se compila
   dentro de una imagen que se levanta con un solo comando, sin que la persona que recibe el
   proyecto tenga que instalar Node ni configurar la base de datos a mano.

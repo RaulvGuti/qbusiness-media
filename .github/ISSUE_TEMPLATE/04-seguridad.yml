@@ -21,7 +21,7 @@ body:
     id: ubicacion
     attributes:
       label: Ubicación en el código
-      description: Archivo o ruta involucrada (ej. src/app/api/leads/route.ts)
+      description: Archivo o ruta involucrada (ej. frontend/src/app/api/leads/route.ts)
     validations:
       required: true
 

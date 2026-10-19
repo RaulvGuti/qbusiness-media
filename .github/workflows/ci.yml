@@ -25,24 +25,31 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          # La aplicacion Next.js vive en frontend/
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Instalar dependencias limpias
+        working-directory: frontend
         run: npm ci
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
       - name: Comprobar linting
+        working-directory: frontend
         run: npm run lint
 
       - name: Generar los tipos de Next.js
         # LayoutProps, PageProps y RouteContext los genera Next.js. Sin este paso
         # `tsc --noEmit` falla en un clon nuevo, porque .next/types no existe todavia.
+        working-directory: frontend
         run: npx next typegen
 
       - name: Validación de tipos estáticos
+        working-directory: frontend
         run: npx tsc --noEmit
 
       - name: Compilación de producción (Build)
+        working-directory: frontend
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: "https://dummy.supabase.co"
@@ -50,6 +57,7 @@ jobs:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
       - name: Auditoría de vulnerabilidades de paquetes
+        working-directory: frontend
         run: npm audit --audit-level high
         continue-on-error: true
 

@@ -1,0 +1,22 @@
+# Contexto del build de Docker: no copiar dependencias, artefactos ni
+# carpetas que no hacen falta dentro de la imagen.
+**/node_modules
+**/.next
+next-env.d.ts
+*.tsbuildinfo
+.git
+.gitignore
+.agents
+.claude
+.cursor
+.devin
+restructuracion
+docs
+supabase
+.github
+.env
+.env.local
+**/.env
+**/.env.local
+compose.yml
+Dockerfile

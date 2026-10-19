@@ -21,3 +21,10 @@ el cliente necesita saber para usar el sitio.
 | 03 | `03-despliegue.md` | Cómo se publica y cómo se actualiza el sitio. *(pendiente)* |
 | 04 | `04-modulos.md` | Qué hace cada pestaña y en qué punto va. *(pendiente)* |
 | 05 | `05-manual-cliente.md` | Lo que el cliente debe saber para usar el sitio. *(pendiente)* |
+
+## Trabajo interno en curso
+
+- La restructuración del código (la app se movió a `frontend/`, se unificaron los layouts
+  de grupo y se consolidaron los estilos) se sigue en `../restructuracion/`, una **carpeta
+  local ignorada por Git**: no se versiona y el enlace solo funciona en la máquina de quien
+  la tenga.
