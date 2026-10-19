@@ -1,5 +1,5 @@
 # 1. Dependencias
-FROM node:20-alpine AS deps
+FROM node:25-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app/frontend
 
@@ -7,7 +7,7 @@ COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
 # 2. Builder
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY . .
@@ -20,7 +20,7 @@ WORKDIR /app/frontend
 RUN npm run build
 
 # 3. Runner de Producción
-FROM node:20-alpine AS runner
+FROM node:25-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
