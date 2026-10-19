@@ -23,14 +23,14 @@ Closes #
 ## Cómo probar localmente (Windows / Node)
 
 1. Si hubo cambios de base de datos, incluir el archivo nuevo en `supabase/migrations/` y decir cuál es
-2. Levantar el proyecto: `npm run dev`
+2. Levantar el proyecto desde `frontend/`: `cd frontend && npm run dev`
 3. Probar el flujo:
 
 ## Checklist de calidad
 
-- [ ] Las comprobaciones locales pasan (`npm run check`)
+- [ ] Las comprobaciones locales pasan (`npm run check`, desde `frontend/`)
 - [ ] No se dejaron `console.log` residuales con datos sensibles
-- [ ] Se documentaron nuevas variables en `.env.example` si aplica
+- [ ] Se documentaron nuevas variables en `frontend/.env.example` si aplica
 - [ ] No se subieron archivos prohibidos (`.env`, `.env.local`, llaves privadas)
 - [ ] Si el cambio es importante, hay documento en `docs/` y el enlace en `docs/README.md`
 

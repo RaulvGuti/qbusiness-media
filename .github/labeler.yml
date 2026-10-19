@@ -4,47 +4,47 @@
 "module:portafolio":
   - changed-files:
       - any-glob-to-any-file:
-          - "src/app/**/portfolio/**"
-          - "src/app/**/portafolio/**"
-          - "src/components/**/portfolio/**"
-          - "src/components/**/Portfolio*"
-          - "src/server/repositories/portafolio*"
-          - "src/server/services/portafolio*"
-          - "src/types/**/portfolio*"
+          - "frontend/src/app/**/portfolio/**"
+          - "frontend/src/app/**/portafolio/**"
+          - "frontend/src/components/**/portfolio/**"
+          - "frontend/src/components/**/Portfolio*"
+          - "frontend/src/server/repositories/portafolio*"
+          - "frontend/src/server/services/portafolio*"
+          - "frontend/src/types/**/portfolio*"
 
 "module:estudio":
   - changed-files:
       - any-glob-to-any-file:
-          - "src/app/**/studio/**"
-          - "src/app/**/booking/**"
-          - "src/app/**/reservas/**"
-          - "src/components/**/studio/**"
-          - "src/components/**/Studio*"
-          - "src/components/**/Booking*"
-          - "src/server/repositories/reservas*"
-          - "src/server/repositories/servicios*"
-          - "src/server/repositories/inventario*"
-          - "src/server/services/reservas*"
-          - "src/types/**/reserva*"
+          - "frontend/src/app/**/studio/**"
+          - "frontend/src/app/**/booking/**"
+          - "frontend/src/app/**/reservas/**"
+          - "frontend/src/components/**/studio/**"
+          - "frontend/src/components/**/Studio*"
+          - "frontend/src/components/**/Booking*"
+          - "frontend/src/server/repositories/reservas*"
+          - "frontend/src/server/repositories/servicios*"
+          - "frontend/src/server/repositories/inventario*"
+          - "frontend/src/server/services/reservas*"
+          - "frontend/src/types/**/reserva*"
 
 "module:leads":
   - changed-files:
       - any-glob-to-any-file:
-          - "src/app/**/contact/**"
-          - "src/app/api/leads/**"
-          - "src/components/**/Contact*"
-          - "src/server/repositories/leads*"
-          - "src/server/services/leads*"
-          - "src/server/notifications/**"
+          - "frontend/src/app/**/contact/**"
+          - "frontend/src/app/api/leads/**"
+          - "frontend/src/components/**/Contact*"
+          - "frontend/src/server/repositories/leads*"
+          - "frontend/src/server/services/leads*"
+          - "frontend/src/server/notifications/**"
 
 "module:social":
   - changed-files:
       - any-glob-to-any-file:
-          - "src/app/**/social/**"
-          - "src/components/**/Social*"
-          - "src/app/api/social/**"
-          - "src/server/repositories/solicitudes*"
-          - "src/server/services/solicitudes*"
+          - "frontend/src/app/**/social/**"
+          - "frontend/src/components/**/Social*"
+          - "frontend/src/app/api/social/**"
+          - "frontend/src/server/repositories/solicitudes*"
+          - "frontend/src/server/services/solicitudes*"
 
 "module:infra":
   - changed-files:
@@ -56,10 +56,10 @@
           - "compose*.yml"
           - "Dockerfile*"
           - "*.config.*"
-          - "package*.json"
-          - ".env*"
-          - "src/server/supabase/**"
-          - "src/lib/**"
+          - "frontend/package*.json"
+          - "frontend/.env*"
+          - "frontend/src/server/supabase/**"
+          - "frontend/src/lib/**"
 
 "type:docs":
   - changed-files:

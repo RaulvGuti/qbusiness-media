@@ -16,14 +16,15 @@ requests, issues, etiquetas y cómo se reportan problemas de seguridad.
 git clone https://github.com/RaulvGuti/qbusiness-media.git
 cd qbusiness-media
 git checkout develop
+cd frontend
 npm install
 npm run setup   # plantilla de commits, .env.local y hooks
 npm run dev
 ```
 
 - Node.js 20.9 o superior.
-- Los datos de Supabase se piden en el grupo del equipo y van en `.env.local`, que Git
-  ignora. Nunca se suben llaves reales al repositorio.
+- Los datos de Supabase se piden en el grupo del equipo y van en `.env.local` (dentro de
+  `frontend/`), que Git ignora. Nunca se suben llaves reales al repositorio.
 - Cada tarea nace de una incidencia. Si no existe, se crea primero con una de las
   plantillas de `.github/ISSUE_TEMPLATE/`.
 
@@ -100,7 +101,7 @@ git push -u origin feat/mi-tarea
 
 Antes de abrirlo:
 
-- [ ] `npm run check` pasa (los tres: lint, tipos y build).
+- [ ] `npm run check` pasa (los tres: lint, tipos y build), corrido desde `frontend/`.
 - [ ] La descripción dice **si hubo migración nueva** en `supabase/migrations/`.
 - [ ] Si el cambio es importante, hay documento en `docs/` con su enlace en `docs/README.md`.
 - [ ] No quedan `console.log` con datos de personas ni archivos con credenciales.
@@ -112,7 +113,7 @@ Automatizaciones que revisan el PR (ninguna se salta):
 | `Validar PR`            | Título con formato de commit y archivos prohibidos (`.env`, llaves, dumps) |
 | `CI`                    | `lint`, verificación de tipos y `build`; además `npm audit`                 |
 | `Etiquetado`            | Etiquetas por rutas tocadas (`.github/labeler.yml`)                          |
-| `Build de contenedores` | Solo si el PR toca `Dockerfile`, `compose.yml`, `docker/**` o `package*.json` |
+| `Build de contenedores` | Solo si el PR toca `Dockerfile`, `compose.yml`, `docker/**` o `frontend/package*.json` |
 
 - `Validar PR` avisa cuando el PR pasa de 1500 líneas modificadas: conviene dividirlo.
 - `.github/CODEOWNERS` exige revisión del responsable en `.github/`, `compose.yml` y

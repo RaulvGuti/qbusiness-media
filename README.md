@@ -78,7 +78,7 @@ Todo vive en una sola página con pestañas, en este orden:
 | Correos de notificación | **Resend** (gratis hasta 3.000/mes) | Llegada real a correo, con aviso de "se envió". |
 | Aviso por WhatsApp | Enlace `wa.me` | Sin contrato con Twilio: se abre el chat con el número de la empresa. |
 | Pagos en línea | **No se conecta ninguna pasarela todavía** | El flujo de reserva ya contempla comprobante de pago y aprobación manual. Si más adelante se cobra en línea, se agrega sin rehacer la base de datos. Ver `docs/01-decisiones-tecnicas.md`. |
-| Desarrollo local | **Un comando** (`npm run dev`) con `docker compose` como alternativa | Quien entrega el proyecto no debe depender de Docker ni de instalar la base de datos a mano. |
+| Desarrollo local | **Un comando** (`cd frontend && npm run dev`) con `docker compose` como alternativa | Quien entrega el proyecto no debe depender de Docker ni de instalar la base de datos a mano. |
 
 > Detalle de por qué Supabase y no Neon, y qué tan grave sería cambiar después:
 > [`docs/01-decisiones-tecnicas.md`](./docs/01-decisiones-tecnicas.md).
@@ -100,8 +100,13 @@ No necesitas instalar Docker ni PostgreSQL para trabajar en el día a día. Dock
 git clone [https://github.com/RaulvGuti/qbusiness-media.git](https://github.com/RaulvGuti/qbusiness-media.git)
 cd qbusiness-media
 git checkout develop
+cd frontend
 npm install
 ```
+
+> La aplicación Next.js vive en `frontend/`. Los comandos de `npm` se corren **dentro de
+> `frontend/`**; la raíz guarda la infraestructura (`Dockerfile`, `compose.yml`, `.github`,
+> `supabase`, `docs`).
 
 > **Ojo:** se trabaja en la rama **`develop`**, no en `main`. `main` es la versión ya publicada y nadie hace commits ahí.
 
@@ -115,7 +120,7 @@ Este comando hace todo lo necesario:
 
 1. Revisa que tu versión de Node sea suficiente.
 2. Activa la plantilla de mensajes de commit (`.gitmessage`).
-3. Crea tu archivo personal `.env.local` a partir de `.env.example`.
+3. Crea tu archivo personal `frontend/.env.local` a partir de `frontend/.env.example`.
 4. Intenta instalar los hooks que revisan el commit antes de aceptarlo.
 
 Los hooks (paso 4) necesitan Python. Si no lo tienes, el comando avisa y sigue: puedes trabajar sin ellos, pero conviene instalarlos para que Git rechace solos los archivos con llaves privadas y los commits directos en `main`:
@@ -127,7 +132,7 @@ pre-commit install
 
 ### 3.4 Conectar la base de datos
 
-El sitio usa el proyecto de Supabase del equipo. Pide en el grupo de WhatsApp del equipo estos tres datos y ponlos en tu `.env.local`:
+El sitio usa el proyecto de Supabase del equipo. Pide en el grupo de WhatsApp del equipo estos tres datos y ponlos en tu `frontend/.env.local`:
 
 | Variable | Dónde se saca |
 | --- | --- |
@@ -140,6 +145,7 @@ El sitio usa el proyecto de Supabase del equipo. Pide en el grupo de WhatsApp de
 ### 3.5 Levantar el sitio
 
 ```bash
+cd frontend
 npm run dev
 ```
 
@@ -157,8 +163,9 @@ docker compose up -d
 git clone [https://github.com/RaulvGuti/qbusiness-media.git](https://github.com/RaulvGuti/qbusiness-media.git)
 cd qbusiness-media
 git checkout develop
+cd frontend
 npm install
-npm run setup
+npm run setup   # se corre también desde frontend/
 npm run dev
 ```
 
@@ -166,26 +173,31 @@ npm run dev
 
 ```
 qbusiness-media/
-├─ src/
-│  ├─ app/                 # Páginas y rutas del sitio (App Router)
-│  ├─ components/          # Piezas visuales reutilizables (layout/, ui/)
-│  ├─ lib/                 # Utilidades y cliente de Supabase para el navegador
-│  ├─ server/              # Lo que solo corre en el servidor
-│  │  ├─ supabase/         # Clientes de Supabase (navegador / servidor / admin)
-│  │  ├─ repositories/     # Consultas a la base de datos
-│  │  └─ services/         # Reglas de negocio (reservas, leads, notificaciones)
-│  ├─ types/               # Tipos de datos compartidos
-│  └─ proxy.ts             # Renueva la sesión en cada petición
+├─ frontend/               # La aplicación Next.js (aquí se corre npm)
+│  ├─ src/
+│  │  ├─ app/              # Páginas y rutas del sitio (App Router)
+│  │  ├─ components/       # Piezas visuales reutilizables (layout/, ui/)
+│  │  ├─ lib/              # Utilidades y cliente de Supabase para el navegador
+│  │  ├─ server/           # Lo que solo corre en el servidor
+│  │  │  ├─ supabase/      # Clientes de Supabase (navegador / servidor / admin)
+│  │  │  ├─ repositories/  # Consultas a la base de datos
+│  │  │  └─ services/      # Reglas de negocio (reservas, leads, notificaciones)
+│  │  ├─ types/            # Tipos de datos compartidos
+│  │  └─ proxy.ts          # Renueva la sesión en cada petición
+│  ├─ public/              # Imágenes y archivos estáticos del sitio
+│  ├─ package.json         # Dependencias y comandos npm
+│  └─ .env.local           # Variables personales (no se versiona)
 ├─ supabase/migrations/    # Archivos .sql: la base de datos se cambia solo aquí
 ├─ docs/                   # Decisiones y avances del proyecto
 ├─ .github/                # Issues, plantillas de PR, etiquetas y automatizaciones
-├─ scripts/setup.mjs       # El comando `npm run setup`
+├─ scripts/setup.mjs       # Lo que ejecuta `npm run setup`
 ├─ compose.yml             # Sitio + PostgreSQL en contenedores
 └─ Dockerfile              # Cómo se construye la imagen del sitio
 ```
 
-Regla fácil de recordar: **lo que el visitante ve va en `src/app` y `src/components`; lo
-que habla con la base de datos va en `src/server`.**
+Regla fácil de recordar: **lo que el visitante ve va en `frontend/src/app` y
+`frontend/src/components`; lo que habla con la base de datos va en
+`frontend/src/server`.**
 
 ---
 
@@ -278,15 +290,19 @@ misma base de datos, y siempre se puede saber quién cambió qué y cuándo.
 ### 5.7 Antes de entregar cualquier trabajo
 
 ```bash
+cd frontend
 npm run check
 ```
 
-Ese comando revisa el estilo del código, los tipos y que el proyecto compile. Los tres
+Ese comando (corrido **dentro de `frontend/`**, como todos los de `npm`) revisa el estilo
+del código, los tipos y que el proyecto compile. Los tres
 tienen que pasar. GitHub también lo revisa solo, pero es más molesto descubrirlo aquí.
 
 ---
 
 ## 6. Comandos más usados
+
+Los comandos de `npm` se corren **dentro de `frontend/`** (es donde vive `package.json`).
 
 | Comando | Para qué sirve |
 | --- | --- |
@@ -304,15 +320,24 @@ tienen que pasar. GitHub también lo revisa solo, pero es más molesto descubrir
 ## 7. Problemas frecuentes
 
 **`node -v` marca una versión menor a 20.9.**
-Instala Node 20.9 o superior y vuelve a correr `npm install`.
+Instala Node 20.9 o superior y vuelve a correr `npm install` dentro de `frontend/`.
+
+**`npm` dice que no encuentra `package.json` (ENOENT) en la raíz del proyecto.**
+Es lo esperado: la aplicación vive en `frontend/` y ahí está su `package.json`. Entra a
+esa carpeta antes de correr cualquier comando de `npm`:
+```bash
+cd frontend
+npm run dev
+```
 
 **La página abre pero no carga fotos ni datos.**
-Faltan las variables de Supabase en `.env.local`. Revisa la sección 3.4 y reinicia con
-`npm run dev`.
+Faltan las variables de Supabase en `frontend/.env.local`. Revisa la sección 3.4 y
+reinicia con `cd frontend && npm run dev`.
 
 **Aviso de que falta una variable de entorno.**
-El archivo se llama `.env.local` y debe estar en la raíz del proyecto. Se crea solo con
-`npm run setup`.
+El archivo se llama `.env.local` y vive en **`frontend/`** (no en la raíz del proyecto;
+la plantilla `frontend/.env.example` sí está en Git). Se crea solo con
+`cd frontend && npm run setup`.
 
 **`git` pide usuario y correo al primer commit.**
 ```bash
@@ -333,7 +358,7 @@ git checkout develop && git pull
 
 **Quiero descartar cambios locales.**
 ```bash
-git restore src/app/page.tsx
+git restore frontend/src/app/page.tsx
 ```
 
 **`npm install` termina con algún aviso raro.**

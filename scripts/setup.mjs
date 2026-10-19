@@ -54,16 +54,18 @@ if (git.status !== 0) {
 }
 
 heading("Variables de entorno");
-const envExample = join(root, ".env.example");
-const envLocal = join(root, ".env.local");
+// La aplicacion Next.js vive en frontend/: la plantilla y el .env.local real
+// tienen que estar junto a next.config.ts para que Next las lea.
+const envExample = join(root, "frontend", ".env.example");
+const envLocal = join(root, "frontend", ".env.local");
 
 if (!existsSync(envExample)) {
-  warn("No se encontro .env.example.");
+  warn("No se encontro frontend/.env.example.");
 } else if (existsSync(envLocal)) {
-  skip(".env.local ya existe, no se modifica");
+  skip("frontend/.env.local ya existe, no se modifica");
 } else {
   copyFileSync(envExample, envLocal);
-  ok(".env.local creado desde .env.example (reemplaza los valores de ejemplo)");
+  ok("frontend/.env.local creado desde frontend/.env.example (reemplaza los valores de ejemplo)");
 }
 
 heading("Hooks de pre-commit");

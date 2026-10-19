@@ -7,7 +7,7 @@ on:
       - "compose*.yml"
       - "**/Dockerfile"
       - "docker/**"
-      - "package*.json"
+      - "frontend/package*.json"
       - ".github/workflows/build.yml"
   workflow_dispatch:
 
@@ -28,8 +28,9 @@ jobs:
 
       - name: Preparar archivo de entorno temporal
         run: |
-          if [ -f .env.example ]; then
-            cp .env.example .env
+          if [ -f frontend/.env.example ]; then
+            # docker compose lee las variables de interpolacion desde la raiz
+            cp frontend/.env.example .env
           else
             echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/qbusiness" > .env
           fi
