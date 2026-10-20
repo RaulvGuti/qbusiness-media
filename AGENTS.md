@@ -259,6 +259,24 @@ Migraciones existentes (`supabase/migrations/`):
 | `000009_resenas_clientes.sql` | Una reseña por reserva, con moderación |
 | `000010_leads_contacto.sql` | Solicitudes del formulario de contacto y su estado |
 | `000011_solicitudes_apoyo_social.sql` | Solicitudes de apoyo de fundaciones y su estado |
+| `000012_administradores_clientes.sql` | `administradores` y `clientes` ligados a Auth; función `es_admin()` |
+| `000013_trigger_auth_nuevo_cliente.sql` | Todo registro nuevo de Auth nace como cliente |
+| `000014_reasignar_fks_a_administradores.sql` | `portafolio`, `leads` y `solicitudes` apuntan a `administradores` |
+| `000015_reservas_contacto_y_cliente.sql` | `reservas` guarda `cliente_id`, `creado_por` y datos del formulario |
+| `000016_configuracion_sitio.sql` | Tabla `configuracion_sitio` (tarifa del salón y parámetros) |
+| `000017_fechas_bloqueadas.sql` | Bloqueos del calendario puestos por el administrador |
+| `000018_validar_disponibilidad.sql` | `validar_reserva`, `intervalos_bloqueados()` y `horarios_ocupados()` |
+| `000019_solicitar_reserva.sql` | Función `solicitar_reserva()`: el precio lo calcula el servidor |
+| `000020_politicas_rls.sql` | RLS en todas las tablas y políticas por rol |
+| `000021_eliminar_usuarios.sql` | `drop table usuarios` (ya no la referencia nadie) |
+| `000022_reservas_backfill_y_limite_pendientes.sql` | Backfill de `creado_por` y tope de pendientes por cliente |
+| `000023_galeria_empresas_carpetas.sql` | `empresas`, `carpetas_galeria`, `archivos_galeria`, `destacados` |
+| `000024_migrar_portafolio_a_carpetas.sql` | Copia `portafolio` al modelo de carpetas |
+| `000025_contactos_notas_y_campos.sql` | `notas_contacto` y campos nuevos de apoyo social |
+| `000026_resenas_autor_estado_video.sql` | Reseñas con autor, `estado` y video; reemplaza `publicado` |
+| `000027_storage_buckets.sql` | Buckets `galeria` y `logos` con políticas de Storage |
+| `000028_privilegios_administradores_clientes.sql` | Privilegios de perfil de `administradores` y `clientes` |
+| `000029_horario_atencion_y_pago.sql` | Horario de atención configurable, `estado_pago` y UPDATE de reservas por el cliente |
 
 Decisiones ya tomadas que hay que respetar:
 
@@ -268,10 +286,21 @@ Decisiones ya tomadas que hay que respetar:
   cancelada libera su espacio sin borrarse.
 - Nada se borra para "limpiar": los catálogos se desactivan con `activo = false` y así se
   conserva el historial.
+- La identidad vive en Supabase Auth: `administradores` y `clientes` comparten el `id` de
+  `auth.users` y las contraseñas **no** se guardan en tablas propias.
 
-Pendiente, que debe llegar como migración (nunca desde el panel): RLS de todas las tablas,
-buckets de Storage con sus políticas, tabla de `horarios_disponibles` y el historial de
-cambios de estado de reservas y leads.
+Estado actual:
+
+- **RLS activo en las 18 tablas** de `public` (migración 000020 y siguientes).
+- **Buckets de Storage** `galeria` y `logos` creados con sus políticas (000027).
+- El **horario de atención** se configura en `configuracion_sitio` (`estudio / hora_apertura`
+  y `estudio / hora_cierre`) y lo aplica el trigger `validar_horario_atencion` (000029); no
+  existe una tabla `horarios_disponibles`.
+- El flujo completo está documentado en [`docs/03-migraciones_esquema_v2.md`](./docs/03-migraciones_esquema_v2.md).
+
+Pendiente, que debe llegar como migración (nunca desde el panel): el historial de cambios de
+estado de reservas y leads, y la eliminación de la tabla legada `portafolio` cuando el
+frontend lea de `carpetas_galeria`.
 
 ---
 
@@ -297,6 +326,7 @@ cambios de estado de reservas y leads.
 | --- | --- |
 | Instalación y arranque | [`README.md`](./README.md) |
 | Decisiones técnicas | [`docs/01-decisiones-tecnicas.md`](./docs/01-decisiones-tecnicas.md) |
+| Migraciones y esquema | [`docs/03-migraciones_esquema_v2.md`](./docs/03-migraciones_esquema_v2.md) |
 | Índice de documentación | [`docs/README.md`](./docs/README.md) |
 | Guía de contribución y seguridad | [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md) |
 | Reglas de commits | [`.gitmessage`](./.gitmessage) |
