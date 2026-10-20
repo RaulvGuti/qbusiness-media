@@ -1,15 +1,36 @@
 import shared from "../panel.module.css";
+import {
+  listarDestacados,
+  listarTodasLasCarpetas,
+  listarTodasLasEmpresas,
+} from "@/server/repositories/galeria";
+import { construirCatalogo } from "./datos";
 import { DestacadosPanel } from "./DestacadosPanel";
 
-export default function DestacadosPage() {
+export const metadata = { title: "Destacados | Admin" };
+
+export default async function DestacadosPage() {
+  // SUPABASE (admin): destacados (con joins), carpetas_galeria y empresas.
+  const [destacados, carpetas, empresas] = await Promise.all([
+    listarDestacados(),
+    listarTodasLasCarpetas(),
+    listarTodasLasEmpresas(),
+  ]);
+
+  const ordenActual = destacados.map((d) => d.carpetaId ?? d.empresaId).filter((x): x is string => !!x);
+
   return (
     <>
       <span className={shared.eye}>Gestión de contenido</span>
       <h1 className={shared.title}>Administración de destacados</h1>
       <p className={shared.sub}>
-        Selecciona los proyectos destacados de todos los módulos y las empresas con las que se ha trabajado.
+        Selecciona las carpetas y empresas destacadas del inicio. El orden se
+        guarda en la tabla <code>destacados</code> (posicion única).
       </p>
-      <DestacadosPanel />
+      <DestacadosPanel
+        catalogo={construirCatalogo(carpetas, empresas)}
+        destacadosIniciales={ordenActual}
+      />
     </>
   );
 }

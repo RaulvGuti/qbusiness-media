@@ -26,6 +26,13 @@ Thumbs.db
 desktop.ini
 *.pem
 
+# IDE / editores: la configuracion compartida del equipo vive en .editorconfig
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
 # Metadata de flujo alternativo de Windows/WSL (nunca debe versionarse)
 *:Zone.Identifier
 *Zone.Identifier*
@@ -38,6 +45,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+
+# eslint
+.eslintcache
+
+# Docker: overrides locales de compose (nunca se versionan)
+docker-compose.override.yml
+compose.override.yml
+
+# Python local (solo para instalar pre-commit en un venv)
+.venv/
+venv/
+__pycache__/
 
 # env files (can opt-in for committing if needed)
 .env*
