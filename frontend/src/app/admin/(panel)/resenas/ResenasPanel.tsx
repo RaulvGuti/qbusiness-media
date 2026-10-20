@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
-import { CATALOGO, iniciales } from "../destacados/datos";
+import {
+  crearResenaAdmin,
+  eliminarResena,
+  moderarResena,
+} from "@/server/repositories/resenas";
+import { iniciales } from "../destacados/datos";
 import shared from "../panel.module.css";
 import {
   FILTROS_ESTADO,
   FILTROS_TIPO,
-  RESENAS_INICIALES,
   type Estado,
   type Resena,
   type Video,
@@ -49,22 +53,24 @@ function mcd(a: number, b: number): number {
   return b ? mcd(b, a % b) : a;
 }
 
-export function ResenasPanel() {
+interface ResenasPanelProps {
+  resenasIniciales: Resena[];
+}
+
+export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
   const toast = useToast();
-  const [resenas, setResenas] = useState<Resena[]>(RESENAS_INICIALES);
+  const [resenas, setResenas] = useState<Resena[]>(resenasIniciales);
   const [estado, setEstado] = useState<"todas" | Estado>("todas");
   const [tipo, setTipo] = useState<(typeof FILTROS_TIPO)[number]["clave"]>("todos");
-  const [aEliminar, setAEliminar] = useState<number | null>(null);
+  const [aEliminar, setAEliminar] = useState<string | null>(null);
   const [verVideo, setVerVideo] = useState<Resena | null>(null);
 
   const [nuevaAbierta, setNuevaAbierta] = useState(false);
   const [autor, setAutor] = useState("");
   const [texto, setTexto] = useState("");
   const [estrellas, setEstrellas] = useState(5);
-  const [proyecto, setProyecto] = useState("");
   const [video, setVideo] = useState<Video | null>(null);
 
-  const proyectos = CATALOGO.filter((c) => c.modulo !== "Empresas");
   const cuenta = (e: "todas" | Estado) =>
     e === "todas" ? resenas.length : resenas.filter((r) => r.estado === e).length;
   const visibles = resenas.filter(
@@ -73,7 +79,9 @@ export function ResenasPanel() {
       (tipo === "todos" || (tipo === "video" ? r.video : !r.video)),
   );
 
-  const cambiar = (id: number, nuevo: Estado) => {
+  const cambiar = async (id: string, nuevo: Estado) => {
+    // SUPABASE (admin): UPDATE resenas_clientes SET estado = $nuevo WHERE id = $id.
+    await moderarResena(id, nuevo);
     setResenas((rs) => rs.map((r) => (r.id === id ? { ...r, estado: nuevo } : r)));
     toast(nuevo === "aprobada" ? "Reseña aprobada" : "Reseña rechazada");
   };
@@ -82,13 +90,14 @@ export function ResenasPanel() {
     setAutor("");
     setTexto("");
     setEstrellas(5);
-    setProyecto(proyectos[0]?.nombre ?? "");
     setVideo(null);
     setNuevaAbierta(true);
   };
 
   const elegirVideo = (archivo: File | undefined) => {
     if (!archivo) return setVideo(null);
+    // SUPABASE (al conectar): subir a Storage bucket 'galeria'
+    // y usar la ruta devuelta como video_url.
     const url = URL.createObjectURL(archivo);
     const el = document.createElement("video");
     el.preload = "metadata";
@@ -104,18 +113,32 @@ export function ResenasPanel() {
     el.src = url;
   };
 
-  const publicar = () => {
+  const publicar = async () => {
     if (!autor.trim() || !texto.trim()) return toast("Completa autor y texto");
+    // SUPABASE (admin): INSERT con origen='admin', estado='aprobada' (sin reserva).
+    const creada = await crearResenaAdmin({
+      autor: autor.trim(),
+      comentario: texto.trim(),
+      calificacion: estrellas,
+      videoUrl: video?.url,
+      videoProporcion:
+        video && Number(video.ratio.split("/")[1]) > Number(video.ratio.split("/")[0])
+          ? "9/16"
+          : "16/9",
+    });
     setResenas((rs) => [
       {
-        id: Date.now(),
-        autor: autor.trim(),
+        id: creada.id,
+        autor: creada.autor,
         fecha: "Ahora",
-        estrellas,
-        texto: texto.trim(),
-        estado: "aprobada",
-        proyecto,
-        video,
+        estrellas: creada.calificacion ?? 0,
+        texto: creada.comentario,
+        estado: creada.estado,
+        empresa: creada.empresaAutor,
+        origen: creada.origen,
+        video: video
+          ? { ratio: video.ratio, label: video.label, url: creada.videoUrl ?? undefined }
+          : null,
       },
       ...rs,
     ]);
@@ -125,7 +148,11 @@ export function ResenasPanel() {
     toast("Reseña publicada");
   };
 
-  const eliminar = () => {
+  const eliminar = async () => {
+    if (!aEliminar) return;
+    // SUPABASE (admin): DELETE FROM resenas_clientes WHERE id = $id.
+    // Preferible en la práctica: moderar a 'rechazada' para conservar historial.
+    await eliminarResena(aEliminar);
     setResenas((rs) => rs.filter((r) => r.id !== aEliminar));
     setAEliminar(null);
     toast("Reseña eliminada");
@@ -213,10 +240,12 @@ export function ResenasPanel() {
               <p>{r.texto}</p>
               <div className={styles.meta}>
                 <span className={styles.tag}>{r.video ? "Video" : "Texto"}</span>
-                {r.proyecto ? (
-                  <span className={`${styles.tag} ${styles.proj}`}>Proyecto: {r.proyecto}</span>
+                {r.empresa ? (
+                  <span className={`${styles.tag} ${styles.proj}`}>Empresa: {r.empresa}</span>
                 ) : (
-                  <span className={styles.tag}>Enviada por visitante</span>
+                  <span className={styles.tag}>
+                    {r.origen === "admin" ? "Agregada por administrador" : "Enviada por cliente"}
+                  </span>
                 )}
               </div>
             </div>
@@ -284,14 +313,6 @@ export function ResenasPanel() {
                   </button>
                 ))}
               </div>
-            </div>
-            <div className={shared.f}>
-              <label htmlFor="n-proyecto">Proyecto asociado</label>
-              <select id="n-proyecto" value={proyecto} onChange={(e) => setProyecto(e.target.value)}>
-                {proyectos.map((p) => (
-                  <option key={p.id}>{p.nombre}</option>
-                ))}
-              </select>
             </div>
             <div className={shared.f}>
               <label htmlFor="n-texto">Texto de la reseña</label>

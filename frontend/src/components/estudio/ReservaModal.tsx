@@ -5,29 +5,35 @@ import { Icon } from '@/components/ui/Icon';
 
 export interface ReservaModalData {
   horas: number;
+  tarifaBase: number;
   subtotalServicios: number;
   subtotalEquipos: number;
   total: number;
+  serviciosIds: string[];
+  equipos: { equipoId: string; cantidad: number }[];
+}
+
+/** Forma exacta de la RPC solicitar_reserva (000019). */
+export interface ReservaModalForm {
+  nombre: string;
+  correo: string;
+  telefono: string;
+  fecha: string;
+  horaInicio: string;
+  horaFin: string;
+  notas: string;
 }
 
 interface ReservaModalProps {
   isOpen: boolean;
   onClose: () => void;
   resumen: ReservaModalData;
-  onSubmit?: (form: {
-    nombre: string;
-    email: string;
-    telefono: string;
-    fecha: string;
-    horaInicio: string;
-    horaFin: string;
-    notas: string;
-  }) => void;
+  onSubmit?: (form: ReservaModalForm) => void | Promise<void>;
 }
 
-const initialForm = {
+const initialForm: ReservaModalForm = {
   nombre: '',
-  email: '',
+  correo: '',
   telefono: '',
   fecha: '',
   horaInicio: '',
@@ -43,6 +49,7 @@ export default function ReservaModal({
 }: ReservaModalProps) {
   const [form, setForm] = useState(initialForm);
   const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -56,8 +63,15 @@ export default function ReservaModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEnviando(true);
+    setError(null);
     try {
-      onSubmit?.(form);
+      // Validación local alineada al trigger validar_horario_atencion (000029):
+      // la reserva debe empezar y terminar el mismo día.
+      if (form.horaFin <= form.horaInicio) {
+        setError('La hora de fin debe ser posterior a la hora de inicio.');
+        return;
+      }
+      await onSubmit?.(form);
     } finally {
       setEnviando(false);
     }
@@ -65,6 +79,7 @@ export default function ReservaModal({
 
   const handleClose = () => {
     setForm(initialForm);
+    setError(null);
     onClose();
   };
 
@@ -112,15 +127,15 @@ export default function ReservaModal({
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label htmlFor="reserva-email" className="text-sm font-semibold text-qbInk">
+                <label htmlFor="reserva-correo" className="text-sm font-semibold text-qbInk">
                   Correo electrónico *
                 </label>
                 <input
-                  id="reserva-email"
-                  name="email"
+                  id="reserva-correo"
+                  name="correo"
                   type="email"
                   required
-                  value={form.email}
+                  value={form.correo}
                   onChange={handleChange}
                   placeholder="correo@ejemplo.com"
                 />
@@ -195,6 +210,12 @@ export default function ReservaModal({
             </div>
           </div>
 
+          {error && (
+            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+              {error}
+            </p>
+          )}
+
           <div className="border border-qbBorder rounded-2xl p-4 space-y-2">
             <h3 className="text-sm font-bold text-qbInk">Resumen de la reserva</h3>
             <dl className="text-sm space-y-1">
@@ -203,24 +224,26 @@ export default function ReservaModal({
                 <dd className="font-medium text-qbInk">{resumen.horas}h</dd>
               </div>
               <div className="flex justify-between">
+                <dt className="text-qbMuted">Tarifa base del salón</dt>
+                <dd className="font-medium text-qbInk">Q{resumen.tarifaBase.toFixed(2)}</dd>
+              </div>
+              <div className="flex justify-between">
                 <dt className="text-qbMuted">Servicios extra</dt>
-                <dd className="font-medium text-qbInk">
-                  Q{resumen.subtotalServicios.toFixed(2)}
-                </dd>
+                <dd className="font-medium text-qbInk">Q{resumen.subtotalServicios.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-qbMuted">Equipo rentable</dt>
-                <dd className="font-medium text-qbInk">
-                  Q{resumen.subtotalEquipos.toFixed(2)}
-                </dd>
+                <dd className="font-medium text-qbInk">Q{resumen.subtotalEquipos.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between border-t border-qbBorder pt-1 mt-1">
                 <dt className="font-bold text-qbInk">Total estimado</dt>
-                <dd className="font-extrabold text-qbInk">
-                  Q{resumen.total.toFixed(2)}
-                </dd>
+                <dd className="font-extrabold text-qbInk">Q{resumen.total.toFixed(2)}</dd>
               </div>
             </dl>
+            <p className="text-[11px] text-qbMuted">
+              El precio final lo calcula el servidor. La reserva queda en estado
+              pendiente hasta que el equipo la confirme.
+            </p>
           </div>
 
           <div className="flex flex-wrap justify-end gap-3 pt-2">

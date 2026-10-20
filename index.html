@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QBusiness Media | Ideas Claras. Crecimiento Real</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        qbLinen: '#F5F2EB',          // Fondo principal (Lino Crudo)
+                        qbChalk: '#ECE7DE',          // Superficie / Card (Tiza Suave)
+                        qbChalkHover: '#E2DBD0',     // Hover sobre tarjetas
+                        qbBorder: '#D8D1C5',         // Bordes sutiles cálidos
+                        qbBorderDark: '#C4BCAD',     // Bordes secundarios
+                        qbInk: '#1F2022',            // Texto / Tinta (Carbón Asfalto)
+                        qbMuted: '#5F6166',          // Texto secundario / Muted cálido
+                        qbTerracotta: '#C85A32',     // Acento Primario (Terracota Quemado - Botones y CTAs)
+                        qbTerracottaHover: '#B24B25',// Hover terracota
+                        qbSage: '#5B6E58',           // Contrapunto (Verde Salvia Seco - Tags y estados positivos)
+                        qbSageHover: '#4D5E4A',      // Hover salvia
+                        qbIndigo: '#2B3A4A',         // Detalle Profundo (Azul Índigo Añejo - Contraste y enlaces)
+                        qbIndigoHover: '#1F2B37',    // Hover índigo
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* Animaciones personalizadas */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            display: flex;
+            width: 200%;
+            animation: marquee 25s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+        /* Botones completamente sólidos y mates, sin brillos ni resplandores incandescentes */
+        button, a[class*="bg-"], .nav-btn, .port-filter-btn, .bs-filter-btn, .subproj-btn {
+            box-shadow: none !important;
+            text-shadow: none !important;
+            filter: none !important;
+        }
+        /* Custom scrollbar cálida acorde al diseño Lino Crudo */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F5F2EB;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D1C5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C85A32;
+        }
+    </style>
+</head>
+<body class="bg-qbLinen text-qbInk font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-qbTerracotta selection:text-white">
+
+    <!-- HEADER / NAVEGACIÓN SUPERIOR (STICKY + BLUR - FONDO DETALLE PROFUNDO AZUL ÍNDIGO) -->
+    <header class="sticky top-0 z-40 bg-qbIndigo/95 backdrop-blur-md border-b border-qbIndigoHover transition-all duration-200 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            
+            <!-- Logotipo Oficial desde Resources/Transparente.png (Texto e ícono blanco puro, contraste perfecto sobre Índigo) -->
+            <div class="flex items-center space-x-3 cursor-pointer group" onclick="switchTab('inicio')">
+                <img src="Resources/Transparente.png" alt="QBusiness Media Logo" class="h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/Solido.png';">
+                <span class="sr-only">QBusiness Media</span>
+            </div>
+
+            <!-- Menú de Pestañas (SPA Desktop) -->
+            <nav class="hidden lg:flex items-center space-x-1 xl:space-x-2">
+                <button onclick="switchTab('inicio')" id="btn-inicio" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-qbTerracotta text-white">
+                    Inicio
+                </button>
+                <button onclick="switchTab('portafolio')" id="btn-portafolio" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-[#ECE7DE]/85 hover:text-white hover:bg-white/10">
+                    Portafolio
+                </button>
+                <button onclick="switchTab('backstage')" id="btn-backstage" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-[#ECE7DE]/85 hover:text-white hover:bg-white/10">
+                    Backstage
+                </button>
+                <button onclick="switchTab('resenas')" id="btn-resenas" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-[#ECE7DE]/85 hover:text-white hover:bg-white/10">
+                    Reseñas
+                </button>
+                <button onclick="switchTab('renta')" id="btn-renta" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-[#ECE7DE]/85 hover:text-white hover:bg-white/10">
+                    Renta de Estudio
+                </button>
+                <button onclick="switchTab('apoyo')" id="btn-apoyo" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-[#ECE7DE]/85 hover:text-white hover:bg-white/10">
+                    Apoyo Social
+                </button>
+            </nav>
+
+            <!-- Acciones Header Derecha -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Botón Sobre QBusiness MEDIA (Estilo wireframe mockup PDF) -->
+                <button onclick="openAboutModal()" class="hidden md:inline-flex items-center border border-white/15 bg-white/10 px-3.5 py-2 rounded-xl text-xs font-semibold text-white hover:bg-white/20 transition">
+                    <i class="fas fa-info-circle mr-1.5 text-qbTerracotta"></i> Sobre Qbusiness MEDIA
+                </button>
+
+                <!-- Botón de Acción Positiva: Cotizar WhatsApp (#5B6E58 Verde Salvia Seco) -->
+                <a href="https://wa.me/50212345678?text=Hola%20QBusiness%20Media,%20quisiera%20cotizar%20un%20servicio%20audiovisual" target="_blank" class="inline-flex items-center bg-qbSage hover:bg-qbSageHover text-white font-bold px-4 py-2.5 rounded-xl transition duration-200 text-xs sm:text-sm">
+                    <i class="fab fa-whatsapp mr-1.5 text-base"></i> Cotizar WhatsApp
+                </a>
+
+                <!-- Acceso Administrativo (Admin Panel) -->
+                <button onclick="switchTab('admin')" id="btn-admin" class="border border-white/15 bg-white/10 p-2.5 rounded-xl text-white/80 hover:text-white hover:border-qbTerracotta transition" title="Panel Administrativo">
+                    <i class="fas fa-lock text-sm"></i>
+                </button>
+
+                <!-- Toggle Móvil -->
+                <button onclick="toggleMobileMenu()" class="lg:hidden text-white p-2 rounded-xl hover:bg-white/10 transition">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú Móvil Desplegable -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-qbIndigo border-b border-qbIndigoHover px-4 pt-3 pb-5 space-y-2">
+            <button onclick="switchTab('inicio'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-qbTerracotta">Inicio</button>
+            <button onclick="switchTab('portafolio'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-[#ECE7DE] hover:bg-white/10">Portafolio</button>
+            <button onclick="switchTab('backstage'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-[#ECE7DE] hover:bg-white/10">Backstage</button>
+            <button onclick="switchTab('resenas'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-[#ECE7DE] hover:bg-white/10">Reseñas</button>
+            <button onclick="switchTab('renta'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-[#ECE7DE] hover:bg-white/10">Renta de Estudio</button>
+            <button onclick="switchTab('apoyo'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-[#ECE7DE] hover:bg-white/10">Apoyo Social</button>
+            <button onclick="openAboutModal(); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-white hover:bg-white/10">Sobre Qbusiness MEDIA</button>
+            <button onclick="switchTab('admin'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-[#ECE7DE] hover:bg-white/10">Acceso Administrativo</button>
+        </div>
+    </header>
+
+    <!-- CUERPO PRINCIPAL DEL MOCKUP (SPA TABS) -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: INICIO (HOME & LANDING PRINCIPAL)  -->
+        <!-- ========================================== -->
+        <section id="tab-inicio" class="tab-content space-y-16">
+            
+            <!-- Hero Section (Centrado, cálido, limpio y sin formulario de contacto) -->
+            <div class="max-w-4xl mx-auto text-center space-y-8 pt-6 pb-2">
+                <div class="inline-flex items-center space-x-2 bg-qbTerracotta/10 text-qbTerracotta border border-qbTerracotta/25 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase">
+                    <span class="w-2 h-2 rounded-full bg-qbTerracotta"></span>
+                    <span>Producción Audiovisual & Renta de Estudio</span>
+                </div>
+
+                <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight text-qbInk">
+                    Ideas Claras<br>
+                    <span class="text-qbTerracotta">
+                        Crecimiento Real
+                    </span>
+                </h1>
+
+                <p class="text-lg sm:text-xl text-qbMuted font-normal leading-relaxed max-w-2xl mx-auto">
+                    Videos que hacen que <strong class="text-qbInk font-semibold">tu marca se vea del tamaño que es</strong>. Soluciones audiovisuales profesionales, fotografía comercial, podcasts y locación de estudio en Quetzaltenango bajo la dirección de Luis Gonzales.
+                </p>
+
+                <!-- CTAs Primarios (Botones sólidos sin brillos ni resplandores incandescentes) -->
+                <div class="flex flex-wrap justify-center gap-4 pt-2">
+                    <button onclick="switchTab('portafolio')" class="bg-qbTerracotta hover:bg-qbTerracottaHover text-white font-bold px-8 py-3.5 rounded-xl transition duration-200 flex items-center">
+                        <i class="fas fa-play-circle mr-2 text-lg"></i> Ver Portafolio
+                    </button>
+                    <button onclick="switchTab('renta')" class="bg-qbSage hover:bg-qbSageHover text-white font-bold px-8 py-3.5 rounded-xl transition duration-200 flex items-center">
+                        <i class="fas fa-video mr-2 text-lg"></i> Rentar Estudio
+                    </button>
+                    <a href="https://wa.me/50212345678?text=Hola%20QBusiness%20Media,%20quisiera%20cotizar%20un%20servicio%20audiovisual" target="_blank" class="border border-qbBorder bg-qbChalk text-qbInk hover:text-qbTerracotta font-semibold px-7 py-3.5 rounded-xl transition hover:border-qbTerracotta flex items-center">
+                        <i class="fab fa-whatsapp mr-2 text-qbSage"></i> Cotizar WhatsApp
+                    </a>
+                </div>
+
+                <!-- Métricas destacadas -->
+                <div class="grid grid-cols-3 gap-6 pt-8 max-w-xl mx-auto border-t border-qbBorder">
+                    <div>
+                        <div class="text-2xl sm:text-3xl font-extrabold text-qbInk">+150</div>
+                        <div class="text-xs text-qbMuted font-medium">Proyectos Realizados</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl sm:text-3xl font-extrabold text-qbSage">100%</div>
+                        <div class="text-xs text-qbMuted font-medium">Clientes Satisfechos</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl sm:text-3xl font-extrabold text-qbTerracotta">4K Cinema</div>
+                        <div class="text-xs text-qbMuted font-medium">Estándar de Calidad</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: NUESTRO TRABAJO (MOCKUP PDF PÁGINA 1 - NUEVOS PORTAFOLIOS) -->
+            <div class="space-y-6 pt-8 border-t border-qbBorder">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-3">
+                    <div>
+                        <span class="text-xs font-bold text-qbSage uppercase tracking-widest">Portafolio Destacado</span>
+                        <h2 class="text-3xl font-extrabold text-qbInk mt-1">Nuestro Trabajo</h2>
+                        <p class="text-sm text-qbMuted">Proyectos y marcas líderes con las que hemos colaborado en la región.</p>
+                    </div>
+                    <button onclick="switchTab('portafolio')" class="text-qbIndigo hover:text-qbTerracotta text-sm font-bold flex items-center transition">
+                        Explorar todo el portafolio <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Tarjetas de Proyectos Destacados (McDía Feliz, Lanivar Xela, Teatro Municipal) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 1. McDía Feliz -->
+                    <div class="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 cursor-pointer shadow-sm" onclick="openPortfolioClient('mcdia')">
+                        <div class="aspect-video relative overflow-hidden bg-black/40">
+                            <img src="Resources/mcdia-feliz.jpeg" alt="McDía Feliz" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/mcdia-feliz.jpeg';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                            <span class="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">McDía Feliz</span>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="w-12 h-12 rounded-full bg-qbTerracotta text-white flex items-center justify-center"><i class="fas fa-play text-sm ml-0.5"></i></span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">McDía Feliz</h3>
+                            <p class="text-xs text-qbMuted mt-1">Campaña de recaudación solidaria, spots comerciales de televisión y cobertura en vivo en restaurantes.</p>
+                            <span class="inline-block mt-3 text-xs font-semibold text-qbSage">Ver proyectos McDía Feliz &rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Lanivar Xela -->
+                    <div class="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 cursor-pointer shadow-sm" onclick="openPortfolioClient('landivar')">
+                        <div class="aspect-video relative overflow-hidden bg-black/40">
+                            <img src="Resources/lanivar-xela.jpeg" alt="Lanivar Xela" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/lanivar-xela.jpeg';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                            <span class="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">Lanivar Xela</span>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="w-12 h-12 rounded-full bg-qbTerracotta text-white flex items-center justify-center"><i class="fas fa-play text-sm ml-0.5"></i></span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">Lanivar Xela</h3>
+                            <p class="text-xs text-qbMuted mt-1">Spots institucionales, campaña de admisiones universitarias y cobertura de vida estudiantil en el campus.</p>
+                            <span class="inline-block mt-3 text-xs font-semibold text-qbSage">Ver proyectos Lanivar Xela &rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Teatro Municipal -->
+                    <div class="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 cursor-pointer shadow-sm" onclick="openPortfolioClient('teatro')">
+                        <div class="aspect-video relative overflow-hidden bg-black/40">
+                            <img src="Resources/teatro-1.jpeg" alt="Teatro Municipal" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/tatro.jpeg';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                            <span class="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">Teatro Municipal</span>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="w-12 h-12 rounded-full bg-qbTerracotta text-white flex items-center justify-center"><i class="fas fa-play text-sm ml-0.5"></i></span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">Teatro Municipal</h3>
+                            <p class="text-xs text-qbMuted mt-1">Producción cinematográfica, registro de obras escénicas, galas y puesta en valor del patrimonio de Xela.</p>
+                            <span class="inline-block mt-3 text-xs font-semibold text-qbSage">Ver proyectos Teatro Municipal &rarr;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: NUESTROS SERVICIOS (6 BLOQUES DEL MOCKUP PDF PÁGINA 1) -->
+            <div class="space-y-6 pt-8 border-t border-qbBorder">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <span class="text-xs font-bold text-qbTerracotta uppercase tracking-widest">Lo que hacemos</span>
+                    <h2 class="text-3xl font-extrabold text-qbInk">Nuestros Servicios</h2>
+                    <p class="text-sm text-qbMuted">Soluciones integrales de producción y medios para potenciar tu presencia de marca.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Servicio 1 -->
+                    <div class="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-qbTerracotta/15 text-qbTerracotta flex items-center justify-center text-xl">
+                            <i class="fas fa-film"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-qbInk">Producción de Video Comercial</h3>
+                        <p class="text-xs sm:text-sm text-qbMuted">Spots televisivos, videos corporativos y comerciales cinematográficos en 4K con óptica de cine profesional.</p>
+                    </div>
+
+                    <!-- Servicio 2 -->
+                    <div class="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbSage transition duration-300 shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-qbSage/15 text-qbSage flex items-center justify-center text-xl">
+                            <i class="fas fa-mobile-screen-button"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-qbInk">Contenido Vertical (9:16)</h3>
+                        <p class="text-xs sm:text-sm text-qbMuted">Estrategia y producción de Reels, TikToks y Shorts diseñados para alto impacto y retención de audiencia.</p>
+                    </div>
+
+                    <!-- Servicio 3 -->
+                    <div class="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbIndigo transition duration-300 shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-qbIndigo/15 text-qbIndigo flex items-center justify-center text-xl">
+                            <i class="fas fa-camera-retro"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-qbInk">Fotografía Comercial & Producto</h3>
+                        <p class="text-xs sm:text-sm text-qbMuted">Sesiones fotográficas en estudio o locación, catálogos, e-commerce y retoque digital de alta fidelidad.</p>
+                    </div>
+
+                    <!-- Servicio 4 -->
+                    <div class="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbSage transition duration-300 shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-qbSage/15 text-qbSage flex items-center justify-center text-xl">
+                            <i class="fas fa-building-columns"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-qbInk">Renta de Estudio de Grabación</h3>
+                        <p class="text-xs sm:text-sm text-qbMuted">Instalaciones con ciclorama, tratamiento acústico, parrilla de luces RGB y equipamiento completo en Quetzaltenango.</p>
+                    </div>
+
+                    <!-- Servicio 5 -->
+                    <div class="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-qbTerracotta/15 text-qbTerracotta flex items-center justify-center text-xl">
+                            <i class="fas fa-podcast"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-qbInk">Podcasts & Streaming Multicámara</h3>
+                        <p class="text-xs sm:text-sm text-qbMuted">Set profesional para grabación de podcast en vivo, micrófonos Shure broadcast y transmisión vía fibra simétrica.</p>
+                    </div>
+
+                    <!-- Servicio 6 -->
+                    <div class="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbIndigo transition duration-300 shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-qbIndigo/15 text-qbIndigo flex items-center justify-center text-xl">
+                            <i class="fas fa-helicopter"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-qbInk">Drones & Cobertura de Eventos</h3>
+                        <p class="text-xs sm:text-sm text-qbMuted">Tomas aéreas 4K certificadas y cobertura integral de conciertos, lanzamientos de marca y festivales.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TICKER CONTINUO DE MARCA (MOCKUP PDF - FONDO DETALLE PROFUNDO AZUL ÍNDIGO) -->
+            <div class="w-full overflow-hidden bg-qbIndigo border-y border-qbIndigoHover py-3.5 my-8">
+                <div class="animate-marquee flex items-center space-x-8 text-xs sm:text-sm font-bold tracking-widest uppercase text-[#ECE7DE]">
+                    <span class="text-white">Qbusiness MEDIA</span>
+                    <span class="text-qbTerracotta">•</span>
+                    <span>Tu historia, nuestra estrategia</span>
+                    <span class="text-qbSage">•</span>
+                    <span class="text-white">Quetzaltenango, Guatemala</span>
+                    <span class="text-qbTerracotta">•</span>
+                    <span>Producción Audiovisual 4K</span>
+                    <span class="text-qbSage">•</span>
+                    <span class="text-white">Renta de Estudio Profesional</span>
+                    <span class="text-qbTerracotta">•</span>
+                    <span>Qbusiness MEDIA</span>
+                    <span class="text-qbSage">•</span>
+                    <span>Tu historia, nuestra estrategia</span>
+                    <span class="text-qbTerracotta">•</span>
+                    <span class="text-white">Quetzaltenango, Guatemala</span>
+                    <span class="text-qbSage">•</span>
+                    <span>Producción Audiovisual 4K</span>
+                    <span class="text-qbTerracotta">•</span>
+                    <span class="text-white">Renta de Estudio Profesional</span>
+                    <span class="text-qbSage">•</span>
+                </div>
+            </div>
+
+            <!-- UBICACIÓN & REDES SOCIALES (MOCKUP PDF PÁGINA 1) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div class="bg-qbChalk border border-qbBorder p-8 rounded-2xl space-y-4 shadow-sm">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-qbSage/15 text-qbSage flex items-center justify-center text-lg">
+                            <i class="fas fa-map-pin"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-qbInk">Ubicación del Estudio</h3>
+                            <span class="text-xs text-qbSage font-semibold">Quetzaltenango, Guatemala</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-qbMuted">
+                        Nuestras instalaciones cuentan con estacionamiento privado, área de maquillaje y set climatizado para el desarrollo cómodo de tu proyecto.
+                    </p>
+                    <div class="w-full h-44 bg-qbLinen rounded-xl border border-qbBorder p-4 flex flex-col justify-center items-center text-center space-y-2 relative overflow-hidden group">
+                        <div class="text-qbTerracotta text-3xl group-hover:scale-110 transition"><i class="fas fa-map-marked-alt"></i></div>
+                        <span class="text-sm font-bold text-qbInk">Estudio QBusiness Media</span>
+                        <span class="text-xs text-qbMuted">Zona 3 / Quetzaltenango, Guatemala</span>
+                        <a href="https://maps.google.com" target="_blank" class="mt-2 text-xs bg-qbTerracotta/15 text-qbTerracotta hover:bg-qbTerracotta hover:text-white px-3 py-1 rounded-md transition font-semibold">Abrir en Google Maps</a>
+                    </div>
+                </div>
+
+                <div class="bg-qbChalk border border-qbBorder p-8 rounded-2xl space-y-4 shadow-sm">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-qbIndigo/15 text-qbIndigo flex items-center justify-center text-lg">
+                            <i class="fas fa-share-nodes"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-qbInk">Redes Sociales Oficiales</h3>
+                            <span class="text-xs text-qbIndigo font-semibold">Conéctate con nuestra comunidad</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-qbMuted">
+                        Síguenos para conocer de cerca los estrenos de campaña, coberturas en tiempo real y dinámicas de producción.
+                    </p>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <a href="https://instagram.com" target="_blank" class="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group">
+                            <i class="fab fa-instagram text-xl text-pink-600 group-hover:scale-110 transition"></i>
+                            <span class="text-xs font-semibold text-qbInk">@qbusinessmedia</span>
+                        </a>
+                        <a href="https://wa.me/50212345678" target="_blank" class="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbSage transition group">
+                            <i class="fab fa-whatsapp text-xl text-qbSage group-hover:scale-110 transition"></i>
+                            <span class="text-xs font-semibold text-qbInk">+502 1234 5678</span>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" class="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group">
+                            <i class="fab fa-youtube text-xl text-red-600 group-hover:scale-110 transition"></i>
+                            <span class="text-xs font-semibold text-qbInk">YouTube Channel</span>
+                        </a>
+                        <a href="https://tiktok.com" target="_blank" class="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbIndigo transition group">
+                            <i class="fab fa-tiktok text-xl text-qbInk group-hover:scale-110 transition"></i>
+                            <span class="text-xs font-semibold text-qbInk">TikTok Shorts</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: PORTAFOLIO (DETALLE & DRILL-DOWN)    -->
+        <!-- ========================================== -->
+        <section id="tab-portafolio" class="tab-content hidden space-y-8">
+            
+            <!-- Vista Principal del Portafolio -->
+            <div id="portfolio-overview" class="space-y-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-qbBorder pb-6">
+                    <div>
+                        <span class="text-xs font-bold text-qbTerracotta uppercase tracking-widest">Galería Multimedia</span>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">Portafolio</h2>
+                        <p class="text-sm text-qbMuted">Explora nuestras campañas para marcas icónicas y proyectos corporativos.</p>
+                    </div>
+
+                    <!-- Filtros Rápidos -->
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="filterPortfolio('all')" class="port-filter-btn px-4 py-2 bg-qbTerracotta text-white font-semibold rounded-xl text-xs transition">Todos</button>
+                        <button onclick="filterPortfolio('comercial')" class="port-filter-btn px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs transition">Comerciales</button>
+                        <button onclick="filterPortfolio('vertical')" class="port-filter-btn px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs transition">Vertical 9:16</button>
+                        <button onclick="filterPortfolio('foto')" class="port-filter-btn px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs transition">Fotografía</button>
+                    </div>
+                </div>
+
+                <!-- Grid de Clientes Principales (McDía Feliz, Lanivar Xela, Teatro Municipal) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <!-- 1. Tarjeta McDía Feliz -->
+                    <div class="port-card bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition-all duration-300 shadow-sm cursor-pointer" onclick="openPortfolioClient('mcdia')" data-category="comercial">
+                        <div class="aspect-[4/3] relative overflow-hidden bg-black/40">
+                            <img src="Resources/mcdia-feliz.jpeg" alt="McDía Feliz" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/mcdia-feliz.jpeg';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/90 via-qbIndigo/30 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">3 Proyectos</span>
+                                <h3 class="text-2xl font-black text-white mt-2">McDía Feliz</h3>
+                                <p class="text-xs text-[#ECE7DE] mt-1">Campaña solidaria, spots de televisión y contenido digital.</p>
+                            </div>
+                        </div>
+                        <div class="p-5 flex justify-between items-center bg-qbChalk border-t border-qbBorder">
+                            <span class="text-xs font-semibold text-qbSage">Abrir galería completa</span>
+                            <span class="w-8 h-8 rounded-full bg-qbTerracotta/15 text-qbTerracotta flex items-center justify-center text-xs group-hover:bg-qbTerracotta group-hover:text-white transition">&rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tarjeta Lanivar Xela -->
+                    <div class="port-card bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition-all duration-300 shadow-sm cursor-pointer" onclick="openPortfolioClient('landivar')" data-category="comercial">
+                        <div class="aspect-[4/3] relative overflow-hidden bg-black/40">
+                            <img src="Resources/lanivar-xela.jpeg" alt="Lanivar Xela" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/lanivar-xela.jpeg';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/90 via-qbIndigo/30 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">3 Campañas</span>
+                                <h3 class="text-2xl font-black text-white mt-2">Lanivar Xela</h3>
+                                <p class="text-xs text-[#ECE7DE] mt-1">Admisiones, recorridos universitarios y producción de campus.</p>
+                            </div>
+                        </div>
+                        <div class="p-5 flex justify-between items-center bg-qbChalk border-t border-qbBorder">
+                            <span class="text-xs font-semibold text-qbSage">Abrir galería completa</span>
+                            <span class="w-8 h-8 rounded-full bg-qbTerracotta/15 text-qbTerracotta flex items-center justify-center text-xs group-hover:bg-qbTerracotta group-hover:text-white transition">&rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Tarjeta Teatro Municipal -->
+                    <div class="port-card bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition-all duration-300 shadow-sm cursor-pointer" onclick="openPortfolioClient('teatro')" data-category="vertical">
+                        <div class="aspect-[4/3] relative overflow-hidden bg-black/40">
+                            <img src="Resources/teatro-1.jpeg" alt="Teatro Municipal" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/tatro.jpeg';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/90 via-qbIndigo/30 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">Temporada de Gala</span>
+                                <h3 class="text-2xl font-black text-white mt-2">Teatro Municipal</h3>
+                                <p class="text-xs text-[#ECE7DE] mt-1">Conciertos en vivo, artes escénicas y piezas de patrimonio.</p>
+                            </div>
+                        </div>
+                        <div class="p-5 flex justify-between items-center bg-qbChalk border-t border-qbBorder">
+                            <span class="text-xs font-semibold text-qbSage">Abrir galería completa</span>
+                            <span class="w-8 h-8 rounded-full bg-qbTerracotta/15 text-qbTerracotta flex items-center justify-center text-xs group-hover:bg-qbTerracotta group-hover:text-white transition">&rarr;</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Subvista Interactiva de Cliente / Proyecto (Mockup PDF Páginas 3 y 4) -->
+            <div id="portfolio-detail" class="hidden space-y-8">
+                <!-- Barra de regreso -->
+                <div class="flex items-center justify-between border-b border-qbBorder pb-4">
+                    <button onclick="closePortfolioClient()" class="inline-flex items-center text-sm font-bold text-qbInk hover:text-qbTerracotta bg-qbChalk hover:bg-qbChalkHover border border-qbBorder px-4 py-2 rounded-xl transition">
+                        <i class="fas fa-arrow-left mr-2 text-qbTerracotta"></i> Regresar a Portafolio
+                    </button>
+                    <span id="detail-client-badge" class="bg-qbTerracotta/15 text-qbTerracotta border border-qbTerracotta/25 px-3 py-1 rounded-full text-xs font-bold uppercase">McDía Feliz</span>
+                </div>
+
+                <!-- Cabecera de Proyecto -->
+                <div class="bg-qbChalk border border-qbBorder p-8 rounded-3xl relative overflow-hidden shadow-sm">
+                    <div class="max-w-3xl space-y-3">
+                        <h2 id="detail-client-title" class="text-3xl sm:text-4xl font-extrabold text-qbInk">McDía Feliz</h2>
+                        <p id="detail-client-desc" class="text-qbMuted text-sm sm:text-base leading-relaxed">
+                            Cobertura audiovisual integral y producción de contenido dinámico para la tradicional jornada benéfica del McDía Feliz en Quetzaltenango. Creación de spots promocionales, entrevistas, registro de donaciones y cobertura en tiempo real para redes sociales.
+                        </p>
+                    </div>
+
+                    <!-- Subpestañas del Proyecto (Proyecto 1, Proyecto 2, Proyecto 3 según PDF Página 3) -->
+                    <div class="flex flex-wrap gap-3 mt-6 pt-6 border-t border-qbBorder">
+                        <button onclick="switchSubProject(1)" id="subproj-btn-1" class="subproj-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-qbTerracotta text-white">
+                            Proyecto 1: Campaña Solidaria
+                        </button>
+                        <button onclick="switchSubProject(2)" id="subproj-btn-2" class="subproj-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-qbLinen text-qbInk hover:bg-qbChalk border border-qbBorder">
+                            Proyecto 2: Activación en Restaurantes
+                        </button>
+                        <button onclick="switchSubProject(3)" id="subproj-btn-3" class="subproj-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-qbLinen text-qbInk hover:bg-qbChalk border border-qbBorder">
+                            Proyecto 3: Aftermovie y Cierre
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contenido de Subproyectos (PDF Página 4 - Grid detallado de spots e imágenes) -->
+                <div id="subproject-content" class="space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 id="subproj-heading" class="text-xl font-bold text-qbInk">Proyecto 1: Material Producido</h3>
+                        <span class="text-xs text-qbSage font-semibold"><i class="fas fa-check-circle mr-1"></i> Formatos 16:9 y 9:16 disponibles</span>
+                    </div>
+
+                    <!-- Grid de Tomas / Spots -->
+                    <div id="subproj-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <!-- Generado dinámicamente con JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: BACKSTAGE (DETRÁS DE CÁMARAS)      -->
+        <!-- ========================================== -->
+        <section id="tab-backstage" class="tab-content hidden space-y-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-qbBorder pb-6">
+                <div>
+                    <span class="text-xs font-bold text-qbTerracotta uppercase tracking-widest">Proceso Creativo</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">Backstage</h2>
+                    <p class="text-sm text-qbMuted">Detrás de cámaras de nuestros rodajes, pruebas de iluminación y suites de postproducción.</p>
+                </div>
+
+                <!-- Botones de Categoría (Mockup PDF Página 5) -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterBackstage('all')" id="bs-btn-all" class="bs-filter-btn px-4 py-2 bg-qbTerracotta text-white font-semibold rounded-xl text-xs transition">Todos</button>
+                    <button onclick="filterBackstage('camaras')" id="bs-btn-camaras" class="bs-filter-btn px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs transition">Detrás de Cámaras</button>
+                    <button onclick="filterBackstage('edicion')" id="bs-btn-edicion" class="bs-filter-btn px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs transition">Detrás de Edición</button>
+                </div>
+            </div>
+
+            <!-- Grid de Backstage (Mockup PDF Páginas 5 y 6) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Backstage Item 1: Cámaras -->
+                <div class="bs-item bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition duration-300 shadow-sm" data-type="camaras">
+                    <div class="aspect-video relative overflow-hidden bg-black/40">
+                        <img src="Resources/backstage.jpeg" alt="Detrás de Cámaras" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/backstage-camaras.png';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                        <span class="absolute top-3 left-3 bg-qbTerracotta text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">Detrás de Cámaras</span>
+                    </div>
+                    <div class="p-6 space-y-2">
+                        <h3 class="text-lg font-bold text-qbInk">Montaje y Fotografía para Campña con Modelos</h3>
+                        <p class="text-xs text-qbMuted leading-relaxed">
+                            Configuración de esquema de iluminación de 3 puntos con luces Aputure y modificadores softbox para spots corporativos.
+                        </p>
+                        <div class="pt-3 flex items-center justify-between text-xs text-qbMuted border-t border-qbBorder">
+                            <span><i class="fas fa-camera mr-1 text-qbTerracotta"></i> Sony Cinema FX3</span>
+                            <span class="text-qbSage font-semibold">Rodaje Quetzaltenango</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backstage Item 2: Edición -->
+                <div class="bs-item bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition duration-300 shadow-sm" data-type="edicion">
+                    <div class="aspect-video relative overflow-hidden bg-black/40">
+                        <img src="Resources/color-grading.jpg" alt="Detrás de Edición" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/backstage-edicion.png';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                        <span class="absolute top-3 left-3 bg-qbSage text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">Detrás de Edición</span>
+                    </div>
+                    <div class="p-6 space-y-2">
+                        <h3 class="text-lg font-bold text-qbInk">Edición de Video Para Spot Publicitario</h3>
+                        <p class="text-xs text-qbMuted leading-relaxed">
+                            Ajuste de curvas tonales, corrección de pieles y perfiles cinematográficos LUT en suite calibrada a estándares broadcast.
+                        </p>
+                        <div class="pt-3 flex items-center justify-between text-xs text-qbMuted border-t border-qbBorder">
+                            <span><i class="fas fa-sliders mr-1 text-qbSage"></i> DaVinci Resolve Studio</span>
+                            <span class="text-qbIndigo font-semibold">Postproducción</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backstage Item 3: Audio de Estudio -->
+                <div class="bs-item bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition duration-300 shadow-sm" data-type="camaras">
+                    <div class="aspect-video relative overflow-hidden bg-black/40">
+                        <img src="Resources/audio.jpeg" alt="Grabación de Audio" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/estudio-3.png';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                        <span class="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">Audio & Foley</span>
+                    </div>
+                    <div class="p-6 space-y-2">
+                        <h3 class="text-lg font-bold text-qbInk">Edicion de Auido para Campñas de Marketing</h3>
+                        <p class="text-xs text-qbMuted leading-relaxed">
+                            Consola RodeCaster Pro II con micrófonos dinámicos Shure SM7B y aislamiento acústico total para una claridad vocal sin eco.
+                        </p>
+                        <div class="pt-3 flex items-center justify-between text-xs text-qbMuted border-t border-qbBorder">
+                            <span><i class="fas fa-microphone mr-1 text-qbIndigo"></i> Shure SM7B</span>
+                            <span class="text-qbSage font-semibold">Acústica Calibrada</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: RESEÑAS (TESTIMONIOS DE CLIENTES)   -->
+        <!-- ========================================== -->
+        <section id="tab-resenas" class="tab-content hidden space-y-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-qbBorder pb-6">
+                <div>
+                    <span class="text-xs font-bold text-qbSage uppercase tracking-widest">Confianza y Resultados</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">Reseñas y Recomendaciones</h2>
+                    <p class="text-sm text-qbMuted">Opiniones reales de marcas y directores que confían en QBusiness Media.</p>
+                </div>
+                <button onclick="openReviewModal()" class="bg-qbTerracotta hover:bg-qbTerracottaHover text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition">
+                    <i class="fas fa-pen-to-square mr-1.5"></i> Dejar una Reseña
+                </button>
+            </div>
+
+            <!-- Grid de Reseñas (Mockup PDF Página 7) -->
+            <div id="reviews-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Reseña 1: McDía Feliz -->
+                <div class="bg-qbChalk border border-qbBorder p-8 rounded-3xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm relative">
+                    <div class="flex items-center justify-between">
+                        <div class="flex text-amber-500 space-x-1 text-sm">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <span class="text-[11px] font-bold bg-amber-500/10 text-amber-600 px-2.5 py-0.5 rounded-full">5.0 / 5.0</span>
+                    </div>
+
+                    <p class="text-qbInk text-sm italic leading-relaxed">
+                        "El profesionalismo del equipo de QBusiness Media en la cobertura del McDía Feliz fue excepcional. Lograron captar la alegría de los niños, las familias y el espíritu solidario de Quetzaltenango con una calidad visual de primer nivel."
+                    </p>
+
+                    <div class="flex items-center space-x-3 pt-3 border-t border-qbBorder">
+                        <div class="w-11 h-11 rounded-full bg-qbTerracotta/15 text-qbTerracotta font-bold flex items-center justify-center text-sm border border-qbTerracotta/25">
+                            CR
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-qbInk">Claudia Recinos</h4>
+                            <span class="text-xs text-qbSage font-semibold">Testimonio de McDía Feliz</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reseña 2: Lanivar Xela -->
+                <div class="bg-qbChalk border border-qbBorder p-8 rounded-3xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm relative">
+                    <div class="flex items-center justify-between">
+                        <div class="flex text-amber-500 space-x-1 text-sm">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <span class="text-[11px] font-bold bg-amber-500/10 text-amber-600 px-2.5 py-0.5 rounded-full">5.0 / 5.0</span>
+                    </div>
+
+                    <p class="text-qbInk text-sm italic leading-relaxed">
+                        "Los spots comerciales y el material vertical para admisiones han tenido una recepción fenomenal entre los jóvenes aspirantes. QBusiness Media sabe comunicar el valor de la vida universitaria con dinamismo y elegancia."
+                    </p>
+
+                    <div class="flex items-center space-x-3 pt-3 border-t border-qbBorder">
+                        <div class="w-11 h-11 rounded-full bg-qbSage/15 text-qbSage font-bold flex items-center justify-center text-sm border border-qbSage/25">
+                            MC
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-qbInk">Ing. Manuel Cifuentes</h4>
+                            <span class="text-xs text-qbIndigo font-semibold">Testimonio de Lanivar Xela</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reseña 3: Teatro Municipal -->
+                <div class="bg-qbChalk border border-qbBorder p-8 rounded-3xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm relative">
+                    <div class="flex items-center justify-between">
+                        <div class="flex text-amber-500 space-x-1 text-sm">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <span class="text-[11px] font-bold bg-amber-500/10 text-amber-600 px-2.5 py-0.5 rounded-full">5.0 / 5.0</span>
+                    </div>
+
+                    <p class="text-qbInk text-sm italic leading-relaxed">
+                        "La grabación multicámara de las galas y temporadas teatrales en el Teatro Municipal superó todas las expectativas. Capturaron la majestuosidad de nuestro monumento histórico y la fuerza de los artistas en escena."
+                    </p>
+
+                    <div class="flex items-center space-x-3 pt-3 border-t border-qbBorder">
+                        <div class="w-11 h-11 rounded-full bg-qbIndigo/15 text-qbIndigo font-bold flex items-center justify-center text-sm border border-qbIndigo/25">
+                            LD
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-qbInk">Lucía De León</h4>
+                            <span class="text-xs text-qbTerracotta font-semibold">Testimonio de Teatro Municipal</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: RENTA DE ESTUDIO (MOCKUP PDF P. 8 & 9)-->
+        <!-- ========================================== -->
+        <section id="tab-renta" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                
+                <!-- Galería de Fotos del Estudio (PDF Página 8) -->
+                <div class="lg:col-span-6 space-y-4">
+                    <div class="bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden shadow-sm">
+                        <img src="Resources/estudio-main.jpeg" alt="Estudio de Grabación QBusiness" class="w-full h-80 object-cover" onerror="this.onerror=null; this.src='Resources/estudio-2.png';">
+                    </div>
+                    <!-- 4 Vistas del Estudio -->
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="bg-qbChalk border border-qbBorder rounded-xl overflow-hidden aspect-video">
+                            <img src="Resources/estudio-1.png" alt="Ciclorama Blanco" class="w-full h-full object-cover">
+                        </div>
+                        <div class="bg-qbChalk border border-qbBorder rounded-xl overflow-hidden aspect-video">
+                            <img src="Resources/estudio-2.png" alt="Set Iluminación" class="w-full h-full object-cover">
+                        </div>
+                        <div class="bg-qbChalk border border-qbBorder rounded-xl overflow-hidden aspect-video">
+                            <img src="Resources/estudio-3.png" alt="Consola de Audio" class="w-full h-full object-cover">
+                        </div>
+                        <div class="bg-qbChalk border border-qbBorder rounded-xl overflow-hidden aspect-video">
+                            <img src="Resources/estudio-4.png" alt="Área de Control" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles, Tarifas y Botón Reservar (PDF Página 8) -->
+                <div class="lg:col-span-6 bg-qbChalk border border-qbBorder p-8 rounded-3xl space-y-6 shadow-sm">
+                    <div class="space-y-2">
+                        <span class="inline-block bg-qbTerracotta/10 text-qbTerracotta border border-qbTerracotta/25 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                            Locación Profesional en Quetzaltenango
+                        </span>
+                        <h2 class="text-3xl font-extrabold text-qbInk">Renta de Estudio de Grabación</h2>
+                        <p class="text-sm text-qbMuted leading-relaxed">
+                            Espacio acondicionado para fotografía publicitaria, filmación de comerciales, podcasting y streamings en vivo.
+                        </p>
+                    </div>
+
+                    <!-- Características (PDF Página 8) -->
+                    <div class="space-y-3 border-t border-qbBorder pt-4">
+                        <h3 class="text-sm font-bold text-qbInk uppercase tracking-wider">Características del Estudio:</h3>
+                        <ul class="space-y-2.5 text-xs sm:text-sm text-qbInk">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-qbSage mr-2.5 text-base"></i> Moderno estudio de fotografía y video con ciclorama blanco sinfín de 35 m².</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-qbSage mr-2.5 text-base"></i> Tratamiento y aislamiento acústico profesional (cero reverberación).</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-qbSage mr-2.5 text-base"></i> Parrilla de iluminación con luces LED RGB Nanlite y Aputure regulables.</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-qbSage mr-2.5 text-base"></i> Conexión a Internet de fibra óptica simétrica 500 Mbps para directos.</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-qbSage mr-2.5 text-base"></i> Climatización silenciosa y área privada de maquillaje/camerino.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Tarifas y Ubicación -->
+                    <div class="grid grid-cols-2 gap-4 border-t border-qbBorder pt-4">
+                        <div class="bg-qbLinen p-4 rounded-2xl border border-qbBorder">
+                            <span class="text-xs text-qbMuted block font-semibold">Precio por Hora:</span>
+                            <span class="text-2xl font-black text-qbTerracotta">Q500 / hr</span>
+                            <span class="text-[11px] text-qbMuted block mt-0.5">(Aprox. $65 USD)</span>
+                        </div>
+                        <div class="bg-qbLinen p-4 rounded-2xl border border-qbBorder">
+                            <span class="text-xs text-qbMuted block font-semibold">Ubicación:</span>
+                            <span class="text-sm font-bold text-qbInk block mt-1">Zona 3, Quetzaltenango</span>
+                            <span class="text-[11px] text-qbSage block mt-0.5">Parqueo privado incluido</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Acción Positiva: Reservar (#5B6E58 Verde Salvia Seco) -->
+                    <button onclick="openStudioModal()" class="w-full bg-qbSage hover:bg-qbSageHover text-white font-extrabold py-4 rounded-2xl transition duration-200 text-sm uppercase tracking-wider flex items-center justify-center">
+                        <i class="fas fa-calendar-check mr-2 text-lg"></i> Reservar Estudio Ahora
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: APOYO SOCIAL (RESPONSABILIDAD SOCIAL)-->
+        <!-- ========================================== -->
+        <section id="tab-apoyo" class="tab-content hidden space-y-10">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="inline-block bg-qbSage/10 text-qbSage border border-qbSage/25 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                    Compromiso con Nuestra Gente
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-qbInk">Apoyo Social</h2>
+                <p class="text-qbMuted text-base">
+                    Comprometidos con impactar a nuestra comunidad. En QBusiness Media destinamos horas de producción, equipo y difusión gratuita para fundaciones, cuerpos de socorro y causas sin fines de lucro en Guatemala.
+                </p>
+            </div>
+
+            <!-- Eventos Realizados (Mockup PDF Página 10) -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-qbInk">Eventos Realizados</h3>
+                    <span class="text-xs text-qbMuted">Impacto Comunitario QBusiness</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Evento 1: Donación Navideña -->
+                    <div class="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden space-y-3 p-4 shadow-sm">
+                        <div class="aspect-video relative rounded-xl overflow-hidden bg-black/40">
+                            <img src="Resources/apoyo-navidad.jpeg" alt="Donación Navideña" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 bg-qbSage text-white text-[10px] font-bold px-2 py-0.5 rounded">Donación Navideña</span>
+                        </div>
+                        <h4 class="font-bold text-qbInk text-sm">Campaña de Recolección Navideña</h4>
+                        <p class="text-xs text-qbMuted">Producción de video spot solidario y recolección de juguetes para hogares infantiles en Quetzaltenango.</p>
+                    </div>
+
+                    <!-- Evento 2: Bomberos Voluntarios -->
+                    <div class="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden space-y-3 p-4 shadow-sm">
+                        <div class="aspect-video relative rounded-xl overflow-hidden bg-black/40">
+                            <img src="Resources/donaciones-bomberos.jpg" alt="Bomberos Voluntarios" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 bg-qbTerracotta text-white text-[10px] font-bold px-2 py-0.5 rounded">Evento Bomberos</span>
+                        </div>
+                        <h4 class="font-bold text-qbInk text-sm">Cuerpo de Bomberos Voluntarios</h4>
+                        <p class="text-xs text-qbMuted">Documentación y difusión audiovisual para la colecta de equipamiento y mantenimiento de unidades de auxilio.</p>
+                    </div>
+
+                    <!-- Evento 3: Talleres Comunitarios -->
+                    <div class="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden space-y-3 p-4 shadow-sm">
+                        <div class="aspect-video relative rounded-xl overflow-hidden bg-black/40">
+                            <img src="Resources/talleres.jpeg" alt="Taller Comunitario" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 bg-qbIndigo text-white text-[10px] font-bold px-2 py-0.5 rounded">Taller Comunitario</span>
+                        </div>
+                        <h4 class="font-bold text-qbInk text-sm">Talleres de Medios para Jóvenes</h4>
+                        <p class="text-xs text-qbMuted">Capacitaciones gratuitas en producción de video digital para jóvenes emprendedores locales.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Solicitud de Apoyo para Fundaciones (Mockup PDF Página 10) -->
+            <div class="max-w-3xl mx-auto bg-qbChalk border border-qbBorder p-8 rounded-3xl space-y-6 shadow-sm">
+                <div class="text-center space-y-1">
+                    <h3 class="text-2xl font-bold text-qbInk">Solicitud de Apoyo para Fundaciones</h3>
+                    <p class="text-xs sm:text-sm text-qbMuted">Completa este formulario oficial para evaluar la colaboración técnica de tu institución.</p>
+                </div>
+
+                <form onsubmit="handleSocialSubmit(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Nombre de la Organización / Fundación *</label>
+                            <input type="text" id="social-org" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition" placeholder="Ej. Bomberos Voluntarios 5ta Cía.">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Correo Electrónico *</label>
+                            <input type="email" id="social-email" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition" placeholder="contacto@fundacion.org">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Teléfono *</label>
+                            <input type="tel" id="social-phone" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition" placeholder="+502 5123-4567">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Ubicación *</label>
+                            <input type="text" id="social-location" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition" placeholder="Quetzaltenango / San Marcos">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">No. Registro / Acreditación *</label>
+                            <input type="text" id="social-reg" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition" placeholder="Reg. ONG 2024-098">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Adjuntar Evidencia o Carta de Solicitud (PDF, JPG, PNG)</label>
+                        <input type="file" id="social-file" class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbMuted file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-qbTerracotta file:text-white hover:file:bg-qbTerracottaHover cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Mensaje / Detalle de la labor y apoyo requerido *</label>
+                        <textarea id="social-msg" rows="3" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition resize-none" placeholder="Describe brevemente el objetivo del material audiovisual solicitado..."></textarea>
+                    </div>
+
+                    <div class="flex items-center space-x-3 pt-1">
+                        <input type="checkbox" id="social-terms" required class="w-4 h-4 rounded text-qbSage focus:ring-qbSage border-qbBorder bg-qbLinen">
+                        <label for="social-terms" class="text-xs text-qbInk">Acepto los términos y condiciones para proyectos pro-bono de QBusiness Media.</label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-qbSage hover:bg-qbSageHover text-white font-bold py-3.5 rounded-xl transition duration-200 text-sm uppercase tracking-wider flex items-center justify-center">
+                        <i class="fas fa-paper-plane mr-2"></i> Enviar Solicitud de Apoyo
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 7: ADMIN PANEL & CONTROL INTERNO       -->
+        <!-- ========================================== -->
+        <section id="tab-admin" class="tab-content hidden space-y-8">
+            
+            <!-- Login Form (Visible si no está autenticado) -->
+            <div id="login-container" class="max-w-md mx-auto bg-qbChalk border border-qbBorder p-8 rounded-3xl space-y-6 shadow-sm">
+                <div class="text-center space-y-2">
+                    <div class="w-14 h-14 bg-qbIndigo/10 border border-qbIndigo/25 text-qbIndigo rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-qbInk">Acceso Administrativo</h2>
+                    <p class="text-xs text-qbMuted">Área exclusiva para gestión y operaciones de QBusiness Media.</p>
+                </div>
+
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Usuario</label>
+                        <input type="text" id="admin-user" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition" placeholder="admin">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Contraseña</label>
+                        <input type="password" id="admin-pass" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbTerracotta transition" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-qbTerracotta hover:bg-qbTerracottaHover text-white font-bold py-3.5 rounded-xl transition duration-200 text-sm uppercase tracking-wider">
+                        Ingresar al Panel
+                    </button>
+                    <p class="text-center text-[11px] text-qbMuted">Credenciales demo: <span class="text-qbIndigo font-mono font-bold">admin</span> / <span class="text-qbIndigo font-mono font-bold">admin123</span></p>
+                </form>
+            </div>
+
+            <!-- Panel Interno de Control -->
+            <div id="admin-panel" class="hidden space-y-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-qbBorder pb-4">
+                    <div>
+                        <span class="text-xs font-bold text-qbSage uppercase tracking-widest">Dashboard de Control</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-qbInk">Panel de Administración Interno</h2>
+                        <p class="text-xs text-qbMuted">Gestión de contactos recibidos, solicitudes de reserva y métricas operativas.</p>
+                    </div>
+                    <button onclick="logoutAdmin()" class="bg-red-500/10 text-red-600 border border-red-500/20 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-500/20 transition flex items-center">
+                        <i class="fas fa-right-from-bracket mr-1.5"></i> Cerrar Sesión
+                    </button>
+                </div>
+
+                <!-- Métricas KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-qbChalk border border-qbBorder p-6 rounded-2xl space-y-2 shadow-sm">
+                        <span class="text-xs text-qbMuted uppercase font-semibold">Leads / Contactos</span>
+                        <h3 id="stat-leads" class="text-3xl font-black text-qbInk">12</h3>
+                        <p class="text-xs text-qbTerracotta"><i class="fas fa-arrow-trend-up mr-1"></i> +3 nuevos hoy</p>
+                    </div>
+                    <div class="bg-qbChalk border border-qbBorder p-6 rounded-2xl space-y-2 shadow-sm">
+                        <span class="text-xs text-qbMuted uppercase font-semibold">Reservas de Estudio</span>
+                        <h3 id="stat-bookings" class="text-3xl font-black text-qbSage">5</h3>
+                        <p class="text-xs text-qbMuted">Pendientes de confirmación</p>
+                    </div>
+                    <div class="bg-qbChalk border border-qbBorder p-6 rounded-2xl space-y-2 shadow-sm">
+                        <span class="text-xs text-qbMuted uppercase font-semibold">Apoyo Social</span>
+                        <h3 id="stat-social" class="text-3xl font-black text-qbTerracotta">3</h3>
+                        <p class="text-xs text-qbTerracotta">En evaluación de comité</p>
+                    </div>
+                    <div class="bg-qbChalk border border-qbBorder p-6 rounded-2xl space-y-2 shadow-sm">
+                        <span class="text-xs text-qbMuted uppercase font-semibold">Estado de Estudio</span>
+                        <h3 class="text-3xl font-black text-qbSage">Activo</h3>
+                        <p class="text-xs text-qbMuted">Disponible para reserva</p>
+                    </div>
+                </div>
+
+                <!-- Lista de Solicitudes Recibidas (Interactivas en tiempo real) -->
+                <div class="bg-qbChalk border border-qbBorder rounded-3xl p-6 space-y-4 shadow-sm">
+                    <div class="flex justify-between items-center border-b border-qbBorder pb-3">
+                        <h3 class="text-lg font-bold text-qbInk"><i class="fas fa-inbox text-qbTerracotta mr-2"></i> Bandeja de Solicitudes Recientes</h3>
+                        <button onclick="clearSampleData()" class="text-xs text-qbMuted hover:text-red-500 transition">Reiniciar bandeja</button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-qbLinen text-qbMuted uppercase tracking-wider font-semibold border-b border-qbBorder">
+                                <tr>
+                                    <th class="py-3 px-4 rounded-l-xl">Tipo</th>
+                                    <th class="py-3 px-4">Solicitante</th>
+                                    <th class="py-3 px-4">Contacto</th>
+                                    <th class="py-3 px-4">Detalle</th>
+                                    <th class="py-3 px-4">Fecha</th>
+                                    <th class="py-3 px-4 rounded-r-xl">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body" class="divide-y divide-qbBorder text-qbInk">
+                                <!-- Filas dinámicas generadas en JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Herramientas Administrativas -->
+                <div class="bg-qbChalk border border-qbBorder p-6 rounded-2xl space-y-4 shadow-sm">
+                    <h3 class="text-base font-bold text-qbInk">Acciones Rápidas del Administrador</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="showToast('Simulador: Generando propuesta de cotización en PDF...')" class="bg-qbTerracotta hover:bg-qbTerracottaHover text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center">
+                            <i class="fas fa-file-pdf mr-2"></i> Generar Cotización PDF
+                        </button>
+                        <button onclick="showToast('Simulador: Módulo para cargar nuevo proyecto multimedia activo')" class="bg-qbSage hover:bg-qbSageHover text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center">
+                            <i class="fas fa-cloud-arrow-up mr-2"></i> Cargar Proyecto al Portafolio
+                        </button>
+                        <button onclick="showToast('Estudio marcado como reservado temporalmente')" class="bg-qbLinen border border-qbBorder hover:border-qbIndigo text-qbInk text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center">
+                            <i class="fas fa-calendar-times mr-2 text-qbIndigo"></i> Bloquear Fecha de Estudio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER INSTITUCIONAL COMPLETO (DETALLE PROFUNDO AZUL ÍNDIGO CON LOGOTIPO TRANSPARENTE EN BLANCO) -->
+    <footer class="border-t border-qbIndigoHover bg-qbIndigo text-[#ECE7DE] mt-16 pt-12 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Columna 1: Identidad -->
+                <div class="space-y-4 md:col-span-1">
+                    <img src="Resources/Transparente.png" alt="QBusiness Media Logo" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='Resources/Solido.png';">
+                    <p class="text-xs text-[#ECE7DE]/80 leading-relaxed">
+                        Somos una agencia de medios y creatividad dedicada a contar historias que impactan. Quetzaltenango, Guatemala.
+                    </p>
+                    <div class="text-xs text-qbTerracotta font-semibold">
+                        "Tu historia, nuestra estrategia."
+                    </div>
+                </div>
+
+                <!-- Columna 2: Navegación Rápida -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-white">Navegación</h4>
+                    <ul class="space-y-2 text-xs text-[#ECE7DE]/75">
+                        <li><a href="javascript:void(0)" onclick="switchTab('inicio')" class="hover:text-qbTerracotta transition">Inicio</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchTab('portafolio')" class="hover:text-qbTerracotta transition">Portafolio Multimedia</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchTab('backstage')" class="hover:text-qbTerracotta transition">Backstage & Producción</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchTab('resenas')" class="hover:text-qbTerracotta transition">Reseñas de Clientes</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchTab('renta')" class="hover:text-qbTerracotta transition">Renta de Estudio</a></li>
+                        <li><a href="javascript:void(0)" onclick="switchTab('apoyo')" class="hover:text-qbTerracotta transition">Apoyo Social</a></li>
+                    </ul>
+                </div>
+
+                <!-- Columna 3: Servicios -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-white">Servicios</h4>
+                    <ul class="space-y-2 text-xs text-[#ECE7DE]/75">
+                        <li>Producción Audiovisual 4K</li>
+                        <li>Contenido Vertical 9:16</li>
+                        <li>Fotografía Comercial de Producto</li>
+                        <li>Producción de Podcasts Broadcast</li>
+                        <li>Renta de Locación y Ciclorama</li>
+                        <li>Cobertura de Eventos con Drone</li>
+                    </ul>
+                </div>
+
+                <!-- Columna 4: Contacto Directo -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-white">Contacto Directo</h4>
+                    <ul class="space-y-2.5 text-xs text-[#ECE7DE]/75">
+                        <li class="flex items-center"><i class="fas fa-location-dot text-qbTerracotta mr-2"></i> Quetzaltenango, Guatemala</li>
+                        <li class="flex items-center"><i class="fab fa-whatsapp text-qbSage mr-2"></i> +502 1234 5678</li>
+                        <li class="flex items-center"><i class="fas fa-envelope text-qbTerracotta mr-2"></i> contacto@qbusinessmedia.gt</li>
+                        <li class="flex items-center"><i class="fas fa-clock text-qbSage mr-2"></i> Lunes a Sábado: 8:00 - 18:00</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Barra Inferior Copyright & Redes -->
+            <div class="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-[#ECE7DE]/60">
+                <p>&copy; 2026 QBusiness Media. Todos los derechos reservados. Dirección General: Luis Gonzales.</p>
+                <div class="flex space-x-4 text-base">
+                    <a href="https://instagram.com" target="_blank" class="hover:text-qbTerracotta transition"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/50212345678" target="_blank" class="hover:text-qbSage transition"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://youtube.com" target="_blank" class="hover:text-qbTerracotta transition"><i class="fab fa-youtube"></i></a>
+                    <a href="https://tiktok.com" target="_blank" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ======================================================= -->
+    <!-- MODAL 1: RESERVA DE ESTUDIO (MOCKUP PDF PÁGINA 8 Y 9)    -->
+    <!-- ======================================================= -->
+    <div id="modal-studio" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        
+        <!-- Pantalla de Formulario de Solicitud de Reserva (PDF Página 8) -->
+        <div id="studio-form-screen" class="bg-qbChalk border border-qbBorder w-full max-w-xl rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs font-bold text-qbTerracotta uppercase tracking-widest">Renta de Estudio</span>
+                    <h3 class="text-2xl font-black text-qbInk mt-1">Solicitud de Reserva de Estudio</h3>
+                </div>
+                <button onclick="closeStudioModal()" class="text-qbMuted hover:text-qbInk p-2">
+                    <i class="fas fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleStudioBooking(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Nombre Completo *</label>
+                        <input type="text" id="book-name" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta" placeholder="Tu nombre">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Correo Electrónico *</label>
+                        <input type="email" id="book-email" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta" placeholder="tucorreo@empresa.com">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Teléfono *</label>
+                        <input type="tel" id="book-phone" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta" placeholder="+502 5555-5555">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Fecha de Reserva *</label>
+                        <input type="date" id="book-date" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Horas estimadas *</label>
+                        <select id="book-hours" onchange="calculateStudioTotal()" class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta">
+                            <option value="2">2 Horas (Mínimo)</option>
+                            <option value="4" selected>4 Horas (Media jornada)</option>
+                            <option value="8">8 Horas (Jornada completa)</option>
+                            <option value="12">12 Horas (Producción extendida)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Hora de Inicio *</label>
+                        <input type="time" id="book-start" value="09:00" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Hora de Fin *</label>
+                        <input type="time" id="book-end" value="13:00" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta">
+                    </div>
+                </div>
+
+                <!-- Equipamiento Adicional (Calculable) -->
+                <div class="bg-qbLinen p-4 rounded-xl border border-qbBorder space-y-2">
+                    <span class="text-xs font-bold text-qbInk block">Equipamiento adicional opcional:</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-qbMuted">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="add-mic" onchange="calculateStudioTotal()" class="rounded text-qbSage focus:ring-qbSage bg-qbChalk border-qbBorder">
+                            <span>Kit Micrófonos Podcast (+Q150)</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="add-cam" onchange="calculateStudioTotal()" class="rounded text-qbSage focus:ring-qbSage bg-qbChalk border-qbBorder">
+                            <span>Cámara Cinema Sony FX3 (+Q350)</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="add-light" onchange="calculateStudioTotal()" class="rounded text-qbSage focus:ring-qbSage bg-qbChalk border-qbBorder">
+                            <span>Kit Luces RGB Extra (+Q200)</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="add-staff" onchange="calculateStudioTotal()" class="rounded text-qbSage focus:ring-qbSage bg-qbChalk border-qbBorder">
+                            <span>Asistente Técnico (+Q250)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Notas Adicionales / Requerimientos de Equipo</label>
+                    <textarea id="book-notes" rows="2" class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta resize-none" placeholder="Indícanos si requieres fondos de color o configuración especial..."></textarea>
+                </div>
+
+                <!-- Resumen de Costo Estimado (PDF Página 8) -->
+                <div class="bg-qbLinen p-3.5 rounded-xl border border-qbBorder flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-qbMuted block">Tarifa Base por Hora: <strong class="text-qbInk">Q500 ($65 USD)</strong></span>
+                        <span class="text-qbMuted text-[11px]">(Se calculará y confirmará formalmente con el equipo)</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-qbMuted text-[11px] block">Total Estimado:</span>
+                        <span id="booking-total-display" class="text-lg font-black text-qbTerracotta">Q2,000 GTQ</span>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción (PDF Página 8: Cancelar y Confirmar Solicitud) -->
+                <div class="flex gap-4 pt-2">
+                    <button type="button" onclick="closeStudioModal()" class="w-1/2 bg-[#D8D1C5] hover:bg-[#C8C0B2] text-qbInk font-bold py-3 rounded-xl transition text-xs uppercase tracking-wider">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-1/2 bg-qbSage hover:bg-qbSageHover text-white font-extrabold py-3 rounded-xl transition text-xs uppercase tracking-wider">
+                        Confirmar Solicitud
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Pantalla de Éxito / Confirmación (Mockup PDF Página 9) -->
+        <div id="studio-success-screen" class="bg-qbChalk border border-qbBorder w-full max-w-md rounded-3xl p-8 space-y-6 shadow-2xl text-center hidden">
+            <div class="w-16 h-16 rounded-full bg-qbSage/20 text-qbSage flex items-center justify-center text-3xl mx-auto border border-qbSage/30 animate-bounce">
+                <i class="fas fa-check"></i>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-2xl font-black text-qbInk">¡Solicitud Recibida con Éxito!</h3>
+                <p class="text-xs text-qbMuted leading-relaxed">
+                    Hemos recibido los detalles de su reserva para el estudio. En breve, un miembro de nuestro equipo se pondrá en contacto con usted por correo electrónico o teléfono para confirmar la disponibilidad exacta, resolver cualquier duda sobre los equipos y coordinar los detalles finales.
+                </p>
+            </div>
+
+            <!-- Resumen de Solicitud (PDF Página 9) -->
+            <div class="bg-qbLinen p-4 rounded-2xl border border-qbBorder text-left space-y-1.5 text-xs text-qbInk">
+                <div class="font-bold text-qbInk text-xs uppercase tracking-wider border-b border-qbBorder pb-1 mb-2">Resumen de Solicitud</div>
+                <div><span class="text-qbMuted">Cliente:</span> <strong id="succ-name" class="text-qbInk">-</strong></div>
+                <div><span class="text-qbMuted">Fecha:</span> <strong id="succ-date" class="text-qbInk">-</strong></div>
+                <div><span class="text-qbMuted">Horario:</span> <strong id="succ-time" class="text-qbInk">-</strong></div>
+                <div><span class="text-qbMuted">Total Estimado:</span> <strong id="succ-total" class="text-qbTerracotta">-</strong></div>
+            </div>
+
+            <!-- Nota Importante (PDF Página 9) -->
+            <p class="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 p-2.5 rounded-xl">
+                <i class="fas fa-circle-info mr-1"></i> <strong>Importante:</strong> Su reserva NO está confirmada hasta que reciba nuestra comunicación directa. No se requiere pago en este momento; se acordará posteriormente.
+            </p>
+
+            <button onclick="closeStudioModal()" class="w-full bg-qbTerracotta hover:bg-qbTerracottaHover text-white font-bold py-3.5 rounded-xl transition text-xs uppercase tracking-wider">
+                Regresar a Renta de Estudio
+            </button>
+
+            <p class="text-[11px] text-qbMuted">¿Tienes preguntas inmediatas? Llámanos o escríbenos al <strong class="text-qbInk">+502 1234 5678</strong></p>
+        </div>
+
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- MODAL 2: SOBRE QBUSINESS MEDIA                           -->
+    <!-- ======================================================= -->
+    <div id="modal-about" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-qbChalk border border-qbBorder w-full max-w-2xl rounded-3xl p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeAboutModal()" class="absolute top-6 right-6 text-qbMuted hover:text-qbInk">
+                <i class="fas fa-xmark text-xl"></i>
+            </button>
+
+            <div class="flex items-center space-x-4">
+                <div class="bg-qbIndigo p-3 rounded-2xl inline-block shadow-sm">
+                    <img src="Resources/Transparente.png" alt="QBusiness Media" class="h-9 w-auto object-contain" onerror="this.onerror=null; this.src='Resources/Solido.png';">
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm text-qbMuted leading-relaxed">
+                <h3 class="text-2xl font-black text-qbInk">Sobre QBusiness Media</h3>
+                <p>
+                    Fundada en Quetzaltenango bajo la visión directiva de <strong class="text-qbInk">Luis Gonzales</strong>, QBusiness Media se ha consolidado como una de las agencias de producción audiovisual y estrategia digital con mayor crecimiento y rigor técnico en el occidente de Guatemala.
+                </p>
+                <p>
+                    Nuestro lema <span class="text-qbTerracotta font-semibold">"Tu historia, nuestra estrategia"</span> resume el compromiso de convertir las metas de comunicación de marcas corporativas, pymes e instituciones en piezas audiovisuales memorables con calidad cinematográfica.
+                </p>
+
+                <div class="grid grid-cols-3 gap-4 pt-4 border-t border-qbBorder text-center">
+                    <div class="bg-qbLinen p-3 rounded-xl border border-qbBorder">
+                        <div class="text-xl font-bold text-qbTerracotta">+8 Años</div>
+                        <div class="text-[11px] text-qbMuted">Trayectoria</div>
+                    </div>
+                    <div class="bg-qbLinen p-3 rounded-xl border border-qbBorder">
+                        <div class="text-xl font-bold text-qbSage">Top 1</div>
+                        <div class="text-[11px] text-qbMuted">Estudio en Xela</div>
+                    </div>
+                    <div class="bg-qbLinen p-3 rounded-xl border border-qbBorder">
+                        <div class="text-xl font-bold text-qbIndigo">4K / Cinema</div>
+                        <div class="text-[11px] text-qbMuted">Equipo Pro</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeAboutModal()" class="bg-qbTerracotta hover:bg-qbTerracottaHover text-white text-xs font-bold px-6 py-3 rounded-xl transition">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- MODAL 3: DEJAR UNA RESEÑA                                -->
+    <!-- ======================================================= -->
+    <div id="modal-review" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-qbChalk border border-qbBorder w-full max-w-md rounded-3xl p-8 space-y-5 shadow-2xl relative">
+            <button onclick="closeReviewModal()" class="absolute top-6 right-6 text-qbMuted hover:text-qbInk">
+                <i class="fas fa-xmark text-xl"></i>
+            </button>
+
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-600 flex items-center justify-center text-xl mx-auto">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 class="text-xl font-bold text-qbInk">Dejar una Reseña</h3>
+                <p class="text-xs text-qbMuted">Tu retroalimentación nos ayuda a seguir mejorando cada producción.</p>
+            </div>
+
+            <form onsubmit="handleReviewSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Nombre Completo *</label>
+                    <input type="text" id="rev-name" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta" placeholder="Ej. Mario Estrada">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Empresa / Marca *</label>
+                    <input type="text" id="rev-company" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta" placeholder="Tu negocio u organización">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Calificación</label>
+                    <select id="rev-rating" class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-amber-600 font-semibold focus:outline-none focus:border-qbTerracotta">
+                        <option value="5">★★★★★ (5 Estrellas - Excelente)</option>
+                        <option value="4">★★★★☆ (4 Estrellas - Muy Bueno)</option>
+                        <option value="3">★★★☆☆ (3 Estrellas - Bueno)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-qbMuted mb-1">Tu Testimonio *</label>
+                    <textarea id="rev-comment" rows="3" required class="w-full bg-qbLinen border border-qbBorder rounded-xl px-4 py-2.5 text-xs text-qbInk focus:outline-none focus:border-qbTerracotta resize-none" placeholder="Cuéntanos cómo fue tu experiencia trabajando con nosotros..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-qbTerracotta hover:bg-qbTerracottaHover text-white font-bold py-3.5 rounded-xl transition text-xs uppercase tracking-wider">
+                    Publicar Reseña
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- TOAST NOTIFICATION FLOTANTE                              -->
+    <!-- ======================================================= -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-qbIndigo text-white font-semibold px-6 py-3.5 rounded-2xl shadow-2xl transform translate-y-36 opacity-0 transition-all duration-300 z-50 flex items-center space-x-3 border border-qbIndigoHover">
+        <i class="fas fa-check-circle text-qbSage text-lg"></i>
+        <span id="toast-msg">¡Operación completada con éxito!</span>
+    </div>
+
+    <!-- JAVASCRIPT: LÓGICA DE CONTROL DEL MOCKUP (SPA, DATOS, FORMULARIOS) -->
+    <script>
+        // BASE DE DATOS LOCAL SIMULADA PARA LOS TRES NUEVOS PORTAFOLIOS
+        const clientPortfolios = {
+            mcdia: {
+                title: "McDía Feliz",
+                badge: "Campaña Solidaria & Cobertura",
+                desc: "Cobertura audiovisual integral y producción de contenido dinámico para la tradicional jornada benéfica del McDía Feliz en Quetzaltenango. Creación de spots promocionales, entrevistas, registro de donaciones y cobertura en tiempo real para redes sociales.",
+                projects: {
+                    1: {
+                        name: "Proyecto 1: Campaña Solidaria",
+                        desc: "Tomas en alta definición, entrevistas a familias beneficiadas y spots promocionales de donación.",
+                        items: [
+                            { type: "Video 16:9", title: "Spot Principal McDía Feliz Xela", img: "Resources/mcdia-feliz.jpeg" },
+                            { type: "Video 16:9", title: "Cápsula de Donaciones y Entrega", img: "Resources/mcdia-feliz2.jpeg" },
+                            { type: "Reel 9:16", title: "Historias en Vivo desde Restaurantes", img: "Resources/mcdia-feliz.jpeg" },
+                            { type: "Foto Producto", title: "Packshots y Bodegón Big Mac Solidario", img: "Resources/mcdia-feliz2.jpeg" }
+                        ]
+                    },
+                    2: {
+                        name: "Proyecto 2: Activación en Restaurantes",
+                        desc: "Producción vertical y multicámara del ambiente en sucursales con voluntarios y personalidades invitadas.",
+                        items: [
+                            { type: "Reel 9:16", title: "Voluntarios y Figuras Públicas en Acción", img: "Resources/mcdia-feliz2.jpeg" },
+                            { type: "Foto Comercial", title: "Retratos de Colaboradores y Clientes", img: "Resources/mcdia-feliz.jpeg" },
+                            { type: "Video 16:9", title: "Transmisión en Vivo Apertura de Cajas", img: "Resources/mcdia-feliz2.jpeg" }
+                        ]
+                    },
+                    3: {
+                        name: "Proyecto 3: Aftermovie y Cierre",
+                        desc: "Resumen cinematográfico del conteo final y agradecimiento a la comunidad quetzalteca.",
+                        items: [
+                            { type: "Video Resumen", title: "Aftermovie Oficial McDía Feliz Quetzaltenango", img: "Resources/mcdia-feliz.jpeg" },
+                            { type: "Reel 9:16", title: "Highlights del Conteo Final de Big Macs", img: "Resources/mcdia-feliz2.jpeg" },
+                            { type: "Foto Publicitaria", title: "Afiche Conmemorativo de Cierre", img: "Resources/mcdia-feliz.jpeg" }
+                        ]
+                    }
+                }
+            },
+            landivar: {
+                title: "Lanivar Xela",
+                badge: "Producción Institucional & Vida Universitaria",
+                desc: "Desarrollo de piezas audiovisuales corporativas, campañas de admisión y registro de eventos académicos y culturales para la Universidad Rafael Landívar, Campus Quetzaltenango. Tomas de campus, laboratorios de alta tecnología y vida estudiantil.",
+                projects: {
+                    1: {
+                        name: "Proyecto 1: Campaña de Admisiones",
+                        desc: "Spots promocionales dirigidos a nuevos estudiantes, presentando facultades, laboratorios y acreditaciones.",
+                        items: [
+                            { type: "Video 16:9", title: "Spot Institucional Admisiones Landívar", img: "Resources/lanivar-xela.jpeg" },
+                            { type: "Reel 9:16", title: "Tour Virtual por el Campus de Xela", img: "Resources/landivar-xela-2.jpg" },
+                            { type: "Foto Comercial", title: "Sesión Fotográfica en Laboratorios", img: "Resources/landivar-xela-3.jpeg" },
+                            { type: "Foto Publicitaria", title: "Campaña de Vallas y Redes Sociales", img: "Resources/lanivar-xela.jpeg" }
+                        ]
+                    },
+                    2: {
+                        name: "Proyecto 2: Vida Universitaria & Comunidad",
+                        desc: "Contenido vertical y testimonial centrado en el desarrollo integral, deportes y clubes estudiantiles.",
+                        items: [
+                            { type: "Video 16:9", title: "Testimoniales de Egresados y Docentes", img: "Resources/landivar-xela-2.jpg" },
+                            { type: "Reel 9:16", title: "Día Landivariano y Actividades Deportivas", img: "Resources/landivar-xela-3.jpeg" },
+                            { type: "Foto Producto", title: "Fotografía Arquitectónica del Campus", img: "Resources/lanivar-xela.jpeg" }
+                        ]
+                    },
+                    3: {
+                        name: "Proyecto 3: Graduaciones y Foros Académicos",
+                        desc: "Cobertura multicámara y circuito cerrado para magnas ceremonias de graduación y simposios internacionales.",
+                        items: [
+                            { type: "Video Resumen", title: "Cápsula de Gala de Graduaciones", img: "Resources/landivar-xela-2.jpg" },
+                            { type: "Reel 9:16", title: "Momentos Emotivos de Entrega de Títulos", img: "Resources/landivar-xela-3.jpeg" },
+                            { type: "Video 16:9", title: "Foro Internacional de Innovación y Tecnología", img: "Resources/lanivar-xela.jpeg" }
+                        ]
+                    }
+                }
+            },
+            teatro: {
+                title: "Teatro Municipal",
+                badge: "Patrimonio Cultural & Artes Escénicas",
+                desc: "Producción cinematográfica, registro de obras teatrales, conciertos sinfónicos y piezas documentales sobre el icónico Teatro Municipal de Quetzaltenango. Iluminación escénica especializada, captura de audio de alta fidelidad y tomas arquitectónicas de época.",
+                projects: {
+                    1: {
+                        name: "Proyecto 1: Temporada de Conciertos y Gala",
+                        desc: "Producción multicámara de conciertos sinfónicos y presentaciones de gala en la sala principal.",
+                        items: [
+                            { type: "Video 16:9", title: "Spot Documental Joya Arquitectónica de Xela", img: "Resources/teatro-1.jpeg" },
+                            { type: "Video 16:9", title: "Concierto Sinfónico de Gala en Vivo", img: "Resources/teatro-2.jpeg" },
+                            { type: "Reel 9:16", title: "Recorrido Nocturno Neoclásico", img: "Resources/teatro-1.jpeg" },
+                            { type: "Foto Comercial", title: "Sesión Fotográfica de Escenario y Palcos", img: "Resources/teatro-2.jpeg" }
+                        ]
+                    },
+                    2: {
+                        name: "Proyecto 2: Festival de Artes Escénicas",
+                        desc: "Cápsulas dinámicas de actores, compañías de danza y preparación de obras teatrales.",
+                        items: [
+                            { type: "Reel 9:16", title: "Detrás de Bambalinas con el Elenco", img: "Resources/teatro-2.jpeg" },
+                            { type: "Video 16:9", title: "Spot Promocional Temporada Teatral", img: "Resources/teatro-1.jpeg" },
+                            { type: "Foto Publicitaria", title: "Galería de Actores en Escena", img: "Resources/teatro-2.jpeg" }
+                        ]
+                    },
+                    3: {
+                        name: "Proyecto 3: Documental del Patrimonio de Xela",
+                        desc: "Registro histórico y cinematográfico de los detalles arquitectónicos, esculturas y restauración del recinto.",
+                        items: [
+                            { type: "Video Resumen", title: "Documental Histórico: El Alma Teatral de Xela", img: "Resources/teatro-1.jpeg" },
+                            { type: "Foto Comercial", title: "Detalles Ornamentales y Fachada Iluminada", img: "Resources/teatro-2.jpeg" },
+                            { type: "Reel 9:16", title: "Píldoras Históricas para Redes Culturales", img: "Resources/teatro-1.jpeg" }
+                        ]
+                    }
+                }
+            }
+        };
+
+        // Estado inicial de datos de administración
+        let currentClientKey = 'mcdia';
+        let currentSubProj = 1;
+        let adminInquiries = [
+            { type: "Contacto", name: "Licda. Claudia Recinos", contact: "crecinos@mcdiafeliz.org", detail: "Cotización cobertura multicámara y spots de recaudación solidaria.", date: "Hoy, 10:15 AM", status: "Nuevo" },
+            { type: "Estudio", name: "Ing. Manuel Cifuentes", contact: "mcifuentes@url.edu.gt", detail: "Reserva de estudio para grabación de podcasts académicos (4 hrs).", date: "Ayer, 4:20 PM", status: "Confirmado" },
+            { type: "Apoyo Social", name: "Dirección Teatro Municipal", contact: "teatromunicipal@xela.gob.gt", detail: "Documentación audiovisual pro-bono para festival de jóvenes artistas.", date: "24 Sep", status: "En Revisión" }
+        ];
+
+        // INICIALIZACIÓN
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdminTable();
+            calculateStudioTotal();
+            // Pestaña inicial por defecto
+            switchTab('inicio');
+        });
+
+        // CONTROL DE PESTAÑAS (SPA)
+        function switchTab(tabId) {
+            // Ocultar todas las secciones
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(t => t.classList.add('hidden'));
+
+            // Mostrar sección objetivo
+            const target = document.getElementById('tab-' + tabId);
+            if (target) {
+                target.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Actualizar estilo en botones de navegación (sin brillos ni resplandores)
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.classList.remove('bg-qbTerracotta', 'text-white');
+                btn.classList.add('text-[#ECE7DE]/85', 'hover:text-white', 'hover:bg-white/10');
+            });
+
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-[#ECE7DE]/85', 'hover:text-white', 'hover:bg-white/10');
+                activeBtn.classList.add('bg-qbTerracotta', 'text-white');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function scrollToContact() {
+            window.open('https://wa.me/50212345678?text=Hola%20QBusiness%20Media,%20quisiera%20cotizar%20un%20servicio%20audiovisual', '_blank');
+        }
+
+        // SISTEMA DE PORTAFOLIO Y SUBPROYECTOS (MOCKUP PDF PÁGINA 2, 3 Y 4)
+        function openPortfolioClient(clientKey) {
+            currentClientKey = clientKey;
+            currentSubProj = 1;
+            const data = clientPortfolios[clientKey];
+            if (!data) return;
+
+            document.getElementById('portfolio-overview').classList.add('hidden');
+            document.getElementById('portfolio-detail').classList.remove('hidden');
+
+            document.getElementById('detail-client-title').textContent = data.title;
+            document.getElementById('detail-client-badge').textContent = data.badge;
+            document.getElementById('detail-client-desc').textContent = data.desc;
+
+            // Asegurar que estamos en tab portafolio
+            switchTab('portafolio');
+            renderSubProjectTabs(data);
+            switchSubProject(1);
+        }
+
+        function closePortfolioClient() {
+            document.getElementById('portfolio-detail').classList.add('hidden');
+            document.getElementById('portfolio-overview').classList.remove('hidden');
+        }
+
+        function renderSubProjectTabs(clientData) {
+            const keys = Object.keys(clientData.projects);
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`subproj-btn-${i}`);
+                if (keys.includes(String(i))) {
+                    btn.classList.remove('hidden');
+                    btn.textContent = clientData.projects[i].name;
+                } else if (btn) {
+                    btn.classList.add('hidden');
+                }
+            }
+        }
+
+        function switchSubProject(subId) {
+            currentSubProj = subId;
+            const clientData = clientPortfolios[currentClientKey];
+            const proj = clientData.projects[subId];
+            if (!proj) return;
+
+            // Actualizar estilo botones
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`subproj-btn-${i}`);
+                if (btn) {
+                    if (i === subId) {
+                        btn.className = "subproj-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-qbTerracotta text-white";
+                    } else {
+                        btn.className = "subproj-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-qbLinen text-qbInk hover:bg-qbChalk border border-qbBorder";
+                    }
+                }
+            }
+
+            document.getElementById('subproj-heading').textContent = proj.name;
+
+            // Renderizar el grid de fotos/videos (PDF Página 4)
+            const grid = document.getElementById('subproj-grid');
+            grid.innerHTML = '';
+
+            proj.items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition cursor-pointer p-2 space-y-2 shadow-sm";
+                card.onclick = () => showToast(`Reproduciendo vista previa: ${item.title}`);
+                card.innerHTML = `
+                    <div class="aspect-video relative rounded-xl overflow-hidden bg-black/40">
+                        <img src="${item.img}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='Resources/Solido.png';">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <span class="w-10 h-10 rounded-full bg-qbTerracotta text-white flex items-center justify-center text-xs"><i class="fas fa-play ml-0.5"></i></span>
+                        </div>
+                        <span class="absolute bottom-1.5 left-1.5 bg-qbIndigo/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded">${item.type}</span>
+                    </div>
+                    <div class="px-1">
+                        <h4 class="text-xs font-bold text-qbInk truncate">${item.title}</h4>
+                        <span class="text-[10px] text-qbSage font-semibold">Click para reproducir</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // FILTROS DE PORTAFOLIO Y BACKSTAGE
+        function filterPortfolio(cat) {
+            const cards = document.querySelectorAll('.port-card');
+            const btns = document.querySelectorAll('.port-filter-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-qbTerracotta', 'text-white');
+                b.classList.add('bg-qbChalk', 'border', 'border-qbBorder', 'text-qbInk', 'hover:bg-qbChalkHover');
+            });
+            event.target.classList.remove('bg-qbChalk', 'border', 'border-qbBorder', 'text-qbInk', 'hover:bg-qbChalkHover');
+            event.target.classList.add('bg-qbTerracotta', 'text-white');
+
+            cards.forEach(card => {
+                if (cat === 'all' || card.getAttribute('data-category') === cat) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        function filterBackstage(type) {
+            const items = document.querySelectorAll('.bs-item');
+            const btns = document.querySelectorAll('.bs-filter-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-qbTerracotta', 'text-white');
+                b.classList.add('bg-qbChalk', 'border', 'border-qbBorder', 'text-qbInk', 'hover:bg-qbChalkHover');
+            });
+            event.target.classList.remove('bg-qbChalk', 'border', 'border-qbBorder', 'text-qbInk', 'hover:bg-qbChalkHover');
+            event.target.classList.add('bg-qbTerracotta', 'text-white');
+
+            items.forEach(item => {
+                if (type === 'all' || item.getAttribute('data-type') === type) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        // GESTIÓN DE MODALES
+        function openStudioModal() {
+            document.getElementById('studio-form-screen').classList.remove('hidden');
+            document.getElementById('studio-success-screen').classList.add('hidden');
+            document.getElementById('modal-studio').classList.remove('hidden');
+            calculateStudioTotal();
+        }
+
+        function closeStudioModal() {
+            document.getElementById('modal-studio').classList.add('hidden');
+        }
+
+        function openAboutModal() {
+            document.getElementById('modal-about').classList.remove('hidden');
+        }
+
+        function closeAboutModal() {
+            document.getElementById('modal-about').classList.add('hidden');
+        }
+
+        function openReviewModal() {
+            document.getElementById('modal-review').classList.remove('hidden');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('modal-review').classList.add('hidden');
+        }
+
+        // CÁLCULO DE TOTAL EN RENTA DE ESTUDIO (MOCKUP PDF PÁGINA 8 Y 9)
+        function calculateStudioTotal() {
+            const hours = parseInt(document.getElementById('book-hours').value) || 4;
+            const ratePerHour = 500;
+            let total = hours * ratePerHour;
+
+            if (document.getElementById('add-mic')?.checked) total += 150;
+            if (document.getElementById('add-cam')?.checked) total += 350;
+            if (document.getElementById('add-light')?.checked) total += 200;
+            if (document.getElementById('add-staff')?.checked) total += 250;
+
+            const formatted = `Q${total.toLocaleString()} GTQ`;
+            const display = document.getElementById('booking-total-display');
+            if (display) display.textContent = formatted;
+            return { total, formatted, hours };
+        }
+
+        // MANEJO DE FORMULARIO DE RESERVA DE ESTUDIO (PDF PÁGINA 8 Y 9)
+        function handleStudioBooking(e) {
+            e.preventDefault();
+            const name = document.getElementById('book-name').value;
+            const email = document.getElementById('book-email').value;
+            const phone = document.getElementById('book-phone').value;
+            const date = document.getElementById('book-date').value || "Fecha acordada";
+            const start = document.getElementById('book-start').value;
+            const end = document.getElementById('book-end').value;
+            const calc = calculateStudioTotal();
+
+            // Llenar pantalla de éxito según PDF Página 9
+            document.getElementById('succ-name').textContent = name;
+            document.getElementById('succ-date').textContent = date;
+            document.getElementById('succ-time').textContent = `${start} a ${end} (${calc.hours} horas)`;
+            document.getElementById('succ-total').textContent = calc.formatted;
+
+            // Guardar en leads de administración
+            adminInquiries.unshift({
+                type: "Estudio",
+                name: name,
+                contact: `${phone} | ${email}`,
+                detail: `Reserva para el ${date} (${start} - ${end}). Total est: ${calc.formatted}`,
+                date: "Hace unos momentos",
+                status: "Pendiente"
+            });
+            renderAdminTable();
+
+            // Cambiar a pantalla de éxito
+            document.getElementById('studio-form-screen').classList.add('hidden');
+            document.getElementById('studio-success-screen').classList.remove('hidden');
+            showToast('¡Solicitud de estudio enviada con éxito!');
+        }
+
+        // MANEJO DE FORMULARIO DE APOYO SOCIAL (PDF PÁGINA 10)
+        function handleSocialSubmit(e) {
+            e.preventDefault();
+            const org = document.getElementById('social-org').value;
+            const email = document.getElementById('social-email').value;
+            const phone = document.getElementById('social-phone').value;
+            const location = document.getElementById('social-location').value;
+            const reg = document.getElementById('social-reg').value;
+            const msg = document.getElementById('social-msg').value;
+
+            adminInquiries.unshift({
+                type: "Apoyo Social",
+                name: org,
+                contact: `${phone} | ${email}`,
+                detail: `Reg: ${reg} | Ubicación: ${location}. Mensaje: ${msg}`,
+                date: "Hace unos momentos",
+                status: "En Evaluación"
+            });
+            renderAdminTable();
+
+            showToast('¡Solicitud de apoyo social registrada exitosamente!');
+            e.target.reset();
+        }
+
+        // MANEJO DE RESEÑAS
+        function handleReviewSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('rev-name').value;
+            const company = document.getElementById('rev-company').value;
+            const comment = document.getElementById('rev-comment').value;
+            const rating = parseInt(document.getElementById('rev-rating').value);
+
+            let starsHtml = '';
+            for (let i = 0; i < 5; i++) {
+                starsHtml += `<i class="fas fa-star ${i < rating ? 'text-amber-500' : 'text-gray-300'}"></i>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = "bg-qbChalk border border-qbBorder p-8 rounded-3xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm relative";
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex text-amber-500 space-x-1 text-sm">
+                        ${starsHtml}
+                    </div>
+                    <span class="text-[11px] font-bold bg-amber-500/10 text-amber-600 px-2.5 py-0.5 rounded-full">${rating}.0 / 5.0</span>
+                </div>
+                <p class="text-qbInk text-sm italic leading-relaxed">"${comment}"</p>
+                <div class="flex items-center space-x-3 pt-3 border-t border-qbBorder">
+                    <div class="w-11 h-11 rounded-full bg-qbSage/20 text-qbSage font-bold flex items-center justify-center text-sm border border-qbSage/30">
+                        ${name.substring(0,2).toUpperCase()}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-qbInk">${name}</h4>
+                        <span class="text-xs text-qbMuted">${company}</span>
+                    </div>
+                </div>
+            `;
+
+            const container = document.getElementById('reviews-container');
+            container.prepend(card);
+
+            closeReviewModal();
+            showToast('¡Tu reseña ha sido publicada!');
+            e.target.reset();
+        }
+
+        // AUTENTICACIÓN Y PANEL ADMINISTRATIVO
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('admin-user').value.trim();
+            const p = document.getElementById('admin-pass').value.trim();
+
+            if (u === 'admin' && p === 'admin123') {
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                renderAdminTable();
+                showToast('¡Bienvenido al Panel Administrativo QBusiness!');
+            } else {
+                showToast('Error: Usuario o contraseña incorrectos (Prueba admin / admin123)');
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('login-container').classList.remove('hidden');
+            showToast('Sesión administrativa finalizada');
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let leadCount = 0;
+            let bookCount = 0;
+            let socialCount = 0;
+
+            adminInquiries.forEach(item => {
+                if (item.type === 'Contacto') leadCount++;
+                if (item.type === 'Estudio') bookCount++;
+                if (item.type === 'Apoyo Social') socialCount++;
+
+                let badgeColor = 'bg-qbIndigo/10 text-qbIndigo border-qbIndigo/25';
+                if (item.type === 'Estudio') badgeColor = 'bg-qbSage/15 text-qbSage border-qbSage/30';
+                if (item.type === 'Apoyo Social') badgeColor = 'bg-qbTerracotta/10 text-qbTerracotta border-qbTerracotta/25';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-qbLinen/70 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold border ${badgeColor}">${item.type}</span></td>
+                    <td class="py-3 px-4 font-bold text-qbInk">${item.name}</td>
+                    <td class="py-3 px-4 text-qbMuted">${item.contact}</td>
+                    <td class="py-3 px-4 text-qbInk max-w-xs truncate" title="${item.detail}">${item.detail}</td>
+                    <td class="py-3 px-4 text-qbMuted text-[11px]">${item.date}</td>
+                    <td class="py-3 px-4 font-semibold text-qbSage">${item.status}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const statLeads = document.getElementById('stat-leads');
+            const statBookings = document.getElementById('stat-bookings');
+            const statSocial = document.getElementById('stat-social');
+
+            if (statLeads) statLeads.textContent = leadCount + 10;
+            if (statBookings) statBookings.textContent = bookCount + 3;
+            if (statSocial) statSocial.textContent = socialCount;
+        }
+
+        function clearSampleData() {
+            adminInquiries = [];
+            renderAdminTable();
+            showToast('Bandeja reiniciada');
+        }
+
+        // TOAST NOTIFICATIONS
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-msg');
+            msg.textContent = message;
+            toast.classList.remove('translate-y-36', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-36', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
