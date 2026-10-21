@@ -1,23 +1,23 @@
 import Link from "next/link";
 import shared from "../panel.module.css";
 import styles from "./page.module.css";
+import { listarLeads } from "@/server/repositories/leads";
+import { listarReservas } from "@/server/repositories/estudio";
+import { listarTodasLasResenas } from "@/server/repositories/resenas";
+import { listarSolicitudes } from "@/server/repositories/solicitudes";
 
-const ACTIVIDAD = [
-  { texto: "Nueva solicitud de reserva del estudio para el sábado.", cuando: "Hace 20 min", nuevo: true },
-  { texto: "Reseña pendiente de aprobar de un cliente.", cuando: "Hace 2 h", nuevo: true },
-  { texto: "Mensaje nuevo desde el formulario de contacto.", cuando: "Hace 3 h", nuevo: true },
-  { texto: "Solicitud de apoyo social recibida.", cuando: "Ayer", nuevo: false },
-  { texto: "Reseña aprobada y publicada.", cuando: "Ayer", nuevo: false },
-];
+export const metadata = { title: "Dashboard | Admin" };
 
 const ATAJOS = [
-  { titulo: "Reseñas", detalle: "Aprobar o rechazar" },
-  { titulo: "Contactos", detalle: "Responder mensajes" },
-  { titulo: "Reservas del estudio", detalle: "Revisar solicitudes" },
-  { titulo: "Textos del sitio", detalle: "Editar contenido", href: "/admin/textos" },
-  { titulo: "Galería", detalle: "Subir fotos y videos" },
+  { titulo: "Galería", detalle: "Carpetas y archivos", href: "/admin/galeria" },
+  { titulo: "Textos y configuración", detalle: "Contenido del sitio", href: "/admin/textos" },
+  { titulo: "Destacados", detalle: "Orden del inicio", href: "/admin/destacados" },
+  { titulo: "Contactos", detalle: "Mensajes y apoyo social", href: "/admin/contactos" },
+  { titulo: "Reseñas", detalle: "Aprobar o rechazar", href: "/admin/resenas" },
+  { titulo: "Reservas del estudio", detalle: "Solicitudes y bloqueos", href: "/admin/reservas" },
 ];
 
+// Gráfica decorativa de la semana (sin datos reales todavía).
 const SEMANA = [
   { dia: "L", alto: 40 },
   { dia: "M", alto: 65 },
@@ -28,7 +28,53 @@ const SEMANA = [
   { dia: "D", alto: 45 },
 ];
 
-export default function DashboardPage() {
+const fmt = (iso: string) =>
+  new Date(iso).toLocaleDateString("es-GT", { day: "2-digit", month: "short" });
+
+export default async function DashboardPage() {
+  // SUPABASE (admin): conteos sobre leads_contacto, resenas_clientes,
+  // solicitudes_apoyo_social y reservas.
+  const [leads, reservas, resenas, solicitudes] = await Promise.all([
+    listarLeads(),
+    listarReservas(),
+    listarTodasLasResenas(),
+    listarSolicitudes(),
+  ]);
+
+  const stats = {
+    resenasPendientes: resenas.filter((r) => r.estado === "pendiente").length,
+    leadsNuevos: leads.filter((l) => l.estado === "nuevo").length,
+    reservasPendientes: reservas.filter((r) => r.estado === "pendiente").length,
+    solicitudesNuevas: solicitudes.filter((s) => s.estado === "nueva").length,
+  };
+
+  const actividad = [
+    ...leads.map((l) => ({
+      texto: `Mensaje de ${l.nombre} en el formulario de contacto.`,
+      cuando: fmt(l.creadoEn),
+      nuevo: l.estado === "nuevo",
+    })),
+    ...resenas
+      .filter((r) => r.estado === "pendiente")
+      .map((r) => ({
+        texto: `Reseña pendiente de ${r.autor}.`,
+        cuando: fmt(r.creadoEn),
+        nuevo: true,
+      })),
+    ...solicitudes.map((s) => ({
+      texto: `Solicitud de apoyo de ${s.nombreEntidad}.`,
+      cuando: fmt(s.creadoEn),
+      nuevo: s.estado === "nueva",
+    })),
+    ...reservas.map((r) => ({
+      texto: `Reserva de ${r.nombre} para el ${fmt(r.fechaHoraInicio)}.`,
+      cuando: fmt(r.creadoEn),
+      nuevo: r.estado === "pendiente",
+    })),
+  ]
+    .sort((a, b) => Number(b.nuevo) - Number(a.nuevo))
+    .slice(0, 6);
+
   return (
     <>
       <span className={shared.eye}>Dashboard de control</span>
@@ -38,25 +84,33 @@ export default function DashboardPage() {
       <div className={styles.stats}>
         <div className={`${styles.stat} ${styles.statHl}`}>
           <span>Reseñas pendientes</span>
-          <b>7</b>
-          <small>3 llegaron esta semana</small>
+          <b>{stats.resenasPendientes}</b>
+          <small>Por moderar</small>
         </div>
         <div className={styles.stat}>
           <span>Mensajes nuevos</span>
-          <b>12</b>
-          <small>4 sin leer desde ayer</small>
+          <b>{stats.leadsNuevos}</b>
+          <small>Sin gestionar</small>
         </div>
         <div className={styles.stat}>
-          <span>Solicitudes de reserva</span>
-          <b>5</b>
-          <small>2 para este fin de semana</small>
+          <span>Reservas pendientes</span>
+          <b>{stats.reservasPendientes}</b>
+          <small>Por confirmar</small>
+        </div>
+        <div className={styles.stat}>
+          <span>Apoyo social (nuevas)</span>
+          <b>{stats.solicitudesNuevas}</b>
+          <small>Por revisar</small>
         </div>
       </div>
 
       <div className={styles.row}>
         <section className={shared.card}>
           <h2 className={shared.cardTitle}>Actividad reciente</h2>
-          {ACTIVIDAD.map((a) => (
+          {actividad.length === 0 && (
+            <p style={{ color: "#8a8a8a", fontSize: 13 }}>Sin actividad registrada.</p>
+          )}
+          {actividad.map((a) => (
             <div key={a.texto} className={styles.act}>
               <i className={`${styles.dot} ${a.nuevo ? "" : styles.dotOld}`} />
               <p>{a.texto}</p>
@@ -69,19 +123,12 @@ export default function DashboardPage() {
           <section className={shared.card}>
             <h2 className={shared.cardTitle}>Accesos rápidos</h2>
             <div className={styles.quick}>
-              {ATAJOS.map((a) =>
-                a.href ? (
-                  <Link key={a.titulo} href={a.href} className={styles.q}>
-                    {a.titulo}
-                    <span>{a.detalle}</span>
-                  </Link>
-                ) : (
-                  <button key={a.titulo} type="button" className={styles.q}>
-                    {a.titulo}
-                    <span>{a.detalle}</span>
-                  </button>
-                ),
-              )}
+              {ATAJOS.map((a) => (
+                <Link key={a.titulo} href={a.href} className={styles.q}>
+                  {a.titulo}
+                  <span>{a.detalle}</span>
+                </Link>
+              ))}
             </div>
           </section>
 

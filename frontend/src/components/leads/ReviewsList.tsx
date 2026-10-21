@@ -1,12 +1,13 @@
 
 import { Icon } from '@/components/ui/Icon';
-import type { ResenaCliente } from '@/types/leads';
+import type { ResenaCliente } from '@/types/resenas';
 
 interface ReviewsListProps {
   resenas: ResenaCliente[];
 }
 
-function StarRating({ calificacion }: { calificacion: number }) {
+function StarRating({ calificacion }: { calificacion: number | null }) {
+  if (calificacion === null) return null;
   return (
     <div
       className="flex items-center gap-0.5"

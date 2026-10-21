@@ -5,10 +5,9 @@ import { Icon } from '@/components/ui/Icon';
 
 const initialForm = {
   nombre: '',
-  email: '',
+  correo: '',
   telefono: '',
-  empresa: '',
-  detalles: '',
+  mensaje: '',
 };
 
 export default function QuoteForm() {
@@ -27,6 +26,9 @@ export default function QuoteForm() {
     e.preventDefault();
     setEnviando(true);
     try {
+      // SUPABASE (al conectar): Server Action con service role:
+      //   INSERT INTO leads_contacto (nombre, correo, telefono, mensaje)
+      //   VALUES (...);  estado nace en 'nuevo'.
       await new Promise((r) => setTimeout(r, 500));
       setEnviado(true);
       setForm(initialForm);
@@ -59,33 +61,26 @@ export default function QuoteForm() {
         />
         <div className="grid gap-3 sm:grid-cols-2">
           <input
-            name="email"
+            name="correo"
             type="email"
             required
             placeholder="Correo *"
-            value={form.email}
+            value={form.correo}
             onChange={handleChange}
           />
           <input
             name="telefono"
-            required
-            placeholder="Teléfono *"
-            value={form.telefono}
+            placeholder="Teléfono"
+            value={form.telefono ?? ''}
             onChange={handleChange}
           />
         </div>
-        <input
-          name="empresa"
-          placeholder="Empresa"
-          value={form.empresa}
-          onChange={handleChange}
-        />
         <textarea
-          name="detalles"
+          name="mensaje"
           rows={3}
           required
           placeholder="Detalles del proyecto *"
-          value={form.detalles}
+          value={form.mensaje ?? ''}
           onChange={handleChange}
         />
       </div>

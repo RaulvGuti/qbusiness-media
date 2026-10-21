@@ -1,13 +1,21 @@
+import type { GrupoConfig } from "@/types/config";
+
 export type Campo = {
+  grupo: GrupoConfig;
+  clave: string;
   etiqueta: string;
-  valor: string;
-  largo?: boolean;
+  tipo?: "texto" | "area" | "numero" | "hora";
   alto?: number;
 };
 
 export type Grupo = { titulo: string; campos: Campo[] };
 
-export const PESTANAS = [
+/**
+ * Campos del editor de textos. Cada campo es un par (grupo, clave) de la tabla
+ * configuracion_sitio (000016). Los grupos permitidos por el CHECK son:
+ * menu, modulos, formularios, contacto, redes, ubicacion, estudio.
+ */
+export const PESTANAS: { id: string; titulo: string; grupos: Grupo[] }[] = [
   {
     id: "generales",
     titulo: "Textos generales",
@@ -15,42 +23,13 @@ export const PESTANAS = [
       {
         titulo: "Menú",
         campos: [
-          { etiqueta: "Inicio", valor: "Inicio" },
-          { etiqueta: "Backstage", valor: "Backstage" },
-          { etiqueta: "Apoyo social", valor: "Apoyo social" },
-          { etiqueta: "Renta de estudio", valor: "Renta de estudio" },
-        ],
-      },
-      {
-        titulo: "Encabezados de módulos",
-        campos: [
-          { etiqueta: "Título", valor: "Nuestro trabajo" },
-          { etiqueta: "Subtítulo", valor: "Producción audiovisual a tu medida" },
           {
-            etiqueta: "Descripción introductoria",
-            valor: "Conoce los proyectos que hemos realizado junto a nuestros clientes.",
-            largo: true,
+            grupo: "menu",
+            clave: "whatsapp_cta",
+            etiqueta: "Mensaje del botón de WhatsApp",
+            tipo: "area",
+            alto: 80,
           },
-        ],
-      },
-      {
-        titulo: "Sobre QBusiness MEDIA",
-        campos: [
-          {
-            etiqueta: "Texto",
-            valor: "Somos una empresa dedicada a la producción de contenido audiovisual.",
-            largo: true,
-            alto: 120,
-          },
-        ],
-      },
-      {
-        titulo: "Formularios",
-        campos: [
-          { etiqueta: "Etiqueta del nombre", valor: "Nombre completo" },
-          { etiqueta: "Etiqueta del correo", valor: "Correo electrónico" },
-          { etiqueta: "Texto del botón", valor: "Enviar mensaje" },
-          { etiqueta: "Mensaje de confirmación", valor: "Gracias, te contactaremos pronto." },
         ],
       },
     ],
@@ -62,26 +41,22 @@ export const PESTANAS = [
       {
         titulo: "Contacto",
         campos: [
-          { etiqueta: "Número de WhatsApp", valor: "+502 0000 0000" },
-          { etiqueta: "Correo de contacto", valor: "contacto@qbusiness.com" },
-          { etiqueta: "Teléfono", valor: "+502 0000 0000" },
-          { etiqueta: "Horario de atención", valor: "Lunes a viernes, 9:00 a 18:00" },
+          { grupo: "contacto", clave: "correo", etiqueta: "Correo de contacto" },
+          { grupo: "contacto", clave: "whatsapp", etiqueta: "Número de WhatsApp" },
         ],
       },
       {
         titulo: "Redes sociales",
         campos: [
-          { etiqueta: "Instagram", valor: "https://instagram.com/" },
-          { etiqueta: "Facebook", valor: "https://facebook.com/" },
-          { etiqueta: "TikTok", valor: "https://tiktok.com/" },
-          { etiqueta: "YouTube", valor: "https://youtube.com/" },
+          { grupo: "redes", clave: "instagram", etiqueta: "Instagram" },
+          { grupo: "redes", clave: "youtube", etiqueta: "YouTube" },
+          { grupo: "redes", clave: "tiktok", etiqueta: "TikTok" },
         ],
       },
       {
         titulo: "Ubicación",
         campos: [
-          { etiqueta: "Dirección", valor: "Ciudad de Guatemala, Guatemala", largo: false },
-          { etiqueta: "Enlace del mapa", valor: "https://maps.google.com/" },
+          { grupo: "ubicacion", clave: "direccion", etiqueta: "Dirección" },
         ],
       },
     ],
@@ -91,17 +66,19 @@ export const PESTANAS = [
     titulo: "Renta de estudio",
     grupos: [
       {
-        titulo: "Información general",
+        titulo: "Tarifas y horario",
         campos: [
-          { etiqueta: "Precio por hora", valor: "Q 0.00" },
-          { etiqueta: "Ubicación del estudio", valor: "Ciudad de Guatemala, Guatemala" },
+          { grupo: "estudio", clave: "tarifa_hora", etiqueta: "Tarifa por hora (Q)", tipo: "numero" },
+          { grupo: "estudio", clave: "hora_apertura", etiqueta: "Hora de apertura", tipo: "hora" },
+          { grupo: "estudio", clave: "hora_cierre", etiqueta: "Hora de cierre", tipo: "hora" },
           {
-            etiqueta: "Características",
-            valor: "Cabina insonorizada, iluminación profesional, fondos intercambiables, equipo de audio.",
-            largo: true,
+            grupo: "estudio",
+            clave: "max_pendientes_por_cliente",
+            etiqueta: "Máximo de reservas pendientes por cliente",
+            tipo: "numero",
           },
         ],
       },
     ],
   },
-] as const;
+];

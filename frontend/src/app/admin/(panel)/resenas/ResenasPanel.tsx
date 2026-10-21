@@ -17,7 +17,11 @@ type ResenaBD = {
 
 type Filtro = "todas" | "pendiente" | "aprobada";
 
-export function ResenasPanel() {
+interface ResenasPanelProps {
+  resenasIniciales: Resena[];
+}
+
+export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
   const toast = useToast();
   const [resenas, setResenas] = useState<ResenaBD[]>([]);
   const [filtro, setFiltro] = useState<Filtro>("todas");

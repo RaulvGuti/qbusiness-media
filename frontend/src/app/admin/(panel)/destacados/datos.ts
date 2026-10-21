@@ -1,23 +1,42 @@
-export const MODULOS = ["Producción audiovisual", "Fotografía", "Renta de estudio", "Ayuda social", "Empresas"] as const;
+import type { CarpetaGaleria, Empresa } from "@/types/portafolio";
 
-export type Elemento = { id: number; nombre: string; modulo: (typeof MODULOS)[number] };
-
-export const CATALOGO: Elemento[] = [
-  { id: 1, nombre: "Spot institucional Banco Atlas", modulo: "Producción audiovisual" },
-  { id: 2, nombre: "Videoclip \"Luz de Medianoche\"", modulo: "Producción audiovisual" },
-  { id: 3, nombre: "Documental Raíces del Café", modulo: "Producción audiovisual" },
-  { id: 4, nombre: "Campaña de producto Aurora", modulo: "Fotografía" },
-  { id: 5, nombre: "Sesión de moda Colección Otoño", modulo: "Fotografía" },
-  { id: 6, nombre: "Podcast \"Voces del Barrio\"", modulo: "Renta de estudio" },
-  { id: 7, nombre: "Sesión de grabación Banda Eco", modulo: "Renta de estudio" },
-  { id: 8, nombre: "Jornada Cámaras por la Niñez", modulo: "Ayuda social" },
-  { id: 9, nombre: "Banco Atlas", modulo: "Empresas" },
-  { id: 10, nombre: "Café Altura", modulo: "Empresas" },
-  { id: 11, nombre: "Grupo Meridian", modulo: "Empresas" },
-  { id: 12, nombre: "Fundación Horizonte", modulo: "Empresas" },
+/** Etiqueta visible de los módulos de carpeta. */
+export const MODULOS: { clave: CarpetaGaleria["modulo"]; texto: string }[] = [
+  { clave: "portafolio", texto: "Portafolio" },
+  { clave: "backstage", texto: "Backstage" },
+  { clave: "estudio", texto: "Estudio" },
+  { clave: "apoyo_social", texto: "Apoyo social" },
 ];
 
-export const DESTACADOS_INICIALES = [1, 9, 3, 10];
+export const MODULO_EMPRESAS = "Empresas";
+
+/** Ítem del catálogo de destacados: una carpeta o una empresa. */
+export type ElementoCatalogo = {
+  id: string;
+  nombre: string;
+  modulo: string;
+  tipo: "carpeta" | "empresa";
+};
+
+export function construirCatalogo(
+  carpetas: CarpetaGaleria[],
+  empresas: Empresa[],
+): ElementoCatalogo[] {
+  return [
+    ...carpetas.map((c) => ({
+      id: c.id,
+      nombre: c.nombre,
+      modulo: MODULOS.find((m) => m.clave === c.modulo)?.texto ?? c.modulo,
+      tipo: "carpeta" as const,
+    })),
+    ...empresas.map((e) => ({
+      id: e.id,
+      nombre: e.nombre,
+      modulo: MODULO_EMPRESAS,
+      tipo: "empresa" as const,
+    })),
+  ];
+}
 
 export function iniciales(texto: string) {
   return texto

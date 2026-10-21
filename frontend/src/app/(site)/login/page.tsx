@@ -7,6 +7,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -16,8 +17,17 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEnviando(true);
+    setError(null);
     try {
+      // SUPABASE (al conectar):
+      //   const { data, error } = await supabase.auth.signInWithPassword({
+      //     email: form.email,
+      //     password: form.password,
+      //   });
+      // El proxy (src/proxy.ts) renueva la sesión en cada petición.
+      // El rol se determina consultando `administradores` o la RPC es_admin().
       await new Promise((r) => setTimeout(r, 600));
+      setError('La autenticación aún no está conectada. Configura Supabase para activar el acceso.');
     } finally {
       setEnviando(false);
     }
@@ -31,7 +41,7 @@ export default function LoginPage() {
             Iniciar sesión
           </h1>
           <p className="text-sm text-qbMuted">
-            Acceso exclusivo para administradores.
+            Acceso para administradores y clientes de QBusiness Media.
           </p>
         </div>
 
@@ -68,6 +78,12 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
+
+          {error && (
+            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"

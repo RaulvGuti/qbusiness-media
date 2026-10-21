@@ -6,17 +6,22 @@ import type { EquipoEstudio, ServicioEstudio } from '@/types/estudio';
 interface RentalCalculatorProps {
   servicios: ServicioEstudio[];
   equipos: EquipoEstudio[];
+  tarifaHoraBase: number;
   onResumenChange?: (resumen: {
     horas: number;
+    tarifaBase: number;
     subtotalServicios: number;
     subtotalEquipos: number;
     total: number;
+    serviciosIds: string[];
+    equipos: { equipoId: string; cantidad: number }[];
   }) => void;
 }
 
 export default function RentalCalculator({
   servicios,
   equipos,
+  tarifaHoraBase,
   onResumenChange,
 }: RentalCalculatorProps) {
   const [horas, setHoras] = useState<number>(2);
@@ -30,18 +35,48 @@ export default function RentalCalculator({
 
   const subtotalEquipos = equipos.reduce((acc, e) => {
     const c = equiposSeleccionados[e.id] || 0;
-    return acc + e.tarifaPorHora * c * horas;
+    return acc + e.precioPorHora * c * horas;
   }, 0);
 
-  const total = subtotalServicios + subtotalEquipos;
+  const total = Math.round((tarifaHoraBase * horas + subtotalServicios + subtotalEquipos) * 100) / 100;
 
-  const notify = (h: number, ss: number, se: number, t: number) => {
-    onResumenChange?.({ horas: h, subtotalServicios: ss, subtotalEquipos: se, total: t });
+  const notify = (
+    h: number,
+    tb: number,
+    ss: number,
+    se: number,
+    t: number,
+    serviciosIds: string[],
+    eqs: { equipoId: string; cantidad: number }[],
+  ) => {
+    onResumenChange?.({
+      horas: h,
+      tarifaBase: tb,
+      subtotalServicios: ss,
+      subtotalEquipos: se,
+      total: t,
+      serviciosIds,
+      equipos: eqs,
+    });
+  };
+
+  const snapshot = (h: number, ss: number, se: number, sSel: Record<string, number>, eSel: Record<string, number>) => {
+    notify(
+      h,
+      tarifaHoraBase * h,
+      ss,
+      se,
+      Math.round((tarifaHoraBase * h + ss + se) * 100) / 100,
+      Object.keys(sSel),
+      Object.entries(eSel)
+        .filter(([, c]) => c > 0)
+        .map(([equipoId, cantidad]) => ({ equipoId, cantidad })),
+    );
   };
 
   const setHorasAndNotify = (h: number) => {
     setHoras(h);
-    notify(h, subtotalServicios, subtotalEquipos, subtotalServicios + subtotalEquipos);
+    snapshot(h, subtotalServicios, subtotalEquipos, serviciosSeleccionados, equiposSeleccionados);
   };
 
   const toggleServicio = (id: string) => {
@@ -52,16 +87,27 @@ export default function RentalCalculator({
       } else {
         next[id] = horas > 0 ? horas : 1;
       }
+      snapshot(horas, subtotalServicios, subtotalEquipos, next, equiposSeleccionados);
       return next;
     });
   };
 
   const updateServicioHoras = (id: string, h: number) => {
-    setServiciosSeleccionados((prev) => ({ ...prev, [id]: Math.max(0, h) }));
+    setServiciosSeleccionados((prev) => {
+      const next = { ...prev, [id]: Math.max(0, h) };
+      const ss = servicios.reduce((acc, s) => acc + s.precioPorHora * (next[s.id] || 0), 0);
+      snapshot(horas, ss, subtotalEquipos, next, equiposSeleccionados);
+      return next;
+    });
   };
 
   const updateEquipoCantidad = (id: string, c: number) => {
-    setEquiposSeleccionados((prev) => ({ ...prev, [id]: Math.max(0, c) }));
+    setEquiposSeleccionados((prev) => {
+      const next = { ...prev, [id]: Math.max(0, c) };
+      const se = equipos.reduce((acc, e) => acc + e.precioPorHora * (next[e.id] || 0) * horas, 0);
+      snapshot(horas, subtotalServicios, se, serviciosSeleccionados, next);
+      return next;
+    });
   };
 
   return (
@@ -84,8 +130,12 @@ export default function RentalCalculator({
             />
           </div>
           <p className="text-sm text-qbMuted">
-            El tiempo aplica a servicios por hora y al cálculo de equipo.
+            El tiempo aplica a la tarifa base del salón, servicios y equipo.
           </p>
+        </div>
+        <div className="border border-qbBorder rounded-2xl p-4 flex justify-between items-center text-sm">
+          <span className="text-qbMuted">Tarifa base del salón</span>
+          <span className="font-bold text-qbInk">Q{tarifaHoraBase.toFixed(2)} / h</span>
         </div>
       </div>
 
@@ -100,9 +150,7 @@ export default function RentalCalculator({
               <div
                 key={s.id}
                 className={`border rounded-2xl p-4 transition ${
-                  seleccionado
-                    ? 'border-qbTerracotta/40'
-                    : 'border-qbBorder'
+                  seleccionado ? 'border-qbTerracotta/40' : 'border-qbBorder'
                 }`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -131,9 +179,7 @@ export default function RentalCalculator({
                         min={0.5}
                         step={0.5}
                         value={hSel}
-                        onChange={(e) =>
-                          updateServicioHoras(s.id, parseFloat(e.target.value) || 0)
-                        }
+                        onChange={(e) => updateServicioHoras(s.id, parseFloat(e.target.value) || 0)}
                         className="w-20 text-sm"
                       />
                       <span className="text-sm font-semibold text-qbInk">
@@ -166,9 +212,9 @@ export default function RentalCalculator({
                     <div className="flex items-center flex-wrap gap-2">
                       <span className="text-sm font-bold text-qbInk">{e.nombre}</span>
                       <span className="text-xs font-semibold text-qbMuted">
-                        Q{Number(e.tarifaPorHora).toFixed(2)}/h
+                        Q{Number(e.precioPorHora).toFixed(2)}/h
                       </span>
-                      <span className="text-[11px] text-qbMuted">Disp.: {e.cantidadDisponible}</span>
+                      <span className="text-[11px] text-qbMuted">Disp.: {e.cantidadTotal}</span>
                     </div>
                     {e.descripcion && (
                       <p className="text-xs text-qbMuted">{e.descripcion}</p>
@@ -180,16 +226,14 @@ export default function RentalCalculator({
                     <input
                       type="number"
                       min={0}
-                      max={e.cantidadDisponible}
+                      max={e.cantidadTotal}
                       step={1}
                       value={cSel}
-                      onChange={(ev) =>
-                        updateEquipoCantidad(e.id, parseInt(ev.target.value) || 0)
-                      }
+                      onChange={(ev) => updateEquipoCantidad(e.id, parseInt(ev.target.value) || 0)}
                       className="w-20 text-sm"
                     />
                     <span className="text-sm font-semibold text-qbInk min-w-[70px] text-right">
-                      Q{(e.tarifaPorHora * cSel * horas).toFixed(2)}
+                      Q{(e.precioPorHora * cSel * horas).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -204,6 +248,10 @@ export default function RentalCalculator({
         <h4 className="text-sm font-bold text-qbInk uppercase tracking-wider">Desglose de costos</h4>
         <dl className="space-y-2 text-sm">
           <div className="flex items-center justify-between">
+            <dt className="text-qbMuted">Tarifa base ({horas}h)</dt>
+            <dd className="font-semibold text-qbInk">Q{(tarifaHoraBase * horas).toFixed(2)}</dd>
+          </div>
+          <div className="flex items-center justify-between">
             <dt className="text-qbMuted">Servicios extra</dt>
             <dd className="font-semibold text-qbInk">Q{subtotalServicios.toFixed(2)}</dd>
           </div>
@@ -217,7 +265,7 @@ export default function RentalCalculator({
           </div>
         </dl>
         <p className="text-[11px] text-qbMuted">
-          * Estimado. Los precios se confirman al validar disponibilidad.
+          * Estimado. El precio final lo calcula el servidor al confirmar la reserva.
         </p>
       </div>
     </div>
