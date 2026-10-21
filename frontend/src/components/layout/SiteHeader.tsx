@@ -17,7 +17,7 @@ const SECCIONES = [
 ] as const;
 
 const WHATSAPP =
-  "https://wa.me/50212345678?text=Hola%20QBusiness%20Media,%20quisiera%20cotizar%20un%20servicio%20audiovisual";
+  "https://wa.me/50259448587?text=Hola%20QBusiness%20Media,%20quisiera%20cotizar%20un%20servicio%20audiovisual";
 
 export function SiteHeader() {
   const ruta = usePathname();

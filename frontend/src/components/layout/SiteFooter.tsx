@@ -76,7 +76,7 @@ export function SiteFooter() {
                 <Icon name="location-dot" className="text-qbTerracotta mr-2" /> Quetzaltenango, Guatemala
               </li>
               <li className="flex items-center">
-                <Icon name="whatsapp" className="text-qbSage mr-2" /> +502 1234 5678
+                <Icon name="whatsapp" className="text-qbSage mr-2" /> +502 5344 8587
               </li>
               <li className="flex items-center">
                 <Icon name="envelope" className="text-qbTerracotta mr-2" /> contacto@qbusinessmedia.gt
@@ -93,7 +93,7 @@ export function SiteFooter() {
             <a target="_blank" className="hover:text-qbTerracotta transition" href="https://instagram.com">
               <Icon name="instagram" />
             </a>{" "}
-            <a target="_blank" className="hover:text-qbSage transition" href="https://wa.me/50212345678">
+            <a target="_blank" className="hover:text-qbSage transition" href="https://wa.me/50253448587">
               <Icon name="whatsapp" />
             </a>{" "}
             <a target="_blank" className="hover:text-qbTerracotta transition" href="https://youtube.com">
