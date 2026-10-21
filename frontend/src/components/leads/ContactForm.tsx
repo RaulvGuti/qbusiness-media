@@ -1,16 +1,13 @@
 'use client';
 
 import { Icon } from '@/components/ui/Icon';
-import type { TipoServicioLead } from '@/types/leads';
 import { useState } from 'react';
+import type { LeadContactoInput } from '@/types/leads';
 
-const initialForm = {
+const initialForm: LeadContactoInput = {
   nombre: '',
-  email: '',
+  correo: '',
   telefono: '',
-  empresa: '',
-  tipoServicio: 'video-corporativo' as TipoServicioLead,
-  presupuesto: '',
   mensaje: '',
 };
 
@@ -20,14 +17,12 @@ export default function ContactForm() {
   const [enviado, setEnviado] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value as (typeof initialForm)[keyof typeof initialForm],
+      [name]: value,
     }));
   };
 
@@ -105,57 +100,21 @@ const handleSubmit = async (e: React.FormEvent) => {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-qbInk">Correo *</label>
             <input
-              name="email"
+              name="correo"
               type="email"
               required
-              value={form.email}
+              value={form.correo}
               onChange={handleChange}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Teléfono *</label>
+            <label className="text-sm font-semibold text-qbInk">Teléfono</label>
             <input
               name="telefono"
-              required
-              value={form.telefono}
+              value={form.telefono ?? ''}
               onChange={handleChange}
             />
           </div>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Empresa</label>
-            <input
-              name="empresa"
-              value={form.empresa}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Tipo de servicio *</label>
-            <select
-              name="tipoServicio"
-              required
-              value={form.tipoServicio}
-              onChange={handleChange}
-            >
-              <option value="video-corporativo">Video corporativo</option>
-              <option value="foto-comercial">Fotografía comercial</option>
-              <option value="podcast">Podcast</option>
-              <option value="reels">Reels</option>
-              <option value="estudio">Renta de estudio</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-qbInk">Presupuesto aproximado</label>
-          <input
-            name="presupuesto"
-            value={form.presupuesto}
-            onChange={handleChange}
-            placeholder="Q5,000 - Q10,000"
-          />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-semibold text-qbInk">Mensaje *</label>
@@ -163,7 +122,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             name="mensaje"
             required
             rows={4}
-            value={form.mensaje}
+            value={form.mensaje ?? ''}
             onChange={handleChange}
             placeholder="Cuéntanos sobre tu proyecto..."
           />

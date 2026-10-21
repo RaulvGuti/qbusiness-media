@@ -18,9 +18,10 @@ el cliente necesita saber para usar el sitio.
 | --- | --- | --- |
 | 01 | [`01-decisiones-tecnicas.md`](./01-decisiones-tecnicas.md) | Por qué Supabase y no Neon, por qué Docker como alternativa, por qué no hay pasarela de pagos todavía y qué tan difícil sería cambiar de base de datos. |
 | 02 | `02-base-de-datos.md` | Cómo se aplican las migraciones paso a paso. *(pendiente)* |
-| 03 | `03-despliegue.md` | Cómo se publica y cómo se actualiza el sitio. *(pendiente)* |
-| 04 | `04-modulos.md` | Qué hace cada pestaña y en qué punto va. *(pendiente)* |
-| 05 | `05-manual-cliente.md` | Lo que el cliente debe saber para usar el sitio. *(pendiente)* |
+| 03 | [`03-migraciones_esquema_v2.md`](./03-migraciones_esquema_v2.md) | La arquitectura final de la base de datos y la secuencia completa de migraciones (000001 → 000029). |
+| 04 | `04-despliegue.md` | Cómo se publica y cómo se actualiza el sitio. *(pendiente)* |
+| 05 | `05-modulos.md` | Qué hace cada pestaña y en qué punto va. *(pendiente)* |
+| 06 | `06-manual-cliente.md` | Lo que el cliente debe saber para usar el sitio. *(pendiente)* |
 
 ## Trabajo interno en curso
 

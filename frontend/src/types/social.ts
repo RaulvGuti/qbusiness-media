@@ -1,23 +1,35 @@
-export type TipoOrganizacion = 'fundacion' | 'institucion' | 'ong' | 'bomberos' | 'otro';
+/**
+ * Tipos alineados a las migraciones de Supabase.
+ * Tabla: solicitudes_apoyo_social (000011 + 000014 + 000025)
+ * Campos reales: id, gestionado_por_id, nombre_entidad, persona_contacto,
+ * correo, telefono, descripcion_proyecto, tipo_entidad, fecha_evento,
+ * estado ('nueva'|'en_revision'|'aprobada'|'rechazada'), notificado_en, creado_en
+ */
 
-export type EstadoSolicitudApoyo = 'pendiente' | 'en_revision' | 'aprobada' | 'rechazada' | 'completada';
+export type EstadoSolicitudApoyo = 'nueva' | 'en_revision' | 'aprobada' | 'rechazada';
 
 export interface SolicitudApoyoSocial {
   id: string;
-  nombreOrganizacion: string;
-  tipoOrganizacion: TipoOrganizacion;
-  nombreContacto: string;
-  cargoContacto: string;
-  email: string;
-  telefono: string;
-  ubicacion: string;
-  descripcionProyecto: string;
-  objetivoApoyo: string;
-  fechaTentativa: string;
-  publicoBeneficiario: string;
-  alcanceSolicitado: 'foto' | 'video' | 'foto-video' | 'reel' | 'otro';
-  presupuestoPropio?: string;
-  comentarios?: string;
+  gestionadoPorId: string | null;
+  nombreEntidad: string;
+  personaContacto: string;
+  correo: string;
+  telefono: string | null;
+  descripcionProyecto: string | null;
+  tipoEntidad: string | null;
+  fechaEvento: string | null;
   estado: EstadoSolicitudApoyo;
-  fechaCreacion: string;
+  notificadoEn: string | null;
+  creadoEn: string;
+}
+
+/** Formulario público de solicitud de apoyo social. */
+export interface SolicitudApoyoSocialInput {
+  nombreEntidad: string;
+  personaContacto: string;
+  correo: string;
+  telefono?: string;
+  descripcionProyecto?: string;
+  tipoEntidad?: string;
+  fechaEvento?: string;
 }

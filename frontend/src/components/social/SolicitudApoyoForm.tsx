@@ -2,23 +2,15 @@
 
 import { useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
-import type { TipoOrganizacion } from '@/types/social';
 
 const initialForm = {
-  nombreOrganizacion: '',
-  tipoOrganizacion: 'fundacion' as TipoOrganizacion,
-  nombreContacto: '',
-  cargoContacto: '',
-  email: '',
+  nombreEntidad: '',
+  personaContacto: '',
+  correo: '',
   telefono: '',
-  ubicacion: '',
+  tipoEntidad: 'fundacion',
+  fechaEvento: '',
   descripcionProyecto: '',
-  objetivoApoyo: '',
-  fechaTentativa: '',
-  publicoBeneficiario: '',
-  alcanceSolicitado: 'foto-video' as 'foto' | 'video' | 'foto-video' | 'reel' | 'otro',
-  presupuestoPropio: '',
-  comentarios: '',
 };
 
 export default function SolicitudApoyoForm() {
@@ -27,9 +19,7 @@ export default function SolicitudApoyoForm() {
   const [enviado, setEnviado] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -94,7 +84,6 @@ const handleSubmit = async (e: React.FormEvent) => {
       onSubmit={handleSubmit}
       className="bg-qbChalk border border-qbBorder rounded-3xl p-6 sm:p-8 space-y-8 shadow-sm"
     >
-      {/* Datos organización */}
       <div className="border border-qbBorderDark rounded-2xl p-5 sm:p-6 bg-black/40 shadow-sm space-y-6">
         <h3 className="text-sm font-bold text-qbInk uppercase tracking-wider">
           Datos de la organización
@@ -102,23 +91,21 @@ const handleSubmit = async (e: React.FormEvent) => {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <label className="text-sm font-semibold text-qbInk">
-              Nombre de la organización *
+              Nombre de la organización / fundación *
             </label>
             <input
-              name="nombreOrganizacion"
+              name="nombreEntidad"
               required
-              value={form.nombreOrganizacion}
+              value={form.nombreEntidad}
               onChange={handleChange}
+              placeholder="Ej. Bomberos Voluntarios 5.ª Cía."
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">
-              Tipo de organización *
-            </label>
+            <label className="text-sm font-semibold text-qbInk">Tipo de organización</label>
             <select
-              name="tipoOrganizacion"
-              required
-              value={form.tipoOrganizacion}
+              name="tipoEntidad"
+              value={form.tipoEntidad}
               onChange={handleChange}
             >
               <option value="fundacion">Fundación</option>
@@ -129,58 +116,37 @@ const handleSubmit = async (e: React.FormEvent) => {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Ubicación *</label>
-            <input
-              name="ubicacion"
-              required
-              value={form.ubicacion}
-              onChange={handleChange}
-              placeholder="Municipio, Departamento"
-            />
-          </div>
-          <div className="space-y-2">
             <label className="text-sm font-semibold text-qbInk">
-              Nombre del contacto *
+              Nombre de la persona de contacto *
             </label>
             <input
-              name="nombreContacto"
+              name="personaContacto"
               required
-              value={form.nombreContacto}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Cargo *</label>
-            <input
-              name="cargoContacto"
-              required
-              value={form.cargoContacto}
+              value={form.personaContacto}
               onChange={handleChange}
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-qbInk">Correo *</label>
             <input
-              name="email"
+              name="correo"
               type="email"
               required
-              value={form.email}
+              value={form.correo}
               onChange={handleChange}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Teléfono *</label>
+            <label className="text-sm font-semibold text-qbInk">Teléfono</label>
             <input
               name="telefono"
-              required
-              value={form.telefono}
+              value={form.telefono ?? ''}
               onChange={handleChange}
             />
           </div>
         </div>
       </div>
 
-      {/* Proyecto */}
       <div className="border border-qbBorderDark rounded-2xl p-5 sm:p-6 bg-black/40 shadow-sm space-y-6">
         <h3 className="text-sm font-bold text-qbInk uppercase tracking-wider">
           Información del proyecto
@@ -188,87 +154,25 @@ const handleSubmit = async (e: React.FormEvent) => {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <label className="text-sm font-semibold text-qbInk">
-              Descripción del proyecto *
+              Descripción del proyecto y apoyo requerido *
             </label>
             <textarea
               name="descripcionProyecto"
               required
               rows={4}
-              value={form.descripcionProyecto}
+              value={form.descripcionProyecto ?? ''}
               onChange={handleChange}
-              placeholder="Actividad, población objetivo, justificación..."
-            />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <label className="text-sm font-semibold text-qbInk">
-              Objetivo del apoyo solicitado *
-            </label>
-            <textarea
-              name="objetivoApoyo"
-              required
-              rows={3}
-              value={form.objetivoApoyo}
-              onChange={handleChange}
-              placeholder="Qué se busca lograr con este apoyo audiovisual"
+              placeholder="Actividad, población objetivo, tipo de material audiovisual solicitado..."
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-qbInk">
-              Alcance solicitado *
-            </label>
-            <select
-              name="alcanceSolicitado"
-              required
-              value={form.alcanceSolicitado}
-              onChange={handleChange}
-            >
-              <option value="foto-video">Fotografía + Video</option>
-              <option value="video">Video</option>
-              <option value="foto">Fotografía</option>
-              <option value="reel">Reels</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">
-              Fecha tentativa de la actividad
+              Fecha tentativa del evento
             </label>
             <input
-              name="fechaTentativa"
+              name="fechaEvento"
               type="date"
-              value={form.fechaTentativa}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <label className="text-sm font-semibold text-qbInk">
-              Público beneficiario *
-            </label>
-            <input
-              name="publicoBeneficiario"
-              required
-              value={form.publicoBeneficiario}
-              onChange={handleChange}
-              placeholder="Niños, adultos mayores, comunidad, etc."
-            />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <label className="text-sm font-semibold text-qbInk">
-              Presupuesto propio / recursos con los que cuentan
-            </label>
-            <textarea
-              name="presupuestoPropio"
-              rows={2}
-              value={form.presupuestoPropio}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <label className="text-sm font-semibold text-qbInk">Comentarios</label>
-            <textarea
-              name="comentarios"
-              rows={2}
-              value={form.comentarios}
+              value={form.fechaEvento ?? ''}
               onChange={handleChange}
             />
           </div>

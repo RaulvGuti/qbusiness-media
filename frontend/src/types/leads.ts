@@ -1,32 +1,28 @@
-export type TipoServicioLead = 'video-corporativo' | 'foto-comercial' | 'podcast' | 'reels' | 'estudio' | 'otro';
+/**
+ * Tipos alineados a las migraciones de Supabase.
+ * Tabla: leads_contacto (000010 + 000014)
+ * Campos reales: id, gestionado_por_id, nombre, correo, telefono, mensaje,
+ * estado ('nuevo'|'contactado'|'cerrado'), notificado_en, creado_en
+ */
 
-export type EstadoLead = 'nuevo' | 'contactado' | 'cotizado' | 'en_proceso' | 'cerrado' | 'descartado';
-
-export type EstadoResena = 'borrador' | 'publicada' | 'eliminada';
+export type EstadoLead = 'nuevo' | 'contactado' | 'cerrado';
 
 export interface LeadContacto {
   id: string;
+  gestionadoPorId: string | null;
   nombre: string;
-  email: string;
-  telefono: string;
-  empresa?: string;
-  tipoServicio: TipoServicioLead;
-  presupuesto?: string;
-  mensaje: string;
-  origen: 'contactanos' | 'whatsapp' | 'landing';
+  correo: string;
+  telefono: string | null;
+  mensaje: string | null;
   estado: EstadoLead;
-  fechaCreacion: string;
+  notificadoEn: string | null;
+  creadoEn: string;
 }
 
-export interface ResenaCliente {
-  id: string;
-  nombreCliente: string;
-  empresa?: string;
-  cargo?: string;
-  calificacion: number; // 1-5
-  testimonio: string;
-  proyectoRelacionado?: string;
-  estado: EstadoResena;
-  fechaCreacion: string;
-  fechaPublicacion?: string;
+/** Formulario público de contacto (ContactForm / QuoteForm). */
+export interface LeadContactoInput {
+  nombre: string;
+  correo: string;
+  telefono?: string;
+  mensaje?: string;
 }

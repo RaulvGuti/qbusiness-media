@@ -8,8 +8,10 @@ import styles from "./AdminHeader.module.css";
 
 const SECCIONES = [
   { href: "/admin/dashboard", texto: "Dashboard" },
+  { href: "/admin/galeria", texto: "Galería" },
   { href: "/admin/textos", texto: "Textos y configuración" },
   { href: "/admin/destacados", texto: "Destacados" },
+  { href: "/admin/contactos", texto: "Contactos" },
   { href: "/admin/resenas", texto: "Reseñas" },
   { href: null, texto: "Galería" },
   { href: "/admin/contactos", texto: "Contactos" },
