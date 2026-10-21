@@ -1,4 +1,3 @@
-
 import { createSupabaseServerClient } from "@/server/supabase/server";
 
 export async function requireAdmin() {
@@ -18,12 +17,12 @@ export async function requireAdmin() {
   }
 
   const { data: perfil, error } = await supabase
-    .from("usuarios")
-    .select("rol")
-    .eq("correo", user.email)
+    .from("administradores")
+    .select("id")
+    .eq("id", user.id)
     .maybeSingle();
 
-  if (error || perfil?.rol !== "admin") {
+  if (error || !perfil) {
     return {
       authorized: false as const,
       status: 403,

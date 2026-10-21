@@ -30,7 +30,7 @@ function StarRating({ calificacion }: { calificacion: number | null }) {
 
 export default function ReviewsList({ resenas }: ReviewsListProps) {
   const publicadas = resenas.filter(
-    (resena) => resena.estado === 'publicada',
+    (resena) => resena.estado === 'aprobada',
   );
 
   if (publicadas.length === 0) {
@@ -51,19 +51,19 @@ export default function ReviewsList({ resenas }: ReviewsListProps) {
           <StarRating calificacion={resena.calificacion} />
 
           <blockquote className="text-qbInk leading-relaxed text-sm">
-            “{resena.testimonio}”
+            “{resena.comentario}”
           </blockquote>
 
           <div className="pt-3 border-t border-qbBorder space-y-1">
             <p className="font-bold text-qbInk text-sm">
-              {resena.nombreCliente}
+              {resena.autor}
             </p>
 
             <time
               className="text-[11px] text-qbMuted"
-              dateTime={resena.fechaCreacion}
+              dateTime={resena.creadoEn}
             >
-              {new Date(resena.fechaCreacion).toLocaleDateString('es-GT')}
+              {new Date(resena.creadoEn).toLocaleDateString('es-GT')}
             </time>
           </div>
         </article>

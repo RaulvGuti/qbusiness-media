@@ -1,29 +1,27 @@
-
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/components/ui/Toast";
+import type { EstadoResena, ResenaCliente } from "@/types/resenas";
 import shared from "../panel.module.css";
 import styles from "./page.module.css";
 
-type ResenaBD = {
-  id: string;
-  reserva_id: string;
-  comentario: string;
-  calificacion: number;
-  publicado: boolean;
-  creado_en: string;
-};
-
-type Filtro = "todas" | "pendiente" | "aprobada";
+type Filtro = "todas" | EstadoResena;
 
 interface ResenasPanelProps {
-  resenasIniciales: Resena[];
+  resenasIniciales: ResenaCliente[];
 }
+
+const FILTROS: { clave: Filtro; texto: string }[] = [
+  { clave: "todas", texto: "Todas" },
+  { clave: "pendiente", texto: "Pendientes" },
+  { clave: "aprobada", texto: "Aprobadas" },
+  { clave: "rechazada", texto: "Rechazadas" },
+];
 
 export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
   const toast = useToast();
-  const [resenas, setResenas] = useState<ResenaBD[]>([]);
+  const [resenas, setResenas] = useState<ResenaCliente[]>(resenasIniciales);
   const [filtro, setFiltro] = useState<Filtro>("todas");
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState<string | null>(null);
@@ -40,17 +38,13 @@ export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
       const datos = await respuesta.json();
 
       if (!respuesta.ok) {
-        throw new Error(
-          datos.error ?? "No se pudieron cargar las reseñas."
-        );
+        throw new Error(datos.error ?? "No se pudieron cargar las reseñas.");
       }
 
       setResenas(datos.resenas ?? []);
     } catch (e) {
       setError(
-        e instanceof Error
-          ? e.message
-          : "Error al cargar las reseñas."
+        e instanceof Error ? e.message : "Error al cargar las reseñas."
       );
     } finally {
       setCargando(false);
@@ -58,85 +52,75 @@ export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
   }, []);
 
   useEffect(() => {
-  const controlador = new AbortController();
+    const controlador = new AbortController();
 
-  async function cargarInicial() {
+    async function cargarInicial() {
+      setError("");
+
+      try {
+        const respuesta = await fetch("/api/api/resenas", {
+          cache: "no-store",
+          signal: controlador.signal,
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+          throw new Error(datos.error ?? "No se pudieron cargar las reseñas.");
+        }
+
+        if (!controlador.signal.aborted) {
+          setResenas(datos.resenas ?? []);
+        }
+      } catch (e) {
+        if (!controlador.signal.aborted) {
+          setError(
+            e instanceof Error ? e.message : "Error al cargar las reseñas."
+          );
+        }
+      } finally {
+        if (!controlador.signal.aborted) {
+          setCargando(false);
+        }
+      }
+    }
+
+    void cargarInicial();
+
+    return () => controlador.abort();
+  }, []);
+
+  async function cambiarEstado(resena: ResenaCliente, estado: EstadoResena) {
+    setActualizando(resena.id);
+    setError("");
+
     try {
-      const respuesta = await fetch("/api/api/resenas", {
-        cache: "no-store",
-        signal: controlador.signal,
+      const respuesta = await fetch(`/api/api/resenas/${resena.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado }),
       });
 
       const datos = await respuesta.json();
 
       if (!respuesta.ok) {
-        throw new Error(
-          datos.error ?? "No se pudieron cargar las reseñas."
-        );
-      }
-
-      if (!controlador.signal.aborted) {
-        setResenas(datos.resenas ?? []);
-      }
-    } catch (error) {
-      if (!controlador.signal.aborted) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Error al cargar las reseñas."
-        );
-      }
-    } finally {
-      if (!controlador.signal.aborted) {
-        setCargando(false);
-      }
-    }
-  }
-
-  void cargarInicial();
-
-  return () => controlador.abort();
-}, []);
-
-  async function cambiarPublicacion(resena: ResenaBD) {
-    const nuevoEstado = !resena.publicado;
-    setActualizando(resena.id);
-    setError("");
-
-    try {
-      const respuesta = await fetch(
-        `/api/api/resenas/${resena.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicado: nuevoEstado }),
-        }
-      );
-
-      const datos = await respuesta.json();
-
-      if (!respuesta.ok) {
-        throw new Error(
-          datos.error ?? "No se pudo actualizar la reseña."
-        );
+        throw new Error(datos.error ?? "No se pudo actualizar la reseña.");
       }
 
       setResenas((actuales) =>
-        actuales.map((r) =>
-          r.id === resena.id ? datos.resena : r
-        )
+        actuales.map((r) => (r.id === resena.id ? datos.resena : r))
       );
 
       toast(
-        nuevoEstado
-          ? "Reseña publicada correctamente"
-          : "Reseña ocultada correctamente"
+        estado === "aprobada"
+          ? "Reseña aprobada correctamente"
+          : estado === "rechazada"
+            ? "Reseña rechazada correctamente"
+            : "Reseña marcada como pendiente"
       );
     } catch (e) {
       const mensaje =
-        e instanceof Error
-          ? e.message
-          : "Error al actualizar la reseña.";
+        e instanceof Error ? e.message : "Error al actualizar la reseña.";
 
       setError(mensaje);
       toast(mensaje);
@@ -145,46 +129,41 @@ export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
     }
   }
 
-  const pendientes = resenas.filter((r) => !r.publicado).length;
-  const publicadas = resenas.filter((r) => r.publicado).length;
+  const conteo: Record<EstadoResena, number> = {
+    pendiente: resenas.filter((r) => r.estado === "pendiente").length,
+    aprobada: resenas.filter((r) => r.estado === "aprobada").length,
+    rechazada: resenas.filter((r) => r.estado === "rechazada").length,
+  };
 
-  const visibles = resenas.filter((r) => {
-    if (filtro === "pendiente") return !r.publicado;
-    if (filtro === "aprobada") return r.publicado;
-    return true;
-  });
-
-  const filtros: { clave: Filtro; texto: string; total: number }[] = [
-    { clave: "todas", texto: "Todas", total: resenas.length },
-    { clave: "pendiente", texto: "Ocultas", total: pendientes },
-    { clave: "aprobada", texto: "Publicadas", total: publicadas },
-  ];
+  const visibles = resenas.filter((r) =>
+    filtro === "todas" ? true : r.estado === filtro
+  );
 
   return (
     <>
       <div className={styles.stats}>
         <div className={`${styles.stat} ${styles.hl}`}>
-          <span>Ocultas</span>
-          <b>{pendientes}</b>
-          <small>No visibles al público</small>
+          <span>Pendientes</span>
+          <b>{conteo.pendiente}</b>
+          <small>Sin moderar</small>
         </div>
 
         <div className={styles.stat}>
-          <span>Publicadas</span>
-          <b>{publicadas}</b>
+          <span>Aprobadas</span>
+          <b>{conteo.aprobada}</b>
           <small>Visibles en el sitio</small>
         </div>
 
         <div className={styles.stat}>
-          <span>Total</span>
-          <b>{resenas.length}</b>
-          <small>Reseñas registradas</small>
+          <span>Rechazadas</span>
+          <b>{conteo.rechazada}</b>
+          <small>No visibles al público</small>
         </div>
       </div>
 
       <div className={shared.toolbar}>
         <div className={shared.chips}>
-          {filtros.map((item) => (
+          {FILTROS.map((item) => (
             <button
               key={item.clave}
               type="button"
@@ -194,7 +173,9 @@ export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
               onClick={() => setFiltro(item.clave)}
             >
               {item.texto}
-              <small>{item.total}</small>
+              <small>
+                {item.clave === "todas" ? resenas.length : conteo[item.clave]}
+              </small>
             </button>
           ))}
         </div>
@@ -232,37 +213,38 @@ export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
                   <div className={styles.avatar}>R</div>
 
                   <div className={styles.author}>
-                    <b>Reseña de cliente</b>
+                    <b>{resena.autor}</b>
                     <span>
-                      {new Date(resena.creado_en).toLocaleDateString(
-                        "es-GT",
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )}
+                      {new Date(resena.creadoEn).toLocaleDateString("es-GT", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
                   </div>
 
-                  <span
-                    className={styles.stars}
-                    aria-label={`${resena.calificacion} de 5 estrellas`}
-                  >
-                    {"★".repeat(resena.calificacion)}
-                    <i>
-                      {"★".repeat(5 - resena.calificacion)}
-                    </i>
-                  </span>
+                  {resena.calificacion !== null && (
+                    <span
+                      className={styles.stars}
+                      aria-label={`${resena.calificacion} de 5 estrellas`}
+                    >
+                      {"★".repeat(resena.calificacion)}
+                      <i>{"★".repeat(5 - resena.calificacion)}</i>
+                    </span>
+                  )}
 
                   <span
                     className={`${styles.st} ${
-                      resena.publicado
+                      resena.estado === "aprobada"
                         ? styles.aprobada
                         : styles.pendiente
                     }`}
                   >
-                    {resena.publicado ? "Publicada" : "Oculta"}
+                    {resena.estado === "aprobada"
+                      ? "Aprobada"
+                      : resena.estado === "rechazada"
+                        ? "Rechazada"
+                        : "Pendiente"}
                   </span>
                 </div>
 
@@ -270,28 +252,36 @@ export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
 
                 <div className={styles.meta}>
                   <span className={styles.tag}>
-                    Reserva: {resena.reserva_id.slice(0, 8)}
+                    {resena.origen === "admin" ? "Reseña del equipo" : "Reseña de cliente"}
                   </span>
+                  {resena.empresaAutor && (
+                    <span className={styles.tag}>{resena.empresaAutor}</span>
+                  )}
                 </div>
               </div>
 
               <div className={styles.acts}>
-                <button
-                  type="button"
-                  className={`${shared.btn} ${
-                    resena.publicado
-                      ? shared.ghost
-                      : shared.btnPrimary
-                  } ${shared.sm}`}
-                  onClick={() => void cambiarPublicacion(resena)}
-                  disabled={actualizando === resena.id}
-                >
-                  {actualizando === resena.id
-                    ? "Guardando..."
-                    : resena.publicado
-                      ? "Ocultar"
-                      : "Publicar"}
-                </button>
+                {resena.estado !== "aprobada" && (
+                  <button
+                    type="button"
+                    className={`${shared.btn} ${shared.btnPrimary} ${shared.sm}`}
+                    onClick={() => void cambiarEstado(resena, "aprobada")}
+                    disabled={actualizando === resena.id}
+                  >
+                    {actualizando === resena.id ? "Guardando..." : "Aprobar"}
+                  </button>
+                )}
+
+                {resena.estado !== "rechazada" && (
+                  <button
+                    type="button"
+                    className={`${shared.btn} ${shared.ghost} ${shared.sm}`}
+                    onClick={() => void cambiarEstado(resena, "rechazada")}
+                    disabled={actualizando === resena.id}
+                  >
+                    Rechazar
+                  </button>
+                )}
               </div>
             </article>
           ))}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition } from "react";
@@ -7,9 +6,33 @@ import {
   cambiarEstadoResena,
   guardarNota,
 } from "@/server/services/admin-seguimiento";
+import type { EstadoResena } from "@/types/resenas";
 
-type Registro = Record<string, any>;
 type Seccion = "contacto" | "apoyo_social" | "resena";
+
+/** Registro genérico de seguimiento: cada sección trae columnas distintas. */
+type Registro = {
+  id: string;
+  estado?: string;
+  publicado?: boolean;
+  correo?: string | null;
+  telefono?: string | null;
+  creado_en?: string | null;
+  nombre?: string | null;
+  nombre_entidad?: string | null;
+  persona_contacto?: string | null;
+  empresa?: string | null;
+  tipo_servicio?: string | null;
+  presupuesto?: string | null;
+  mensaje?: string | null;
+  tipo_organizacion?: string | null;
+  descripcion_proyecto?: string | null;
+  ubicacion?: string | null;
+  calificacion?: number | null;
+  comentario?: string | null;
+  reserva_id?: string | null;
+  notas_admin?: string | null;
+};
 
 const opcionesEstado: Record<Seccion, string[]> = {
   contacto: [
@@ -27,7 +50,7 @@ const opcionesEstado: Record<Seccion, string[]> = {
     "rechazada",
     "completada",
   ],
-  resena: ["borrador", "publicada", "eliminada"],
+  resena: ["pendiente", "aprobada", "rechazada"],
 };
 
 const nombresEstado: Record<string, string> = {
@@ -42,9 +65,7 @@ const nombresEstado: Record<string, string> = {
   aprobada: "Aprobada",
   rechazada: "Rechazada",
   completada: "Completada",
-  borrador: "Borrador",
-  publicada: "Publicada",
-  eliminada: "Oculta",
+  pendiente: "Pendiente",
 };
 
 export default function SeguimientoAdminTable({
@@ -80,10 +101,6 @@ export default function SeguimientoAdminTable({
         <p role="status" className="rounded-xl border p-3 text-sm">
           {mensaje}
         </p>
-            const estadoActual =
-             seccion === "resena"
-                  ? registro.estado ?? (registro.publicado ? "publicada" : "borrador")
-                 : registro.estado;
       )}
 
       {registros.length === 0 && (
@@ -108,10 +125,8 @@ export default function SeguimientoAdminTable({
 
         const estadoActual =
           seccion === "resena"
-            ? registro.publicado
-              ? "publicada"
-              : "borrador"
-            : registro.estado;
+            ? (registro.estado ?? "pendiente")
+            : (registro.estado ?? "");
 
         const notaInicial = registro.notas_admin ?? "";
 
@@ -168,12 +183,12 @@ export default function SeguimientoAdminTable({
                   Calificación: {"★".repeat(registro.calificacion ?? 0)}
                   {"☆".repeat(5 - (registro.calificacion ?? 0))}
                 </p>
-                <p className="whitespace-pre-wrap">
-                  {registro.comentario}
-                </p>
-                <p className="text-xs text-qbMuted">
-                  Reserva relacionada: {registro.reserva_id}
-                </p>
+                <p className="whitespace-pre-wrap">{registro.comentario}</p>
+                {registro.reserva_id && (
+                  <p className="text-xs text-qbMuted">
+                    Reserva relacionada: {registro.reserva_id}
+                  </p>
+                )}
               </div>
             )}
 
@@ -191,14 +206,10 @@ export default function SeguimientoAdminTable({
                       if (seccion === "resena") {
                         await cambiarEstadoResena(
                           id,
-                          estado as "borrador" | "publicada" | "eliminada"
+                          estado as EstadoResena
                         );
                       } else {
-                        await cambiarEstado(
-                          seccion,
-                          id,
-                          estado
-                        );
+                        await cambiarEstado(seccion, id, estado);
                       }
                     });
                   }}

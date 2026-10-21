@@ -9,19 +9,19 @@ async function obtenerClienteAdmin() {
   const sesion = await createSupabaseServerClient();
   const { data: { user }, error } = await sesion.auth.getUser();
 
-  if (error || !user?.email) {
+  if (error || !user) {
     throw new Error("Debes iniciar sesión para continuar.");
   }
 
   const admin = createSupabaseAdminClient();
 
   const { data: usuario, error: errorUsuario } = await admin
-    .from("usuarios")
-    .select("id, rol, correo")
-    .eq("correo", user.email)
+    .from("administradores")
+    .select("id")
+    .eq("id", user.id)
     .maybeSingle();
 
-  if (errorUsuario || !usuario || usuario.rol !== "admin") {
+  if (errorUsuario || !usuario) {
     throw new Error("No tienes permisos de administrador.");
   }
 
@@ -192,13 +192,13 @@ export async function guardarNota(
 
 export async function cambiarEstadoResena(
   id: string,
-  estado: "borrador" | "publicada" | "eliminada"
+  estado: "pendiente" | "aprobada" | "rechazada"
 ) {
   const { admin, usuario } = await obtenerClienteAdmin();
 
   const { data: actual, error: errorLectura } = await admin
     .from("resenas_clientes")
-    .select("publicado")
+    .select("estado")
     .eq("id", id)
     .single();
 
@@ -207,7 +207,7 @@ export async function cambiarEstadoResena(
   const { error } = await admin
     .from("resenas_clientes")
     .update({
-      publicado: estado === "publicada",
+      estado,
       revisado_por_id: usuario.id,
       revisado_en: new Date().toISOString(),
     })
@@ -221,7 +221,7 @@ export async function cambiarEstadoResena(
       entidad: "resena",
       entidad_id: id,
       accion: "revision",
-      estado_anterior: actual.publicado ? "publicada" : "borrador",
+      estado_anterior: actual.estado,
       estado_nuevo: estado,
       creado_por_id: usuario.id,
     });
