@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import shared from "../panel.module.css";
 import {
-  actualizarEstadoPagoReserva,
-  actualizarEstadoReserva,
-  crearFechaBloqueada,
-  eliminarFechaBloqueada,
-} from "@/server/repositories/estudio";
+  cambiarEstadoPagoReservaAdminAction,
+  cambiarEstadoReservaAdminAction,
+  crearBloqueoCalendarioAdminAction,
+  eliminarBloqueoCalendarioAdminAction,
+} from "@/server/services/reservas/admin";
 import type {
   EstadoPagoReserva,
   EstadoReserva,
@@ -34,9 +34,6 @@ const ESTADOS_PAGO: { clave: EstadoPagoReserva; texto: string }[] = [
   { clave: "pagado", texto: "Pagado" },
   { clave: "rechazado", texto: "Comprobante rechazado" },
 ];
-
-// SUPABASE (al conectar): id del admin autenticado (administradores.id).
-const ADMIN_ID = "admin-0001";
 
 const fmtFechaHora = (iso: string) =>
   new Date(iso).toLocaleString("es-GT", {
@@ -68,41 +65,52 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
   });
 
   const cambiarEstado = async (id: string, estado: EstadoReserva) => {
-    // SUPABASE (admin): UPDATE reservas SET estado = $estado WHERE id = $id.
-    await actualizarEstadoReserva(id, estado);
-    setReservas((prev) => prev.map((r) => (r.id === id ? { ...r, estado } : r)));
-    toast(`Reserva ${estado}`);
+    try {
+      await cambiarEstadoReservaAdminAction(id, estado);
+      setReservas((prev) => prev.map((r) => (r.id === id ? { ...r, estado } : r)));
+      toast(`Reserva ${estado}`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "No se pudo actualizar el estado");
+    }
   };
 
   const cambiarPago = async (id: string, estadoPago: EstadoPagoReserva) => {
-    // SUPABASE (admin): UPDATE reservas SET estado_pago = $estadoPago WHERE id = $id.
-    await actualizarEstadoPagoReserva(id, estadoPago);
-    setReservas((prev) => prev.map((r) => (r.id === id ? { ...r, estadoPago } : r)));
-    toast("Estado de pago actualizado");
+    try {
+      await cambiarEstadoPagoReservaAdminAction(id, estadoPago);
+      setReservas((prev) => prev.map((r) => (r.id === id ? { ...r, estadoPago } : r)));
+      toast("Estado de pago actualizado");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "No se pudo actualizar el estado de pago");
+    }
   };
 
   const crearBloqueo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.desde || !form.hasta) return toast("Indica las fechas desde y hasta");
-    // SUPABASE (admin): INSERT INTO fechas_bloqueadas (... creado_por = auth.uid() ...).
-    const nueva = await crearFechaBloqueada({
-      desde: form.desde,
-      hasta: form.hasta,
-      horaDesde: form.horaDesde || null,
-      horaHasta: form.horaHasta || null,
-      motivo: form.motivo || null,
-      creadoPor: ADMIN_ID,
-    });
-    setFechas((prev) => [...prev, nueva]);
-    setForm({ desde: "", hasta: "", horaDesde: "", horaHasta: "", motivo: "" });
-    toast("Fecha bloqueada creada");
+    try {
+      const nueva = await crearBloqueoCalendarioAdminAction({
+        desde: form.desde,
+        hasta: form.hasta,
+        horaDesde: form.horaDesde || null,
+        horaHasta: form.horaHasta || null,
+        motivo: form.motivo || null,
+      });
+      setFechas((prev) => [...prev, nueva]);
+      setForm({ desde: "", hasta: "", horaDesde: "", horaHasta: "", motivo: "" });
+      toast("Fecha bloqueada creada");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "No se pudo crear el bloqueo");
+    }
   };
 
   const borrarBloqueo = async (id: string) => {
-    // SUPABASE (admin): DELETE FROM fechas_bloqueadas WHERE id = $id.
-    await eliminarFechaBloqueada(id);
-    setFechas((prev) => prev.filter((f) => f.id !== id));
-    toast("Bloqueo eliminado");
+    try {
+      await eliminarBloqueoCalendarioAdminAction(id);
+      setFechas((prev) => prev.filter((f) => f.id !== id));
+      toast("Bloqueo eliminado");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "No se pudo eliminar el bloqueo");
+    }
   };
 
   return (

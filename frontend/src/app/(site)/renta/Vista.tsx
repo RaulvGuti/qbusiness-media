@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import RentalCalculator from '@/components/estudio/RentalCalculator';
 import ReservaModal, { type ReservaModalData, type ReservaModalForm } from '@/components/estudio/ReservaModal';
+import { enviarSolicitudReservaCliente } from '@/server/services/reservas/clients';
 import type { EquipoEstudio, ServicioEstudio } from '@/types/estudio';
 
 interface VistaProps {
@@ -30,12 +31,18 @@ export function Vista({ servicios, equipos, tarifaHora }: VistaProps) {
   const tarifa = tarifaHora ?? 0;
   const sinTarifa = tarifaHora === null || tarifaHora <= 0;
 
-  const handleReserva = async (_form: ReservaModalForm) => {
-    // SUPABASE (al conectar): autenticar sesión de cliente y ejecutar
-    //   supabase.rpc('solicitar_reserva', { ...form, p_servicios, p_equipos })
-    // La RPC valida disponibilidad, horario de atención y calcula el total.
-    // Hoy: solo se simula la confirmación de la solicitud.
-    void _form;
+  const handleReserva = async (form: ReservaModalForm) => {
+    await enviarSolicitudReservaCliente({
+      nombre: form.nombre,
+      correo: form.correo,
+      telefono: form.telefono,
+      fecha: form.fecha,
+      horaInicio: form.horaInicio,
+      horaFin: form.horaFin,
+      notas: form.notas || undefined,
+      servicios: resumen.serviciosIds,
+      equipos: resumen.equipos,
+    });
     setModalOpen(false);
     setExito(true);
   };
