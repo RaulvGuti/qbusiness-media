@@ -1,4 +1,5 @@
 
+
 import { listarContactos } from "@/server/services/admin-seguimiento";
 import SeguimientoAdminTable from "@/components/admin/SeguimientoAdminTable";
 
