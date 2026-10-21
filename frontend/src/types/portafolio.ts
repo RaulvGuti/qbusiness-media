@@ -5,7 +5,7 @@
  * La tabla legada `portafolio` (000003) NO se usa en el frontend.
  */
 
-export type ModuloCarpeta = 'portafolio' | 'backstage' | 'estudio' | 'apoyo_social';
+export type ModuloCarpeta = 'login' |'portafolio' | 'backstage' | 'estudio' | 'apoyo_social';
 export type EstadoCarpeta = 'borrador' | 'publicado';
 export type TipoArchivo = 'imagen' | 'video' | 'enlace';
 export type OrientacionArchivo = 'vertical' | 'horizontal' | 'cuadrada';
