@@ -6,9 +6,11 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 
 export default function LoginPage() {
+  const [isRegistering, setIsRegistering] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -19,32 +21,47 @@ export default function LoginPage() {
     e.preventDefault();
     setEnviando(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: form.email,
-        password: form.password,
-      });
+      if (isRegistering) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+        });
 
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
+        if (signUpError) {
+          setError(signUpError.message);
+          return;
+        }
 
-      // Verificamos si es administrador o usuario común para redirigir correctamente
-      const { data: adminCheck } = await supabase
-        .from('administradores')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-
-      if (adminCheck) {
-        window.location.href = '/admin/dashboard';
+        setSuccessMessage('¡Cuenta creada con éxito! Ya puedes iniciar sesión.');
+        setIsRegistering(false);
       } else {
-        window.location.href = '/resenas';
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+
+        if (authError) {
+          setError(authError.message);
+          return;
+        }
+
+        const { data: adminCheck } = await supabase
+          .from('administradores')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (adminCheck) {
+          window.location.href = '/admin/dashboard';
+        } else {
+          window.location.href = '/resenas';
+        }
       }
     } catch (err: any) {
-      setError('Ocurrió un error inesperado al iniciar sesión.');
+      setError('Ocurrió un error inesperado.');
     } finally {
       setEnviando(false);
     }
@@ -67,15 +84,34 @@ export default function LoginPage() {
     }
   };
 
+  const handleRecoverPassword = async () => {
+    if (!form.email) {
+      setError('Por favor, ingresa tu correo electrónico primero para recuperar tu contraseña.');
+      return;
+    }
+
+    const { error: recoverError } = await supabase.auth.resetPasswordForEmail(form.email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+
+    if (recoverError) {
+      setError(recoverError.message);
+    } else {
+      alert('Se han enviado las instrucciones de recuperación a tu correo electrónico.');
+    }
+  };
+
   return (
     <section className="page-stack">
       <div className="max-w-md mx-auto w-full space-y-6">
         <div className="text-center space-y-3">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-qbInk">
-            Iniciar sesión
+            {isRegistering ? 'Crear una cuenta' : 'Iniciar sesión'}
           </h1>
           <p className="text-sm text-qbMuted">
-            Acceso para administradores y clientes de QBusiness Media.
+            {isRegistering 
+              ? 'Regístrate para dejar reseñas y acceder a QBusiness Media.' 
+              : 'Acceso para administradores y clientes de QBusiness Media.'}
           </p>
         </div>
 
@@ -113,14 +149,26 @@ export default function LoginPage() {
                 required
                 value={form.email}
                 onChange={handleChange}
-                placeholder="admin@qbusinessmedia.com"
+                placeholder="correo@ejemplo.com"
+                className="w-full bg-white border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbInk transition shadow-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="login-password" className="text-sm font-semibold text-qbInk">
-                Contraseña
-              </label>
+              <div className="flex justify-between items-center">
+                <label htmlFor="login-password" className="text-sm font-semibold text-qbInk">
+                  Contraseña
+                </label>
+                {!isRegistering && (
+                  <button
+                    type="button"
+                    onClick={handleRecoverPassword}
+                    className="text-xs font-medium text-qbIndigo hover:underline cursor-pointer"
+                  >
+                    ¿Recuperar contraseña?
+                  </button>
+                )}
+              </div>
               <input
                 id="login-password"
                 name="password"
@@ -129,6 +177,7 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="••••••••"
+                className="w-full bg-white border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbInk transition shadow-sm"
               />
             </div>
 
@@ -138,22 +187,45 @@ export default function LoginPage() {
               </p>
             )}
 
+            {successMessage && (
+              <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                {successMessage}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={enviando}
-              className="w-full px-6 py-2.5 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center justify-center disabled:opacity-60 cursor-pointer"
+              className="w-full px-6 py-2.5 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center justify-center disabled:opacity-60 cursor-pointer shadow-sm"
             >
               {enviando ? (
-                <>Iniciando sesión...</>
+                <>{isRegistering ? 'Registrando...' : 'Iniciando sesión...'}</>
               ) : (
                 <>
                   <Icon name="lock" className="mr-2" />
-                  Iniciar sesión
+                  {isRegistering ? 'Crear cuenta' : 'Iniciar sesión'}
                 </>
               )}
             </button>
 
-            <div className="text-center">
+            {/* Alternar entre vistas */}
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegistering(!isRegistering);
+                  setError(null);
+                  setSuccessMessage(null);
+                }}
+                className="text-sm text-qbMuted hover:text-qbInk transition cursor-pointer font-medium"
+              >
+                {isRegistering 
+                  ? '¿Ya tienes una cuenta? Inicia sesión' 
+                  : '¿No tienes cuenta? Regístrate aquí'}
+              </button>
+            </div>
+
+            <div className="text-center pt-1">
               <Link
                 href="/"
                 className="text-sm text-qbMuted hover:text-qbInk transition"
