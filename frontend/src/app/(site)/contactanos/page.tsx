@@ -30,7 +30,7 @@ export default function ContactanosPage() {
               </p>
               <p className="flex items-center gap-2">
                 <Icon name="whatsapp" />
-                <span>+502 1234 5678</span>
+                <span>+502 5944 8587</span>
               </p>
               <p className="flex items-center gap-2">
                 <Icon name="location-dot" />
