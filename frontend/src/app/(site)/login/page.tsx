@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,12 +57,12 @@ export default function LoginPage() {
           .single();
 
         if (adminCheck) {
-          window.location.href = '/admin/dashboard';
+          router.push('/admin/dashboard');
         } else {
-          window.location.href = '/resenas';
+          router.push('/resenas');
         }
       }
-    } catch (err: any) {
+    } catch {
       setError('Ocurrió un error inesperado.');
     } finally {
       setEnviando(false);
@@ -79,7 +81,7 @@ export default function LoginPage() {
       if (googleError) {
         setError(googleError.message);
       }
-    } catch (err) {
+    } catch {
       setError('No se pudo conectar con el proveedor de Google.');
     }
   };

@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
       }
 
       router.push('/admin/dashboard');
-    } catch (err) {
+    } catch {
       setError('Ocurrió un error inesperado al iniciar sesión.');
       setEnviando(false);
     }
