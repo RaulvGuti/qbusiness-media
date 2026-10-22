@@ -26,20 +26,37 @@ export default function ContactForm() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setEnviando(true);
-    try {
-      // SUPABASE (al conectar): Server Action con service role:
-      //   INSERT INTO leads_contacto (nombre, correo, telefono, mensaje)
-      //   VALUES (...);  estado nace en 'nuevo'.
-      await new Promise((r) => setTimeout(r, 500));
-      setEnviado(true);
-      setForm(initialForm);
-    } finally {
-      setEnviando(false);
+  
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setEnviando(true);
+
+  try {
+    const respuesta = await fetch("/api/api/contactos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    const resultado = await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(resultado.error || "No se pudo enviar el contacto.");
     }
-  };
+
+    setEnviado(true);
+    setForm(initialForm);
+  } catch (error) {
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Ocurrió un error al enviar el contacto.",
+    );
+  } finally {
+    setEnviando(false);
+  }
+};
+
 
   if (enviado) {
     return (

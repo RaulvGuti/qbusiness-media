@@ -84,7 +84,20 @@ export default function SolicitudApoyoForm() {
     } finally {
       setEnviando(false);
     }
-  };
+
+    setEnviado(true);
+    setForm(initialForm);
+  } catch (error) {
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Ocurrió un error al enviar la solicitud.",
+    );
+  } finally {
+    setEnviando(false);
+  }
+};
+
 
   if (enviado) {
     return (
