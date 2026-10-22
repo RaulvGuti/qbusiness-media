@@ -199,7 +199,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
       nuevos.push({
         id: crypto.randomUUID(),
         carpetaId: carpeta.id,
-        tipo: file.type.startsWith("video/") ? "video" : "foto",
+        tipo: file.type.startsWith("video/") ? "video" : "imagen",
         orientacion,
         pieFoto: "",
         url,
