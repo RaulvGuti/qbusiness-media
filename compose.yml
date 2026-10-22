@@ -23,6 +23,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # Las variables NEXT_PUBLIC_* se incrustan en el bundle del navegador
+      # durante el build, asi que deben llegar como argumentos de construccion.
+      # Sin ellas la imagen compila, pero el login no conecta con Supabase.
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     container_name: qbusiness-web
     restart: unless-stopped
     ports:

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { obtenerSupabase } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -26,6 +26,8 @@ export default function LoginPage() {
     setSuccessMessage(null);
 
     try {
+      const supabase = obtenerSupabase();
+
       if (isRegistering) {
         const { error: signUpError } = await supabase.auth.signUp({
           email: form.email,
@@ -71,6 +73,8 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     try {
+      const supabase = obtenerSupabase();
+
       const { error: googleError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -91,6 +95,8 @@ export default function LoginPage() {
       setError('Por favor, ingresa tu correo electrónico primero para recuperar tu contraseña.');
       return;
     }
+
+    const supabase = obtenerSupabase();
 
     const { error: recoverError } = await supabase.auth.resetPasswordForEmail(form.email, {
       redirectTo: `${window.location.origin}/login`,

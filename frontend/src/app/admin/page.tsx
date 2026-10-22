@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { obtenerSupabase } from '@/lib/supabase/client';
 
 export default function AdminLoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -23,6 +23,8 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
+      const supabase = obtenerSupabase();
+
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
@@ -59,6 +61,8 @@ export default function AdminLoginPage() {
       setError('Por favor, ingresa tu correo electrónico corporativo primero.');
       return;
     }
+
+    const supabase = obtenerSupabase();
 
     const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
       redirectTo: `${window.location.origin}/admin/reset-password`,

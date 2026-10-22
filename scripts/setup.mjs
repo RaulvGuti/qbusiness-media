@@ -68,6 +68,21 @@ if (!existsSync(envExample)) {
   ok("frontend/.env.local creado desde frontend/.env.example (reemplaza los valores de ejemplo)");
 }
 
+// Docker Compose lee sus variables de interpolacion desde el `.env` de la
+// RAIZ del repositorio, no desde frontend/.env.local. Sin este archivo,
+// `docker compose build` no recibe los valores de Supabase y la imagen sale
+// con el proyecto de ejemplo incrustado en el bundle del navegador.
+const envRoot = join(root, ".env");
+
+if (!existsSync(envExample)) {
+  warn("No se encontro frontend/.env.example, no se puede crear el .env de la raiz.");
+} else if (existsSync(envRoot)) {
+  skip(".env de la raiz ya existe, no se modifica");
+} else {
+  copyFileSync(envExample, envRoot);
+  ok(".env de la raiz creado desde frontend/.env.example (lo usa docker compose)");
+}
+
 heading("Hooks de pre-commit");
 const preCommit = run("pre-commit", ["--version"]);
 

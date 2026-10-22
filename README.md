@@ -121,7 +121,8 @@ Este comando hace todo lo necesario:
 1. Revisa que tu versión de Node sea suficiente.
 2. Activa la plantilla de mensajes de commit (`.gitmessage`).
 3. Crea tu archivo personal `frontend/.env.local` a partir de `frontend/.env.example`.
-4. Intenta instalar los hooks que revisan el commit antes de aceptarlo.
+4. Crea el `.env` de la raíz del repositorio, que es el que lee `docker compose`.
+5. Intenta instalar los hooks que revisan el commit antes de aceptarlo.
 
 Los hooks (paso 4) necesitan Python. Si no lo tienes, el comando avisa y sigue: puedes trabajar sin ellos, pero conviene instalarlos para que Git rechace solos los archivos con llaves privadas y los commits directos en `main`:
 
@@ -156,6 +157,16 @@ Opción alternativa con contenedores (útil para replicar cómo se entrega al cl
 ```bash
 docker compose up -d
 ```
+
+> Los contenedores leen sus variables del `.env` de la **raíz** del repositorio (lo crea
+> `npm run setup`), no de `frontend/.env.local`. Reemplaza ahí los valores de ejemplo por
+> los reales de Supabase antes de construir.
+>
+> Si cambias una variable `NEXT_PUBLIC_*` tienes que **reconstruir la imagen**
+> (`docker compose build --no-cache web`): esas variables quedan incrustadas en el bundle
+> del navegador durante el build, no se leen al arrancar el contenedor.
+>
+> El detalle completo está en [`docs/04-despliegue.md`](./docs/04-despliegue.md).
 
 ### 3.6 Pasos completos, en una lista
 
@@ -355,6 +366,12 @@ git status
 git stash
 git checkout develop && git pull
 ```
+
+**El build de Docker falla con `exit code: 1` en `npm run build`.**
+Revisa [`docs/04-despliegue.md`](./docs/04-despliegue.md), sección 5. Lo más común es que
+las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` no estén
+definidas en el `.env` de la raíz: sin ellas el bundle del navegador no puede apuntar al
+proyecto de Supabase.
 
 **Quiero descartar cambios locales.**
 ```bash
