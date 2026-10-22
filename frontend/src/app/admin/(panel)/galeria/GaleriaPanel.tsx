@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/Toast";
 import shared from "../panel.module.css";
 import { actualizarEstadoCarpeta } from "@/server/repositories/galeria";
 import type { ArchivoGaleria, CarpetaGaleria, Empresa } from "@/types/portafolio";
+import { GaleriaGestor } from "./GaleriaGestor"; // ajusta la ruta
 
 interface Props {
   carpetasIniciales: CarpetaGaleria[];
@@ -13,11 +14,17 @@ interface Props {
 }
 
 const MODULOS: CarpetaGaleria["modulo"][] = [
+  "login",
   "portafolio",
   "backstage",
   "estudio",
   "apoyo_social",
 ];
+
+// Etiqueta visible de cada módulo en los chips (el id "login" se muestra como "Inicio").
+const ETIQUETAS: Partial<Record<CarpetaGaleria["modulo"], string>> = {
+  login: "Inicio",
+};
 
 const fmtFecha = (iso: string) =>
   new Date(iso).toLocaleDateString("es-GT", {
@@ -28,13 +35,13 @@ const fmtFecha = (iso: string) =>
 
 export function GaleriaPanel({ carpetasIniciales, archivosIniciales, empresasIniciales }: Props) {
   const toast = useToast();
-  const [modulo, setModulo] = useState<"todos" | CarpetaGaleria["modulo"]>("todos");
+  const [vista, setVista] = useState<"todos" | "gestor" | CarpetaGaleria["modulo"]>("todos");
   const [carpetas, setCarpetas] = useState(carpetasIniciales);
+  const [archivos, setArchivos] = useState(archivosIniciales);
+  const [empresas, setEmpresas] = useState(empresasIniciales);
 
-  const archivos = archivosIniciales;
-  const empresas = empresasIniciales;
-
-  const visibles = carpetas.filter((c) => modulo === "todos" || c.modulo === modulo);
+  const visibles = carpetas.filter((c) => vista === "todos" || c.modulo === vista);
+  const enGestor = vista === "gestor";
 
   const alternarEstado = async (carpeta: CarpetaGaleria) => {
     const nuevo = carpeta.estado === "publicado" ? "borrador" : "publicado";
@@ -65,14 +72,35 @@ export function GaleriaPanel({ carpetasIniciales, archivosIniciales, empresasIni
             <button
               key={m}
               type="button"
-              className={`${shared.chip} ${m === modulo ? shared.on : ""}`}
-              onClick={() => setModulo(m)}
+              className={`${shared.chip} ${m === vista ? shared.on : ""}`}
+              onClick={() => setVista(m)}
             >
-              {m === "todos" ? "Todos" : m}
+              {m === "todos" ? "Todos" : (ETIQUETAS[m] ?? m)}
             </button>
           ))}
+          <button
+            type="button"
+            className={`${shared.chip} ${enGestor ? shared.on : ""}`}
+            onClick={() => setVista("gestor")}
+          >
+            Gestor de galería
+          </button>
         </div>
       </div>
+
+      {/* Siempre montado (solo se oculta) para conservar el módulo/carpeta elegidos */}
+      <div style={{ display: enGestor ? "block" : "none" }}>
+        <GaleriaGestor
+          carpetas={carpetas}
+          setCarpetas={setCarpetas}
+          archivos={archivos}
+          setArchivos={setArchivos}
+          setEmpresas={setEmpresas}
+        />
+      </div>
+
+      {!enGestor && (
+        <>
 
       <section className={shared.card}>
         <h2 className={shared.cardTitle}>Carpetas</h2>
@@ -164,7 +192,9 @@ export function GaleriaPanel({ carpetasIniciales, archivosIniciales, empresasIni
           <p className={shared.empty}>No hay empresas registradas.</p>
         )}
         <ul style={{ display: "grid", gap: 10, listStyle: "none", padding: 0, margin: 0 }}>
-          {empresas.map((e) => (
+          {empresas.map((e) => {
+            const nCarpetas = carpetas.filter((c) => c.nombreEmpresa === e.nombre).length;
+            return (
             <li
               key={e.id}
               style={{
@@ -187,14 +217,20 @@ export function GaleriaPanel({ carpetasIniciales, archivosIniciales, empresasIni
                 {e.descripcion && (
                   <div style={{ opacity: 0.7 }}>{e.descripcion}</div>
                 )}
+                <div style={{ fontSize: 11, opacity: 0.6 }}>
+                  {nCarpetas} carpeta{nCarpetas === 1 ? "" : "s"}
+                </div>
               </div>
               {e.logoRuta && (
                 <span style={{ fontSize: 11, opacity: 0.6 }}>logo: {e.logoRuta}</span>
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
       </section>
+        </>
+      )}
     </>
   );
 }

@@ -1,19 +1,27 @@
+import EventosRealizados from './EventosRealizados';
 import SolicitudApoyoForm from '@/components/social/SolicitudApoyoForm';
 
 export default function ApoyoPage() {
   return (
     <section className="page-stack">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-qbBorder pb-6">
-        <div>
-          <span className="text-xs font-bold text-qbSage uppercase tracking-widest">Impacto Social</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">Apoyo Social</h2>
-          <p className="text-sm text-qbMuted">
-            Apoyamos a fundaciones, instituciones sin fines de lucro y cuerpos de bomberos voluntarios.
-          </p>
-        </div>
+      {/* Encabezado centrado */}
+      <div className="text-center max-w-2xl mx-auto space-y-3">
+        <span className="text-[11px] font-bold text-qbInk uppercase tracking-widest">
+          Compromiso con nuestra gente
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-qbInk">Apoyo Social</h2>
+        <p className="text-sm text-qbMuted">
+          Comprometidos con impactar a nuestra comunidad. En QBusiness Media destinamos horas de
+          producción, equipo y difusión gratuita para fundaciones, cuerpos de socorro y causas sin
+          fines de lucro en Guatemala.
+        </p>
       </div>
 
-      <SolicitudApoyoForm />
+      {/* Mismo ancho para las tarjetas de eventos y el formulario */}
+      <div className="w-full max-w-5xl mx-auto space-y-12">
+        <EventosRealizados />
+        <SolicitudApoyoForm />
+      </div>
     </section>
   );
 }
