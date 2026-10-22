@@ -1,7 +1,5 @@
 import {
-  construirTimestampGuatemala,
   crearClienteSupabase,
-  ejecutarEnSeccionCriticaCalendario,
   mapearConfiguracionEstudio,
   mapearEquipo,
   mapearFechaBloqueada,
@@ -9,7 +7,6 @@ import {
   mapearReservaEquipo,
   mapearReservaServicio,
   mapearServicio,
-  normalizarErrorReserva,
 } from "./supabase.mjs";
 
 /**
@@ -21,14 +18,12 @@ import {
  *   1. Recibe y lista todas las solicitudes creadas por `clients` en `reservas`
  *      junto con sus servicios y equipos a precio congelado.
  *   2. Modera el ciclo de vida de cada reserva (`pendiente` → `confirmada` →
- *      `completada` / `cancelada`), serializando los cambios de estado sobre el
- *      calendario y respetando los triggers `validar_reserva` (000018) y
- *      `validar_horario_atencion` (000029).
+ *      `completada` / `cancelada`), respetando los triggers `validar_reserva`
+ *      (000018) y `validar_horario_atencion` (000029).
  *   3. Aprueba (`pagado`) o rechaza (`rechazado`) los comprobantes de pago
  *      subidos desde `clients` (`estado_pago`, 000029).
- *   4. Administra `fechas_bloqueadas` (000017), verificando antes de bloquear
- *      que no existan reservas activas (`pendiente` o `confirmada`) en ese
- *      intervalo para evitar choques silenciosos con clientes agendados.
+ *   4. Administra `fechas_bloqueadas` (000017), cuyos intervalos impactan de
+ *      inmediato la disponibilidad que consulta `clients` en `horarios_ocupados`.
  *   5. Configura los parámetros del estudio en `configuracion_sitio` (`tarifa_hora`,
  *      `hora_apertura`, `hora_cierre`, `max_pendientes_por_cliente`) y los
  *      catálogos (`servicios_estudio`, `inventario_equipos`) sin borrar
@@ -74,10 +69,7 @@ export async function listarReservasAdmin(
   const { data, error } = await query;
 
   if (error) {
-    throw normalizarErrorReserva(
-      error,
-      "No se pudieron listar las reservas del estudio.",
-    );
+    throw new Error(`No se pudieron listar las reservas del estudio: ${error.message}`);
   }
 
   return (data ?? []).map(mapearReserva);
@@ -96,9 +88,8 @@ export async function listarServiciosDeReservaAdmin(
     .eq("reserva_id", reservaId);
 
   if (error) {
-    throw normalizarErrorReserva(
-      error,
-      "No se pudieron listar los servicios de la reserva.",
+    throw new Error(
+      `No se pudieron listar los servicios de la reserva: ${error.message}`,
     );
   }
 
@@ -120,9 +111,8 @@ export async function listarEquiposDeReservaAdmin(
     .eq("reserva_id", reservaId);
 
   if (error) {
-    throw normalizarErrorReserva(
-      error,
-      "No se pudieron listar los equipos de la reserva.",
+    throw new Error(
+      `No se pudieron listar los equipos de la reserva: ${error.message}`,
     );
   }
 
@@ -131,9 +121,9 @@ export async function listarEquiposDeReservaAdmin(
 
 /**
  * Actualiza el estado de una reserva (`pendiente`, `confirmada`, `completada`, `cancelada`).
- * Corre dentro de la sección crítica del calendario y traduce cualquier conflicto
- * de exclusión GiST (`23P01`) si se intenta reactivar una reserva sobre un horario
- * que ya fue ocupado por otro cliente.
+ * Si pasa a `confirmada` o `pendiente`, PostgreSQL valida automáticamente que no
+ * exista traslape con otra reserva activa ni con un bloqueo (`validar_reserva`, 000018).
+ * Si pasa a `completada`, habilita al cliente en el módulo `clients` para dejar reseña.
  */
 export async function actualizarEstadoReservaAdmin(
   { id, estado },
@@ -143,23 +133,18 @@ export async function actualizarEstadoReservaAdmin(
     throw new Error(`Estado de reserva inválido: ${estado}`);
   }
 
-  return ejecutarEnSeccionCriticaCalendario(async () => {
-    const { data, error } = await supabase
-      .from("reservas")
-      .update({ estado })
-      .eq("id", id)
-      .select("*")
-      .single();
+  const { data, error } = await supabase
+    .from("reservas")
+    .update({ estado })
+    .eq("id", id)
+    .select("*")
+    .single();
 
-    if (error) {
-      throw normalizarErrorReserva(
-        error,
-        "No se pudo actualizar el estado de la reserva.",
-      );
-    }
+  if (error) {
+    throw new Error(`No se pudo actualizar el estado de la reserva: ${error.message}`);
+  }
 
-    return mapearReserva(data);
-  });
+  return mapearReserva(data);
 }
 
 /**
@@ -182,9 +167,8 @@ export async function actualizarEstadoPagoReservaAdmin(
     .single();
 
   if (error) {
-    throw normalizarErrorReserva(
-      error,
-      "No se pudo actualizar el estado de pago de la reserva.",
+    throw new Error(
+      `No se pudo actualizar el estado de pago de la reserva: ${error.message}`,
     );
   }
 
@@ -194,57 +178,6 @@ export async function actualizarEstadoPagoReservaAdmin(
 /* ==========================================================================
  * Fechas bloqueadas del calendario (migración 000017)
  * ========================================================================== */
-
-/**
- * Verifica si un bloqueo de fechas propuesto (`desde`, `hasta`, `horaDesde`, `horaHasta`)
- * choca con alguna reserva activa (`pendiente` o `confirmada`) en una lista de reservas.
- */
-export function detectarReservasEnRangoDeBloqueo(
-   { desde, hasta, horaDesde, horaHasta },
-  reservasActivas = [],
-) {
-  const hDesde = horaDesde ? horaDesde.slice(0, 5) : null;
-  const hHasta = horaHasta ? horaHasta.slice(0, 5) : null;
-
-  return reservasActivas.filter((r) => {
-    if (r.estado !== "pendiente" && r.estado !== "confirmada") return false;
-
-    const rInicioMs = new Date(r.fechaHoraInicio).getTime();
-    const rFinMs = new Date(r.fechaHoraFin).getTime();
-    if (Number.isNaN(rInicioMs) || Number.isNaN(rFinMs)) return false;
-
-    // Si es bloqueo de día completo en el rango [desde, hasta]
-    if (!hDesde || !hHasta) {
-      const inicioRangoMs = new Date(
-        construirTimestampGuatemala(desde, "00:00"),
-      ).getTime();
-      const finRangoMs =
-        new Date(construirTimestampGuatemala(hasta, "23:59")).getTime() + 60_000;
-      return rInicioMs < finRangoMs && inicioRangoMs < rFinMs;
-    }
-
-    // Si es bloqueo parcial por horas en cada día desde..hasta
-    const cursor = new Date(`${desde}T00:00:00Z`);
-    const limite = new Date(`${hasta}T00:00:00Z`);
-
-    while (cursor <= limite) {
-      const fechaDia = cursor.toISOString().slice(0, 10);
-      const bInicioMs = new Date(
-        construirTimestampGuatemala(fechaDia, hDesde),
-      ).getTime();
-      const bFinMs = new Date(
-        construirTimestampGuatemala(fechaDia, hHasta),
-      ).getTime();
-
-      if (rInicioMs < bFinMs && bInicioMs < rFinMs) {
-        return true;
-      }
-      cursor.setUTCDate(cursor.getUTCDate() + 1);
-    }
-
-    return false;
-  });
-}
 
 /**
  * Lista todos los bloqueos del calendario ordenados por fecha de inicio (`desde`).
@@ -258,10 +191,7 @@ export async function listarFechasBloqueadasAdmin(
     .order("desde", { ascending: true });
 
   if (error) {
-    throw normalizarErrorReserva(
-      error,
-      "No se pudieron cargar las fechas bloqueadas.",
-    );
+    throw new Error(`No se pudieron cargar las fechas bloqueadas: ${error.message}`);
   }
 
   return (data ?? []).map(mapearFechaBloqueada);
@@ -269,103 +199,52 @@ export async function listarFechasBloqueadasAdmin(
 
 /**
  * Crea un bloqueo en el calendario (`fechas_bloqueadas`).
- *
- * Seguridad adicional:
- *  - Valida coherencia de fechas (`hasta >= desde`) y de horas parciales.
- *  - Antes de insertar, verifica dentro de la sección crítica si ya existen
- *    reservas activas (`pendiente` o `confirmada`) en ese horario para impedir
- *    que un administrador bloquee accidentalmente encima de una reserva activa.
+ * Si `creadoPor` no viene explícito, toma el `id` del administrador autenticado.
+ * Los bloqueos se reflejan de inmediato en `horarios_ocupados()` para `clients`.
  */
 export async function crearFechaBloqueadaAdmin(
   datos,
   supabase = crearClienteSupabase(),
 ) {
-  if (!datos?.desde || !datos?.hasta) {
-    throw new Error("Debes indicar las fechas de inicio y fin del bloqueo.");
-  }
-  if (datos.hasta < datos.desde) {
-    throw new Error("La fecha final del bloqueo no puede ser anterior a la inicial.");
+  let creadoPor = datos.creadoPor;
+
+  if (!creadoPor) {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData?.user?.id) {
+      throw new Error(
+        "Se requiere sesión de administrador o indicar creadoPor para registrar un bloqueo.",
+      );
+    }
+    creadoPor = authData.user.id;
   }
 
-  const horaDesde = datos.horaDesde ? String(datos.horaDesde).slice(0, 5) : null;
-  const horaHasta = datos.horaHasta ? String(datos.horaHasta).slice(0, 5) : null;
+  const horaDesde = datos.horaDesde ? datos.horaDesde : null;
+  const horaHasta = datos.horaHasta ? datos.horaHasta : null;
 
   if ((horaDesde && !horaHasta) || (!horaDesde && horaHasta)) {
     throw new Error(
       "Para un bloqueo parcial debes indicar tanto horaDesde como horaHasta.",
     );
   }
-  if (horaDesde && horaHasta && horaHasta <= horaDesde) {
-    throw new Error("La hora final del bloqueo debe ser posterior a la hora inicial.");
+
+  const { data, error } = await supabase
+    .from("fechas_bloqueadas")
+    .insert({
+      desde: datos.desde,
+      hasta: datos.hasta,
+      hora_desde: horaDesde,
+      hora_hasta: horaHasta,
+      motivo: datos.motivo || null,
+      creado_por: creadoPor,
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`No se pudo crear la fecha bloqueada: ${error.message}`);
   }
 
-  return ejecutarEnSeccionCriticaCalendario(async () => {
-    let creadoPor = datos.creadoPor;
-
-    if (!creadoPor) {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData?.user?.id) {
-        throw new Error(
-          "Se requiere sesión de administrador o indicar creadoPor para registrar un bloqueo.",
-        );
-      }
-      creadoPor = authData.user.id;
-    }
-
-    if (!datos.forzar) {
-      const inicioBusqueda = construirTimestampGuatemala(datos.desde, "00:00");
-      const finBusqueda = construirTimestampGuatemala(datos.hasta, "23:59:59");
-
-      const { data: reservasEnRango, error: errReservas } = await supabase
-        .from("reservas")
-        .select("*")
-        .in("estado", ["pendiente", "confirmada"])
-        .lt("fecha_hora_inicio", finBusqueda)
-        .gt("fecha_hora_fin", inicioBusqueda);
-
-      if (errReservas) {
-        throw normalizarErrorReserva(
-          errReservas,
-          "No se pudieron verificar las reservas activas antes de bloquear.",
-        );
-      }
-
-      const traslapadas = detectarReservasEnRangoDeBloqueo(
-        {
-          desde: datos.desde,
-          hasta: datos.hasta,
-          horaDesde,
-          horaHasta,
-        },
-        (reservasEnRango ?? []).map(mapearReserva),
-      );
-
-      if (traslapadas.length > 0) {
-        throw new Error(
-          `No se puede bloquear ese horario porque choca con ${traslapadas.length} reserva(s) activa(s) (pendiente o confirmada). Cancela o reprograma la reserva primero.`,
-        );
-      }
-    }
-
-    const { data, error } = await supabase
-      .from("fechas_bloqueadas")
-      .insert({
-        desde: datos.desde,
-        hasta: datos.hasta,
-        hora_desde: horaDesde,
-        hora_hasta: horaHasta,
-        motivo: datos.motivo || null,
-        creado_por: creadoPor,
-      })
-      .select("*")
-      .single();
-
-    if (error) {
-      throw normalizarErrorReserva(error, "No se pudo crear la fecha bloqueada.");
-    }
-
-    return mapearFechaBloqueada(data);
-  });
+  return mapearFechaBloqueada(data);
 }
 
 /**
@@ -382,7 +261,7 @@ export async function eliminarFechaBloqueadaAdmin(
     .eq("id", id);
 
   if (error) {
-    throw normalizarErrorReserva(error, "No se pudo eliminar el bloqueo de fecha.");
+    throw new Error(`No se pudo eliminar el bloqueo de fecha: ${error.message}`);
   }
 }
 
@@ -401,42 +280,31 @@ export async function actualizarConfiguracionEstudioAdmin(
   const filas = [];
 
   if (cambios.tarifaHora !== undefined && cambios.tarifaHora !== null) {
-    const tarifa = Number(cambios.tarifaHora);
-    if (!Number.isFinite(tarifa) || tarifa <= 0) {
-      throw new Error("La tarifa por hora debe ser un número mayor a 0.");
-    }
     filas.push({
       grupo: "estudio",
       clave: "tarifa_hora",
-      valor: String(tarifa),
+      valor: String(cambios.tarifaHora),
     });
   }
   if (cambios.maxPendientesPorCliente !== undefined) {
-    const maxPend = Number(cambios.maxPendientesPorCliente);
-    if (!Number.isInteger(maxPend) || maxPend <= 0) {
-      throw new Error("El límite de reservas pendientes por cliente debe ser un entero mayor a 0.");
-    }
     filas.push({
       grupo: "estudio",
       clave: "max_pendientes_por_cliente",
-      valor: String(maxPend),
+      valor: String(cambios.maxPendientesPorCliente),
     });
-  }
-  if (cambios.horaApertura && cambios.horaCierre && cambios.horaCierre <= cambios.horaApertura) {
-    throw new Error("La hora de cierre del estudio debe ser posterior a la hora de apertura.");
   }
   if (cambios.horaApertura) {
     filas.push({
       grupo: "estudio",
       clave: "hora_apertura",
-      valor: String(cambios.horaApertura).slice(0, 5),
+      valor: String(cambios.horaApertura),
     });
   }
   if (cambios.horaCierre) {
     filas.push({
       grupo: "estudio",
       clave: "hora_cierre",
-      valor: String(cambios.horaCierre).slice(0, 5),
+      valor: String(cambios.horaCierre),
     });
   }
 
@@ -446,9 +314,8 @@ export async function actualizarConfiguracionEstudioAdmin(
       .upsert(filas, { onConflict: "grupo,clave" });
 
     if (error) {
-      throw normalizarErrorReserva(
-        error,
-        "No se pudo actualizar la configuración del estudio.",
+      throw new Error(
+        `No se pudo actualizar la configuración del estudio: ${error.message}`,
       );
     }
   }
@@ -471,15 +338,10 @@ export async function guardarServicioEstudioAdmin(
   servicio,
   supabase = crearClienteSupabase(),
 ) {
-  const precio = Number(servicio.precioPorHora);
-  if (!Number.isFinite(precio) || precio < 0) {
-    throw new Error("El precio por hora del servicio debe ser mayor o igual a 0.");
-  }
-
   const payload = {
-    nombre: String(servicio.nombre ?? "").trim(),
+    nombre: servicio.nombre,
     descripcion: servicio.descripcion ?? null,
-    precio_por_hora: precio,
+    precio_por_hora: Number(servicio.precioPorHora),
     activo: servicio.activo ?? true,
   };
 
@@ -495,10 +357,7 @@ export async function guardarServicioEstudioAdmin(
   const { data, error } = await query;
 
   if (error) {
-    throw normalizarErrorReserva(
-      error,
-      "No se pudo guardar el servicio del estudio.",
-    );
+    throw new Error(`No se pudo guardar el servicio del estudio: ${error.message}`);
   }
 
   return mapearServicio(data);
@@ -512,20 +371,11 @@ export async function guardarEquipoEstudioAdmin(
   equipo,
   supabase = crearClienteSupabase(),
 ) {
-  const cantidad = Number(equipo.cantidadTotal);
-  const precio = Number(equipo.precioPorHora);
-  if (!Number.isInteger(cantidad) || cantidad < 0) {
-    throw new Error("La cantidad total del equipo debe ser un entero mayor o igual a 0.");
-  }
-  if (!Number.isFinite(precio) || precio < 0) {
-    throw new Error("El precio por hora del equipo debe ser mayor o igual a 0.");
-  }
-
   const payload = {
-    nombre: String(equipo.nombre ?? "").trim(),
+    nombre: equipo.nombre,
     descripcion: equipo.descripcion ?? null,
-    cantidad_total: cantidad,
-    precio_por_hora: precio,
+    cantidad_total: Number(equipo.cantidadTotal),
+    precio_por_hora: Number(equipo.precioPorHora),
     activo: equipo.activo ?? true,
   };
 
@@ -541,10 +391,7 @@ export async function guardarEquipoEstudioAdmin(
   const { data, error } = await query;
 
   if (error) {
-    throw normalizarErrorReserva(
-      error,
-      "No se pudo guardar el equipo del inventario.",
-    );
+    throw new Error(`No se pudo guardar el equipo del inventario: ${error.message}`);
   }
 
   return mapearEquipo(data);
@@ -567,9 +414,8 @@ export async function obtenerPanelReservasAdmin(
   ]);
 
   if (configRes.error) {
-    throw normalizarErrorReserva(
-      configRes.error,
-      "No se pudo cargar la configuración del estudio.",
+    throw new Error(
+      `No se pudo cargar la configuración del estudio: ${configRes.error.message}`,
     );
   }
 
