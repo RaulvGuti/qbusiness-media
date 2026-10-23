@@ -72,6 +72,12 @@ export default function ReservaModal({
         return;
       }
       await onSubmit?.(form);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo registrar la solicitud de reserva.',
+      );
     } finally {
       setEnviando(false);
     }

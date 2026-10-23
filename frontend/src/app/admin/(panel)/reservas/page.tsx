@@ -1,16 +1,11 @@
 import shared from "../panel.module.css";
-import { listarFechasBloqueadas, listarReservas } from "@/server/repositories/estudio";
+import { obtenerPanelReservasAdmin } from "@/server/services/reservas/admin";
 import { ReservasPanel } from "./ReservasPanel";
 
 export const metadata = { title: "Reservas | Admin" };
 
 export default async function ReservasPage() {
-  // SUPABASE (admin): SELECT * FROM reservas ORDER BY fecha_hora_inicio DESC;
-  //                    SELECT * FROM fechas_bloqueadas ORDER BY desde;
-  const [reservas, fechasBloqueadas] = await Promise.all([
-    listarReservas(),
-    listarFechasBloqueadas(),
-  ]);
+  const { reservas, fechasBloqueadas } = await obtenerPanelReservasAdmin();
 
   return (
     <>
