@@ -8,7 +8,7 @@ import {
   guardarNota,
 } from "@/server/services/admin-seguimiento";
 
-type Registro = Record<string, any>;
+type Registro = Record<string, string | number | boolean | null | undefined>;
 type Seccion = "contacto" | "apoyo_social" | "resena";
 
 const opcionesEstado: Record<Seccion, string[]> = {
@@ -80,10 +80,6 @@ export default function SeguimientoAdminTable({
         <p role="status" className="rounded-xl border p-3 text-sm">
           {mensaje}
         </p>
-            const estadoActual =
-             seccion === "resena"
-                  ? registro.estado ?? (registro.publicado ? "publicada" : "borrador")
-                 : registro.estado;
       )}
 
       {registros.length === 0 && (
@@ -128,9 +124,24 @@ export default function SeguimientoAdminTable({
                 <p className="text-xs text-qbMuted">{fecha}</p>
               </div>
 
-              <span className="rounded-full border px-3 py-1 text-xs font-semibold">
-                {nombresEstado[estadoActual] ?? estadoActual}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                {registro.origen && (
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      registro.origen === "apoyo_social"
+                        ? "bg-purple-100 text-purple-800 border border-purple-200"
+                        : "bg-blue-100 text-blue-800 border border-blue-200"
+                    }`}
+                  >
+                    {registro.origen === "apoyo_social"
+                      ? "Apoyo Social"
+                      : "Contacto General"}
+                  </span>
+                )}
+                <span className="rounded-full border px-3 py-1 text-xs font-semibold">
+                  {nombresEstado[estadoActual] ?? estadoActual}
+                </span>
+              </div>
             </div>
 
             {seccion === "contacto" && (

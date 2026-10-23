@@ -34,16 +34,17 @@ export async function crearLead(input: LeadContactoInput): Promise<LeadContacto>
     notificadoEn: null,
     creadoEn: new Date().toISOString(),
   };
+  leadsMock.unshift(nuevo);
   return Promise.resolve(nuevo);
 }
 
-export async function actualizarEstadoLead(id: string, estado: EstadoLead, gestionadoPorId: string): Promise<void> {
+export async function actualizarEstadoLead(id: string, estado: EstadoLead, gestionadoPorId?: string): Promise<void> {
   // SUPABASE: UPDATE leads_contacto SET estado = $estado, gestionado_por_id = $gestionadoPorId
   // WHERE id = $id;
   const lead = leadsMock.find((l) => l.id === id);
   if (lead) {
     lead.estado = estado;
-    lead.gestionadoPorId = gestionadoPorId;
+    if (gestionadoPorId) lead.gestionadoPorId = gestionadoPorId;
   }
   return Promise.resolve();
 }

@@ -17,13 +17,15 @@ export async function requireAdmin() {
     };
   }
 
+  // `usuarios` fue eliminada en migración 000021.
+  // Los administradores viven en la tabla `administradores` (000012).
   const { data: perfil, error } = await supabase
-    .from("usuarios")
-    .select("rol")
+    .from("administradores")
+    .select("id")
     .eq("correo", user.email)
     .maybeSingle();
 
-  if (error || perfil?.rol !== "admin") {
+  if (error || !perfil) {
     return {
       authorized: false as const,
       status: 403,
