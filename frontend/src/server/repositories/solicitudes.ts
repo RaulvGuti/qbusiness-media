@@ -37,13 +37,14 @@ export async function crearSolicitud(input: SolicitudApoyoSocialInput): Promise<
     notificadoEn: null,
     creadoEn: new Date().toISOString(),
   };
+  solicitudesMock.unshift(nueva);
   return Promise.resolve(nueva);
 }
 
 export async function actualizarEstadoSolicitud(
   id: string,
   estado: EstadoSolicitudApoyo,
-  gestionadoPorId: string,
+  gestionadoPorId?: string,
 ): Promise<void> {
   // SUPABASE: UPDATE solicitudes_apoyo_social
   // SET estado = $estado, gestionado_por_id = $gestionadoPorId WHERE id = $id;
@@ -51,7 +52,7 @@ export async function actualizarEstadoSolicitud(
   const solicitud = solicitudesMock.find((s) => s.id === id);
   if (solicitud) {
     solicitud.estado = estado;
-    solicitud.gestionadoPorId = gestionadoPorId;
+    if (gestionadoPorId) solicitud.gestionadoPorId = gestionadoPorId;
   }
   return Promise.resolve();
 }

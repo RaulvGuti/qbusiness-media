@@ -73,12 +73,18 @@ export default function SolicitudApoyoForm() {
     e.preventDefault();
     setEnviando(true);
     try {
-      // SUPABASE (al conectar): Server Action con service role:
-      //   INSERT INTO solicitudes_apoyo_social
-      //     (nombre_entidad, persona_contacto, correo, telefono, descripcion_proyecto,
-      //      tipo_entidad, fecha_evento)
-      //   VALUES (...);  estado nace en 'nueva'.
-      await new Promise((r) => setTimeout(r, 600));
+      const respuesta = await fetch("/api/api/solicitudes-apoyo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const resultado = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(resultado.error || "No se pudo enviar la solicitud.");
+      }
+
       setEnviado(true);
       setForm(initialForm);
     } catch (error) {
