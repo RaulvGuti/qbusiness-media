@@ -121,7 +121,9 @@ export async function GET() {
   const [resultadoContactos, resultadoApoyo] = await Promise.all([
     auth.supabase
       .from("leads_contacto")
-      .select("id, nombre, correo, telefono, mensaje, estado, creado_en")
+      .select(
+        "id, nombre, correo, telefono, mensaje, empresa, tipo_servicio, presupuesto, notas_admin, actualizado_en, gestionado_por_id, estado, creado_en"
+      )
       .order("creado_en", { ascending: false }),
 
     auth.supabase
