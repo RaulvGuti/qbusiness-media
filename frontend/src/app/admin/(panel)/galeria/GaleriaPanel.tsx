@@ -14,16 +14,16 @@ interface Props {
 }
 
 const MODULOS: CarpetaGaleria["modulo"][] = [
-  "login",
+  "inicio",
   "portafolio",
   "backstage",
   "estudio",
   "apoyo_social",
 ];
 
-// Etiqueta visible de cada módulo en los chips (el id "login" se muestra como "Inicio").
+// Etiqueta visible de cada módulo en los chips.
 const ETIQUETAS: Partial<Record<CarpetaGaleria["modulo"], string>> = {
-  login: "Inicio",
+  inicio: "Inicio",
 };
 
 const fmtFecha = (iso: string) =>

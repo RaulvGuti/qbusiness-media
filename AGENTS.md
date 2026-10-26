@@ -277,6 +277,12 @@ Migraciones existentes (`supabase/migrations/`):
 | `000027_storage_buckets.sql` | Buckets `galeria` y `logos` con políticas de Storage |
 | `000028_privilegios_administradores_clientes.sql` | Privilegios de perfil de `administradores` y `clientes` |
 | `000029_horario_atencion_y_pago.sql` | Horario de atención configurable, `estado_pago` y UPDATE de reservas por el cliente |
+| `000030_seguimiento_administrativo.sql` | Campos de seguimiento en leads, apoyo social y reseñas; tabla `seguimiento_administrativo` |
+| `000031_seguridad_pagos_y_comprobantes.sql` | Limita los cambios de pago del cliente y crea el bucket privado `comprobantes` |
+| `000032_administradores_alta_y_sincronizacion_auth.sql` | Alta de administradores y sincronización de perfiles desde Auth |
+| `000033_galeria_inicio_portada_destacados.sql` | Módulo `inicio`, portadas de galería/empresa y reordenamiento de destacados |
+| `000034_formularios_publicos_y_configuracion.sql` | Funciones de alta para los formularios públicos, solo `service_role`, y claves iniciales de contacto/redes/ubicación |
+| `000035_resenas_empresa_y_vista_publica.sql` | `empresa_id` en reseñas, política de inserción reforzada y vista pública `resenas_publicas` |
 
 Decisiones ya tomadas que hay que respetar:
 
@@ -291,8 +297,8 @@ Decisiones ya tomadas que hay que respetar:
 
 Estado actual:
 
-- **RLS activo en las 18 tablas** de `public` (migración 000020 y siguientes).
-- **Buckets de Storage** `galeria` y `logos` creados con sus políticas (000027).
+- **RLS activo en las 19 tablas** de `public` (migración 000020 y siguientes).
+- **Buckets de Storage** `galeria` y `logos` públicos (000027) y `comprobantes` privado (000031).
 - El **horario de atención** se configura en `configuracion_sitio` (`estudio / hora_apertura`
   y `estudio / hora_cierre`) y lo aplica el trigger `validar_horario_atencion` (000029); no
   existe una tabla `horarios_disponibles`.
