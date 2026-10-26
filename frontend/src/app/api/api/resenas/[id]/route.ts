@@ -5,6 +5,16 @@ type Contexto = {
   params: Promise<{ id: string }>;
 };
 
+const ESTADOS_RESENA = ["pendiente", "aprobada", "rechazada"] as const;
+type EstadoResena = (typeof ESTADOS_RESENA)[number];
+
+function esEstadoResena(valor: unknown): valor is EstadoResena {
+  return (
+    typeof valor === "string" &&
+    (ESTADOS_RESENA as readonly string[]).includes(valor)
+  );
+}
+
 export async function PATCH(
   request: Request,
   { params }: Contexto,
@@ -20,17 +30,22 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
+  const estado = body?.estado;
 
-  if (typeof body.publicado !== "boolean") {
+  if (!esEstadoResena(estado)) {
     return NextResponse.json(
-      { error: "El campo publicado debe ser verdadero o falso" },
+      { error: "El estado de la reseña no es válido" },
       { status: 400 },
     );
   }
 
   const { data, error } = await auth.supabase
     .from("resenas_clientes")
-    .update({ publicado: body.publicado })
+    .update({
+      estado,
+      revisado_por_id: auth.user.id,
+      revisado_en: new Date().toISOString(),
+    })
     .eq("id", id)
     .select()
     .single();
