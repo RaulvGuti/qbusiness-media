@@ -1,7 +1,13 @@
 import EventosRealizados from './EventosRealizados';
 import SolicitudApoyoForm from '@/components/social/SolicitudApoyoForm';
+import { listarCarpetasPublicadasConPortada } from '@/server/repositories/galeria';
 
-export default function ApoyoPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function ApoyoPage() {
+  // carpetas_galeria estado='publicado' modulo='apoyo_social' + su portada
+  const carpetas = await listarCarpetasPublicadasConPortada('apoyo_social');
+
   return (
     <section className="page-stack">
       {/* Encabezado centrado */}
@@ -19,7 +25,7 @@ export default function ApoyoPage() {
 
       {/* Mismo ancho para las tarjetas de eventos y el formulario */}
       <div className="w-full max-w-5xl mx-auto space-y-12">
-        <EventosRealizados />
+        <EventosRealizados carpetas={carpetas} />
         <SolicitudApoyoForm />
       </div>
     </section>

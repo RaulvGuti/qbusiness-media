@@ -1,9 +1,10 @@
+import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
-import { MediaPlaceholder } from "@/components/ui/MediaPlaceholder";
-import type { CarpetaGaleria } from "@/types/portafolio";
+import { PortadaCarpeta } from "@/components/galeria/PortadaCarpeta";
+import type { CarpetaConPortada } from "@/types/galeria-publica";
 
 interface VistaProps {
-  carpetas: CarpetaGaleria[];
+  carpetas: CarpetaConPortada[];
 }
 
 const ETIQUETA_CATEGORIA: Record<string, string> = {
@@ -34,17 +35,20 @@ export function Vista({ carpetas }: VistaProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {carpetas.map((carpeta) => (
-            <div
+            <Link
               key={carpeta.id}
-              className="bs-item bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition duration-300 shadow-sm"
+              href={`/backstage/${carpeta.id}`}
+              className="bs-item block bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden group hover:border-qbTerracotta transition duration-300 shadow-sm"
             >
               <div className="aspect-video relative overflow-hidden bg-black/40">
-                <MediaPlaceholder
-                  label={carpeta.nombre}
-                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                <PortadaCarpeta
+                  url={carpeta.portadaUrl}
+                  tipo={carpeta.portadaTipo}
+                  titulo={carpeta.nombre}
+                  className="transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80" />
-                <span className="absolute top-3 left-3 bg-qbTerracotta text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">
+                <span className="absolute top-3 left-3 bg-black text-qbInk border border-qbBorder text-[11px] font-bold px-2.5 py-1 rounded-md uppercase">
                   {ETIQUETA_CATEGORIA[carpeta.categoria ?? ''] ?? 'Backstage'}
                 </span>
               </div>
@@ -65,8 +69,11 @@ export function Vista({ carpetas }: VistaProps) {
                     {carpeta.lugar ?? 'Quetzaltenango'}
                   </span>
                 </div>
+                <p className="text-[11px] text-qbMuted">
+                  {carpeta.totalArchivos} archivo{carpeta.totalArchivos === 1 ? '' : 's'} · Ver contenido →
+                </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
