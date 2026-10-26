@@ -10,8 +10,8 @@ import { Icon } from '@/components/ui/Icon';
     correo               → correo
     telefono             → telefono
     descripcionProyecto  → descripcion_proyecto
-    tipoEntidad          → tipo_entidad
-    fechaEvento          → fecha_evento
+    tipoEntidad          → tipo_organizacion
+    fechaEvento          → fecha_tentativa
   estado, gestionado_por_id, notificado_en y creado_en los maneja el sistema.
 */
 const initialForm = {

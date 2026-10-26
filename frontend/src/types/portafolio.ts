@@ -1,11 +1,11 @@
 /**
  * Tipos alineados a las migraciones de Supabase.
- * Tablas (modelo v2 de galería, 000023 + 000024):
+ * Tablas (modelo v2 de galería, 000023 + 000024 + 000033):
  * empresas, carpetas_galeria, archivos_galeria, destacados.
  * La tabla legada `portafolio` (000003) NO se usa en el frontend.
  */
 
-export type ModuloCarpeta = 'login' |'portafolio' | 'backstage' | 'estudio' | 'apoyo_social';
+export type ModuloCarpeta = 'inicio' | 'portafolio' | 'backstage' | 'estudio' | 'apoyo_social';
 export type EstadoCarpeta = 'borrador' | 'publicado';
 export type TipoArchivo = 'imagen' | 'video' | 'enlace';
 export type OrientacionArchivo = 'vertical' | 'horizontal' | 'cuadrada';
@@ -15,6 +15,7 @@ export interface Empresa {
   id: string;
   nombre: string;
   logoRuta: string | null;
+  portadaRuta: string | null;
   descripcion: string | null;
   activa: boolean;
 }
@@ -45,6 +46,7 @@ export interface ArchivoGaleria {
   id: string;
   carpetaId: string;
   tipo: TipoArchivo;
+  esPortada: boolean;
   rutaStorage: string | null;
   urlExterna: string | null;
   urlMiniatura: string | null;

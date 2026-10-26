@@ -2,6 +2,7 @@ import type { CarpetaGaleria, Empresa } from "@/types/portafolio";
 
 /** Etiqueta visible de los módulos de carpeta. */
 export const MODULOS: { clave: CarpetaGaleria["modulo"]; texto: string }[] = [
+  { clave: "inicio", texto: "Inicio" },
   { clave: "portafolio", texto: "Portafolio" },
   { clave: "backstage", texto: "Backstage" },
   { clave: "estudio", texto: "Estudio" },

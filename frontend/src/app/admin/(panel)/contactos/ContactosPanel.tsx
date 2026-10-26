@@ -187,8 +187,8 @@ export function ContactosPanel({ leadsIniciales, solicitudesIniciales }: Props) 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", justifyContent: "space-between" }}>
                   <div>
                     <b>{s.nombreEntidad}</b>{" "}
-                    {s.tipoEntidad && (
-                      <span style={{ fontSize: 11, opacity: 0.6 }}>({s.tipoEntidad})</span>
+                    {s.tipoOrganizacion && (
+                      <span style={{ fontSize: 11, opacity: 0.6 }}>({s.tipoOrganizacion})</span>
                     )}{" "}
                     <Chip texto={s.estado} tono={TONO_SOLICITUD[s.estado]} />
                   </div>
@@ -201,9 +201,9 @@ export function ContactosPanel({ leadsIniciales, solicitudesIniciales }: Props) 
                 {s.descripcionProyecto && (
                   <p style={{ fontSize: 13, margin: 0 }}>{s.descripcionProyecto}</p>
                 )}
-                {s.fechaEvento && (
+                {s.fechaTentativa && (
                   <div style={{ fontSize: 12, opacity: 0.7 }}>
-                    Fecha del evento: {fecha(s.fechaEvento)}
+                    Fecha tentativa: {fecha(s.fechaTentativa)}
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

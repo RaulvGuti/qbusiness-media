@@ -21,7 +21,6 @@ import type { ArchivoGaleria, CarpetaGaleria, Empresa } from "@/types/portafolio
 // Campos extra que usa la interfaz. Súmalos a tus tipos reales cuando conectes el backend.
 type ArchivoUI = ArchivoGaleria & {
   url?: string;
-  esPortada?: boolean;
   nombreArchivo?: string;
 };
 type CarpetaUI = CarpetaGaleria & { etiqueta?: string; filtro?: string };
@@ -29,7 +28,7 @@ type CarpetaUI = CarpetaGaleria & { etiqueta?: string; filtro?: string };
 type Orientacion = "horizontal" | "vertical" | "cuadrada";
 
 const MODULOS_GESTOR = [
-  { id: "login", label: "Inicio de sesión", representa: "Cliente o campaña" },
+  { id: "inicio", label: "Inicio", representa: "Cliente o campaña" },
   { id: "portafolio", label: "Portafolio", representa: "Cliente o campaña" },
   { id: "backstage", label: "Backstage", representa: "Sesión o proyecto" },
   { id: "estudio", label: "Renta de estudio", representa: "Set o espacio" },
@@ -47,7 +46,7 @@ interface Props {
 }
 
 // Las carpetas de estos módulos representan una empresa (cliente o campaña).
-const MODULOS_CON_EMPRESA = ["login", "portafolio"];
+const MODULOS_CON_EMPRESA = ["inicio", "portafolio"];
 
 /* ------------------------------------------------------------------ */
 /* Utilidades                                                          */
@@ -150,7 +149,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
     // TODO (Supabase, admin): INSERT INTO carpetas_galeria ... y usar el id devuelto.
     setCarpetas((prev) => [nueva, ...prev]);
 
-    // Inicio de sesión y Portafolio alimentan la lista de Empresas (sin duplicar nombres).
+    // Inicio y Portafolio alimentan la lista de Empresas (sin duplicar nombres).
     if (generaEmpresa) {
       // TODO (Supabase, admin): INSERT INTO empresas ... ON CONFLICT (nombre) DO NOTHING.
       setEmpresas((prev) =>
@@ -163,6 +162,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
                 descripcion: datos.descripcion,
                 activa: true,
                 logoRuta: null,
+                portadaRuta: null,
               },
               ...prev,
             ] as unknown as Empresa[]),
@@ -240,7 +240,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
       pieFoto: "",
       url: miniatura,
       nombreArchivo: enlace.trim(),
-      esPortada: !items.some((i) => i.esPortada),
+      esPortada: false,
     } as unknown as ArchivoGaleria;
 
     // TODO: guardar el enlace en BD.
@@ -256,12 +256,18 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
       prev.map((a) => (a.id === id ? ({ ...a, ...cambios } as ArchivoGaleria) : a)),
     );
 
-  const ponerPortada = (id: string) =>
+  const ponerPortada = (id: string) => {
+    const objetivo = items.find((a) => a.id === id);
+    if (objetivo?.tipo === "enlace") {
+      toast("Un enlace no puede ser portada");
+      return;
+    }
     setArchivos((prev) =>
       prev.map((a) =>
         a.carpetaId === carpetaId ? ({ ...a, esPortada: a.id === id } as ArchivoGaleria) : a,
       ),
     );
+  };
 
   const mover = (id: string, dir: -1 | 1) =>
     setArchivos((prev) => {
@@ -281,7 +287,9 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
     setArchivos((prev) => {
       const resto = prev.filter((a) => a.id !== id);
       if (objetivo?.esPortada) {
-        const primero = resto.findIndex((a) => a.carpetaId === carpetaId);
+        const primero = resto.findIndex(
+          (a) => a.carpetaId === carpetaId && a.tipo !== "enlace",
+        );
         if (primero >= 0) resto[primero] = { ...resto[primero], esPortada: true } as ArchivoGaleria;
       }
       return resto;
@@ -454,7 +462,12 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
                   >
                     ▶
                   </button>
-                  <button type="button" style={s.btnMini} onClick={() => ponerPortada(a.id)}>
+                  <button
+                    type="button"
+                    style={s.btnMini}
+                    disabled={a.tipo === "enlace"}
+                    onClick={() => ponerPortada(a.id)}
+                  >
                     Portada
                   </button>
                   <button type="button" style={s.btnMini} onClick={() => eliminar(a.id)}>

@@ -60,8 +60,8 @@ export async function POST(request: Request) {
             correo,
             telefono: telefono || null,
             descripcion_proyecto: descripcion,
-            tipo_entidad: tipoEntidad,
-            fecha_evento: fechaEvento || null,
+            tipo_organizacion: tipoEntidad,
+            fecha_tentativa: fechaEvento || null,
             estado: "nueva",
           });
 
@@ -116,8 +116,8 @@ export async function GET() {
         correo: s.correo,
         telefono: s.telefono,
         descripcion_proyecto: s.descripcionProyecto,
-        tipo_entidad: s.tipoEntidad,
-        fecha_evento: s.fechaEvento,
+        tipo_organizacion: s.tipoOrganizacion,
+        fecha_tentativa: s.fechaTentativa,
         estado: s.estado,
         creado_en: s.creadoEn,
       })),
@@ -127,7 +127,7 @@ export async function GET() {
   const { data, error } = await acceso.supabase
     .from("solicitudes_apoyo_social")
     .select(
-      "id, nombre_entidad, persona_contacto, correo, telefono, descripcion_proyecto, estado, creado_en"
+      "id, nombre_entidad, persona_contacto, correo, telefono, descripcion_proyecto, tipo_organizacion, fecha_tentativa, estado, creado_en"
     )
     .order("creado_en", { ascending: false });
 
@@ -141,8 +141,8 @@ export async function GET() {
         correo: s.correo,
         telefono: s.telefono,
         descripcion_proyecto: s.descripcionProyecto,
-        tipo_entidad: s.tipoEntidad,
-        fecha_evento: s.fechaEvento,
+        tipo_organizacion: s.tipoOrganizacion,
+        fecha_tentativa: s.fechaTentativa,
         estado: s.estado,
         creado_en: s.creadoEn,
       })),

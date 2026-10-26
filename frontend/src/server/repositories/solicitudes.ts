@@ -2,7 +2,7 @@ import type { EstadoSolicitudApoyo, SolicitudApoyoSocial, SolicitudApoyoSocialIn
 import { solicitudesMock } from './datos-mock';
 
 /**
- * Repositorio de solicitudes_apoyo_social (000011 + 000025).
+ * Repositorio de solicitudes_apoyo_social (000011 + 000025 + 000030).
  * Hoy: datos mock. Al conectar Supabase:
  *   supabase.from('solicitudes_apoyo_social').select(...)
  * Escritura del formulario público: service role desde un Server Action.
@@ -20,7 +20,7 @@ export async function contarSolicitudesPorEstado(estado: EstadoSolicitudApoyo): 
 export async function crearSolicitud(input: SolicitudApoyoSocialInput): Promise<SolicitudApoyoSocial> {
   // SUPABASE (service role):
   // INSERT INTO solicitudes_apoyo_social
-  //   (nombre_entidad, persona_contacto, correo, telefono, descripcion_proyecto, tipo_entidad, fecha_evento)
+  //   (nombre_entidad, persona_contacto, correo, telefono, descripcion_proyecto, tipo_organizacion, fecha_tentativa)
   // VALUES (...) RETURNING *;
   // El estado nace en 'nueva' (DEFAULT).
   const nueva: SolicitudApoyoSocial = {
@@ -31,8 +31,8 @@ export async function crearSolicitud(input: SolicitudApoyoSocialInput): Promise<
     correo: input.correo,
     telefono: input.telefono ?? null,
     descripcionProyecto: input.descripcionProyecto ?? null,
-    tipoEntidad: input.tipoEntidad ?? null,
-    fechaEvento: input.fechaEvento ?? null,
+    tipoOrganizacion: input.tipoEntidad ?? null,
+    fechaTentativa: input.fechaEvento ?? null,
     estado: 'nueva',
     notificadoEn: null,
     creadoEn: new Date().toISOString(),
