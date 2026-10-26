@@ -1,7 +1,7 @@
 # 03 — Migraciones y esquema v2 de la base de datos
 
 Este documento describe la **arquitectura final de la base de datos** y la secuencia completa de
-migraciones, del `000001` al `000029`. Reemplaza al esquema original de la primera etapa: las
+migraciones, del `000001` al `000035`. Reemplaza al esquema original de la primera etapa: las
 tablas `usuarios`, `portafolio` y `resenas_clientes` cambiaron de forma y hoy la base se apoya
 en Supabase Auth y en un modelo de galería por carpetas.
 
@@ -16,7 +16,7 @@ en Supabase Auth y en un modelo de galería por carpetas.
 - **Backend:** Supabase (Postgres + Auth + Storage). No hay otra base de datos.
 - **Identidad:** los perfiles (`administradores`, `clientes`) tienen como `id` el mismo `id` de
   `auth.users`. `auth.uid()` identifica a quien inició sesión sin tablas puente.
-- **Autorización:** RLS activo en **las 18 tablas** de `public`. Las claves se protegen además
+- **Autorización:** RLS activo en **las 19 tablas** de `public`. Las claves se protegen además
   con `grant`/`revoke` a nivel de columna o tabla donde interesa.
 - **Zona horaria del negocio:** `America/Guatemala` (UTC-6, sin horario de verano). Las marcas
   de tiempo se guardan en `timestamptz` y se interpretan en esa zona en las funciones.
@@ -24,7 +24,7 @@ en Supabase Auth y en un modelo de galería por carpetas.
 
 ---
 
-## 2. Secuencia de migraciones (000001 → 000029)
+## 2. Secuencia de migraciones (000001 → 000035)
 
 | # | Archivo | Qué agrega o cambia |
 | --- | --- | --- |
@@ -57,13 +57,19 @@ en Supabase Auth y en un modelo de galería por carpetas.
 | 027 | `000027_storage_buckets.sql` | Buckets `galeria` y `logos` con políticas de Storage |
 | 028 | `000028_privilegios_administradores_clientes.sql` | Corrige privilegios de `administradores` y `clientes` |
 | 029 | `000029_horario_atencion_y_pago.sql` | Horario de atención configurable, `estado_pago` y UPDATE de reservas por el cliente |
+| 030 | `000030_seguimiento_administrativo.sql` | Campos de seguimiento en leads, apoyo social y reseñas; tabla `seguimiento_administrativo` |
+| 031 | `000031_seguridad_pagos_y_comprobantes.sql` | Limita el pago que puede cambiar el cliente y crea el bucket privado `comprobantes` |
+| 032 | `000032_administradores_alta_y_sincronizacion_auth.sql` | `crear_administrador()` y sincronización de perfiles desde `auth.users` |
+| 033 | `000033_galeria_inicio_portada_destacados.sql` | Módulo `inicio`, portadas de carpeta/empresa, reordenamiento diferible de destacados y vistas |
+| 034 | `000034_formularios_publicos_y_configuracion.sql` | `enviar_contacto()` y `enviar_solicitud_apoyo()` para el servidor (solo `service_role`) y claves iniciales de contacto, redes y ubicación |
+| 035 | `000035_resenas_empresa_y_vista_publica.sql` | `resenas_clientes.empresa_id`, política de inserción reforzada y vista pública `resenas_publicas` con `security_invoker` |
 
-Las migraciones **028 y 029 son correcciones "sobre" migraciones anteriores**: no se editó ningún
-archivo ya creado; se agregó una migración que ajusta lo que estaba mal o faltaba.
+Las migraciones **028, 029 y 031 son correcciones "sobre" migraciones anteriores**: no se editó
+ningún archivo ya creado; se agregó una migración que ajusta lo que estaba mal o faltaba.
 
 ---
 
-## 3. Modelo de datos (18 tablas en `public`)
+## 3. Modelo de datos (19 tablas en `public`)
 
 ### Identidad y equipo
 - **`administradores`** — equipo interno con acceso al panel. `id` = `auth.users.id`. Guarda
@@ -79,7 +85,8 @@ archivo ya creado; se agregó una migración que ajusta lo que estaba mal o falt
 - **`configuracion_sitio`** — pares `(grupo, clave)` con `valor` de texto. Se usa para la tarifa
   del salón (`estudio / tarifa_hora`), el límite de pendientes
   (`estudio / max_pendientes_por_cliente`) y el horario de atención
-  (`estudio / hora_apertura`, `estudio / hora_cierre`).
+  (`estudio / hora_apertura`, `estudio / hora_cierre`). La migración 000034 deja las seis
+  claves iniciales de `contacto`, `redes` y `ubicacion` con `valor` nulo.
 
 ### Reserva del salón
 - **`reservas`** — una reserva del salón (recurso único). Sin datos de usuario heredados: guarda
@@ -93,18 +100,23 @@ archivo ya creado; se agregó una migración que ajusta lo que estaba mal o falt
 - **`fechas_bloqueadas`** — bloqueos del administrador; de día completo u horario puntual.
 
 ### Galería y contenido
-- **`empresas`** — clientes/marcas con logo.
-- **`carpetas_galeria`** — agrupan archivos por módulo (`portafolio`, `backstage`, `estudio`,
-  `apoyo_social`); con `estado` `borrador`/`publicado` y `publicada_en` automático.
+- **`empresas`** — clientes/marcas con logo y `portada_ruta` opcional para la portada.
+- **`carpetas_galeria`** — agrupan archivos por módulo (`inicio`, `portafolio`, `backstage`,
+  `estudio`, `apoyo_social`); con `estado` `borrador`/`publicado` y `publicada_en` automático.
+  El módulo `inicio` corresponde a la página principal; `login` nunca existió en la base.
 - **`archivos_galeria`** — fotos, videos o enlaces dentro de una carpeta (con orientación y orden).
-- **`destacados`** — carpeta o empresa fijada en una posición del sitio.
+  `es_portada` marca una sola portada por carpeta y el CHECK impide que sea un enlace.
+- **`destacados`** — carpeta o empresa fijada en una posición del sitio; la posición es diferible
+  para que `reordenar_destacados()` pueda intercambiar filas.
 - **`resenas_clientes`** — reseñas; una por reserva (cliente) y también creadas por admin. `estado`
-  `pendiente / aprobada / rechazada`, con autor, empresa, carpeta y video opcionales.
+  `pendiente / aprobada / rechazada`, con autor, empresa (`empresa_autor` y `empresa_id`), carpeta y
+  video opcionales.
 
 ### Captación
 - **`leads_contacto`** — prospectos del formulario de contacto, con estado y notas.
-- **`solicitudes_apoyo_social`** — solicitudes de fundaciones/bomberos, con estado, tipo de entidad
-  y fecha del evento.
+- **`solicitudes_apoyo_social`** — solicitudes de fundaciones/bomberos, con estado, tipo de
+  organización y fecha tentativa (000030). Los campos `tipo_entidad` y `fecha_evento` de 000025
+  quedan solo para registros anteriores.
 - **`notas_contacto`** — notas internas sobre un lead **o** una solicitud (nunca ambos).
 
 ---
@@ -124,6 +136,7 @@ archivo ya creado; se agregó una migración que ajusta lo que estaba mal o falt
 | `leads_contacto` | — | — | control total |
 | `solicitudes_apoyo_social` | — | — | control total |
 | `notas_contacto` | — | — | control total |
+| `seguimiento_administrativo` | — | — | control total |
 | `configuracion_sitio` | lectura | lectura | control total |
 | `fechas_bloqueadas` | — | — | control total |
 | `empresas` | lectura de activas | — | control total |
@@ -175,8 +188,19 @@ Notas:
 - `reservas_update_cliente()` — acota la edición del cliente sobre su reserva a cancelar o subir
   comprobante (000029).
 - `solicitar_reserva(...)` — crea la reserva con precio calculado en el servidor.
+- `enviar_contacto(...)` / `enviar_solicitud_apoyo(...)` — altas de los formularios públicos;
+  normalizan el correo, validan tamaños (254 para campos cortos y 5000 para textos largos) y
+  solo pueden ejecutarlas el servidor con `service_role` (000034).
 - `horarios_ocupados(...)` — lo que el sitio público consulta para pintar el calendario; devuelve
   solo horarios y tipo (`RESERVA`/`BLOQUEO`), sin datos personales.
+- `definir_portada(uuid, uuid)` — cambia la portada de una carpeta de forma atómica y rechaza
+  enlaces (000033).
+- `reordenar_destacados(jsonb)` — recibe `[{"id": "...", "posicion": 1}, ...]`, difiere la
+  restricción única durante el cambio y valida que no haya IDs o posiciones repetidas (000033).
+- Vistas `carpetas_con_portada` y `destacados_detalle` — lectura con `security_invoker`, para que
+  RLS siga aplicando al usuario que consulta (000033).
+- Vista `resenas_publicas` — solo reseñas aprobadas, con nombres visibles de carpeta y empresa;
+  usa `security_invoker` y grants explícitos para `anon`, `authenticated` y `service_role` (000035).
 
 ---
 
@@ -184,8 +208,12 @@ Notas:
 
 Dos buckets **públicos de lectura**, escritura solo de administradores:
 
-- **`galeria`** — las rutas se guardan en `archivos_galeria.ruta_storage`.
+- **`galeria`** — las rutas se guardan en `archivos_galeria.ruta_storage` y
+  `empresas.portada_ruta`.
 - **`logos`** — la ruta se guarda en `empresas.logo_ruta`.
+
+El bucket **`comprobantes`** (000031) es privado: cada cliente accede solo a su carpeta
+`<uid>/...` y el administrador a todo. La ruta se guarda en `reservas.url_comprobante_pago`.
 
 Las políticas de `storage.objects` replican `es_admin()` para insert/update/delete.
 
@@ -197,7 +225,7 @@ Ambiente local (para probar de cero):
 
 ```bash
 supabase start
-supabase db reset        # aplica 000001 → 000029 sobre una base limpia
+supabase db reset        # aplica 000001 → 000035 sobre una base limpia
 ```
 
 Remoto (proyecto enlazado en la nube), **después de aprobar el PR a `develop`**:
