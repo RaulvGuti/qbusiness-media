@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
+import { guardarDestacados } from "@/server/repositories/galeria";
 import shared from "../panel.module.css";
 import { MODULOS, MODULO_EMPRESAS, iniciales, type ElementoCatalogo } from "./datos";
 import styles from "./page.module.css";
@@ -16,6 +17,7 @@ export function DestacadosPanel({ catalogo, destacadosIniciales }: DestacadosPan
   const [destacados, setDestacados] = useState<string[]>(destacadosIniciales);
   const [modulo, setModulo] = useState<string>("Todos");
   const [busqueda, setBusqueda] = useState("");
+  const [guardando, setGuardando] = useState(false);
 
   const q = busqueda.trim().toLowerCase();
   const lista = catalogo.filter(
@@ -32,11 +34,23 @@ export function DestacadosPanel({ catalogo, destacadosIniciales }: DestacadosPan
       return copia;
     });
 
-  const guardar = () => {
-    // SUPABASE (admin): reemplazar la tabla destacados:
-    //   DELETE FROM destacados;  luego INSERTar cada id con su posicion (1..n).
-    // Check: exactamente uno de carpeta_id / empresa_id por fila.
-    toast("Destacados guardados");
+  const guardar = async () => {
+    // La posición es el lugar en la lista (1..n); la BD reemplaza todos los destacados
+    // en una sola transacción (guardar_destacados, migración 000037).
+    const items = destacados.flatMap((id) => {
+      const c = catalogo.find((x) => x.id === id);
+      return c ? [{ tipo: c.tipo, id }] : [];
+    });
+
+    setGuardando(true);
+    try {
+      await guardarDestacados(items);
+      toast("Destacados guardados");
+    } catch (e) {
+      toast(e instanceof Error && e.message ? e.message : "No se pudieron guardar los destacados");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -138,8 +152,13 @@ export function DestacadosPanel({ catalogo, destacadosIniciales }: DestacadosPan
           })}
         </ol>
         <div className={styles.savebar}>
-          <button type="button" className={`${shared.btn} ${shared.btnPrimary}`} onClick={guardar}>
-            Guardar cambios
+          <button
+            type="button"
+            className={`${shared.btn} ${shared.btnPrimary}`}
+            onClick={() => void guardar()}
+            disabled={guardando}
+          >
+            {guardando ? "Guardando…" : "Guardar cambios"}
           </button>
         </div>
       </section>
