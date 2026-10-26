@@ -26,8 +26,13 @@ type Registro = {
   presupuesto?: string | null;
   mensaje?: string | null;
   tipo_organizacion?: string | null;
+  tipo_entidad?: string | null;
   descripcion_proyecto?: string | null;
   ubicacion?: string | null;
+  objetivo_apoyo?: string | null;
+  publico_beneficiario?: string | null;
+  fecha_evento?: string | null;
+  fecha_tentativa?: string | null;
   calificacion?: number | null;
   comentario?: string | null;
   reserva_id?: string | null;
@@ -99,13 +104,16 @@ export default function SeguimientoAdminTable({
   return (
     <section className="space-y-5">
       {mensaje && (
-        <p role="status" className="rounded-xl border p-3 text-sm">
+        <p
+          role="status"
+          className="rounded-xl border border-[#3a3a3a] bg-[#161616] p-3 text-sm text-[#e8e8e8]"
+        >
           {mensaje}
         </p>
       )}
 
       {registros.length === 0 && (
-        <p className="rounded-xl border border-qbBorder bg-white p-6 text-qbMuted">
+        <p className="rounded-xl border border-[#262626] bg-[#0d0d0d] p-6 text-[#8a8a8a]">
           No hay registros disponibles.
         </p>
       )}
@@ -134,7 +142,7 @@ export default function SeguimientoAdminTable({
         return (
           <article
             key={id}
-            className="space-y-4 rounded-2xl border border-qbBorder bg-white p-5 shadow-sm"
+            className="space-y-4 rounded-2xl border border-[#262626] bg-[#0d0d0d] p-5 shadow-sm"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-1">
@@ -165,31 +173,88 @@ export default function SeguimientoAdminTable({
             </div>
 
             {seccion === "contacto" && (
-              <div className="space-y-2 text-sm">
-                {registro.empresa && <p>Empresa: {registro.empresa}</p>}
+              <div className="space-y-2 text-sm text-[#e8e8e8]">
+                {registro.empresa && (
+                  <p>
+                    <span className="font-semibold text-white">Empresa:</span>{" "}
+                    {registro.empresa}
+                  </p>
+                )}
                 {registro.tipo_servicio && (
-                  <p>Servicio: {registro.tipo_servicio}</p>
+                  <p>
+                    <span className="font-semibold text-white">Servicio:</span>{" "}
+                    {registro.tipo_servicio}
+                  </p>
                 )}
                 {registro.presupuesto && (
-                  <p>Presupuesto: {registro.presupuesto}</p>
+                  <p>
+                    <span className="font-semibold text-white">
+                      Presupuesto:
+                    </span>{" "}
+                    {registro.presupuesto}
+                  </p>
                 )}
                 <p className="whitespace-pre-wrap">
+                  <span className="font-semibold text-white">Mensaje:</span>{" "}
                   {registro.mensaje || "Sin mensaje"}
                 </p>
               </div>
             )}
 
             {seccion === "apoyo_social" && (
-              <div className="space-y-2 text-sm">
-                <p>Entidad: {registro.nombre_entidad}</p>
-                <p>Contacto: {registro.persona_contacto}</p>
-                {registro.tipo_organizacion && (
-                  <p>Tipo: {registro.tipo_organizacion}</p>
+              <div className="space-y-2 text-sm text-[#e8e8e8]">
+                {registro.nombre_entidad && (
+                  <p>
+                    <span className="font-semibold text-white">Entidad:</span>{" "}
+                    {registro.nombre_entidad}
+                  </p>
+                )}
+                {registro.persona_contacto && (
+                  <p>
+                    <span className="font-semibold text-white">Contacto:</span>{" "}
+                    {registro.persona_contacto}
+                  </p>
+                )}
+                {(registro.tipo_entidad || registro.tipo_organizacion) && (
+                  <p>
+                    <span className="font-semibold text-white">Tipo:</span>{" "}
+                    {registro.tipo_entidad ?? registro.tipo_organizacion}
+                  </p>
+                )}
+                {(registro.fecha_evento || registro.fecha_tentativa) && (
+                  <p>
+                    <span className="font-semibold text-white">
+                      Fecha del evento:
+                    </span>{" "}
+                    {registro.fecha_evento ?? registro.fecha_tentativa}
+                  </p>
+                )}
+                {registro.ubicacion && (
+                  <p>
+                    <span className="font-semibold text-white">Ubicación:</span>{" "}
+                    {registro.ubicacion}
+                  </p>
                 )}
                 <p className="whitespace-pre-wrap">
+                  <span className="font-semibold text-white">Descripción:</span>{" "}
                   {registro.descripcion_proyecto || "Sin descripción"}
                 </p>
-                {registro.ubicacion && <p>Ubicación: {registro.ubicacion}</p>}
+                {registro.objetivo_apoyo && (
+                  <p className="whitespace-pre-wrap">
+                    <span className="font-semibold text-white">
+                      Objetivo de apoyo:
+                    </span>{" "}
+                    {registro.objetivo_apoyo}
+                  </p>
+                )}
+                {registro.publico_beneficiario && (
+                  <p>
+                    <span className="font-semibold text-white">
+                      Público beneficiario:
+                    </span>{" "}
+                    {registro.publico_beneficiario}
+                  </p>
+                )}
               </div>
             )}
 
@@ -209,10 +274,10 @@ export default function SeguimientoAdminTable({
             )}
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="space-y-2 text-sm font-semibold">
+              <label className="space-y-2 text-sm font-semibold text-[#e8e8e8]">
                 Estado
                 <select
-                  className="w-full rounded-xl border border-qbBorder p-3"
+                  className="w-full rounded-xl border border-[#262626] bg-[#171717] p-3 text-[#f2f2f2]"
                   value={estadoActual}
                   disabled={pendiente}
                   onChange={(e) => {
@@ -220,10 +285,7 @@ export default function SeguimientoAdminTable({
 
                     ejecutar(async () => {
                       if (seccion === "resena") {
-                        await cambiarEstadoResena(
-                          id,
-                          estado as EstadoResena
-                        );
+                        await cambiarEstadoResena(id, estado as EstadoResena);
                       } else {
                         await cambiarEstado(seccion, id, estado);
                       }
@@ -270,10 +332,10 @@ function NotaAdmin({
   const [nota, setNota] = useState(notaInicial);
 
   return (
-    <div className="space-y-2 text-sm font-semibold">
+    <div className="space-y-2 text-sm font-semibold text-[#e8e8e8]">
       <label>Nota privada del administrador</label>
       <textarea
-        className="min-h-24 w-full rounded-xl border border-qbBorder p-3 font-normal"
+        className="min-h-24 w-full rounded-xl border border-[#262626] bg-[#171717] p-3 font-normal text-[#f2f2f2] placeholder:text-[#8a8a8a]"
         value={nota}
         onChange={(e) => setNota(e.target.value)}
         placeholder="Escribe observaciones internas..."
@@ -282,7 +344,7 @@ function NotaAdmin({
         type="button"
         disabled={pendiente || !nota.trim()}
         onClick={() => guardar(nota)}
-        className="rounded-xl bg-qbInk px-4 py-2 text-white disabled:opacity-50"
+        className="rounded-xl border border-white bg-white px-4 py-2 font-semibold text-black transition hover:bg-[#d9d9d9] disabled:opacity-50"
       >
         Guardar nota
       </button>

@@ -127,7 +127,7 @@ export async function GET() {
   const { data, error } = await acceso.supabase
     .from("solicitudes_apoyo_social")
     .select(
-      "id, nombre_entidad, persona_contacto, correo, telefono, descripcion_proyecto, tipo_organizacion, fecha_tentativa, estado, creado_en"
+      "id, nombre_entidad, persona_contacto, correo, telefono, descripcion_proyecto, tipo_entidad, fecha_evento, tipo_organizacion, cargo_contacto, ubicacion, objetivo_apoyo, fecha_tentativa, publico_beneficiario, alcance_solicitado, presupuesto_propio, comentarios, notas_admin, actualizado_en, gestionado_por_id, estado, creado_en"
     )
     .order("creado_en", { ascending: false });
 
