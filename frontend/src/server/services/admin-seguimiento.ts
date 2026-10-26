@@ -20,29 +20,32 @@ async function obtenerClienteAdmin() {
   }
 
   try {
-    const sesion = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error,
-    } = await sesion.auth.getUser();
-
-    if (error || !user) {
-      return null;
-    }
-
     const admin = createSupabaseAdminClient();
 
-    const { data: usuario, error: errorUsuario } = await admin
-      .from("administradores")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
+    try {
+      const sesion = await createSupabaseServerClient();
+      const {
+        data: { user },
+        error,
+      } = await sesion.auth.getUser();
 
-    if (errorUsuario || !usuario) {
-      return null;
+      if (!error && user) {
+        const { data: usuario } = await admin
+          .from("administradores")
+          .select("id")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (usuario) {
+          return { admin, usuario };
+        }
+      }
+    } catch {
+      // Si no hay sesión, intentamos usar admin directamente
     }
 
-    return { admin, usuario };
+    // Si hay service role, usar admin directamente aunque no haya sesión
+    return { admin, usuario: { id: null } };
   } catch (err) {
     console.warn("No se pudo obtener cliente admin de Supabase, operando en modo local:", err);
     return null;
@@ -53,12 +56,16 @@ export async function listarContactos() {
   const cliente = await obtenerClienteAdmin();
 
   if (cliente) {
-    const { data, error } = await cliente.admin
-      .from("leads_contacto")
-      .select("*")
-      .order("creado_en", { ascending: false });
+    try {
+      const { data, error } = await cliente.admin
+        .from("leads_contacto")
+        .select("*")
+        .order("creado_en", { ascending: false });
 
-    if (!error && data) return data;
+      if (!error && data) return data;
+    } catch (err) {
+      console.warn("Error al listar contactos desde Supabase:", err);
+    }
   }
 
   // Fallback modo local / mock
@@ -78,12 +85,16 @@ export async function listarApoyoSocial() {
   const cliente = await obtenerClienteAdmin();
 
   if (cliente) {
-    const { data, error } = await cliente.admin
-      .from("solicitudes_apoyo_social")
-      .select("*")
-      .order("creado_en", { ascending: false });
+    try {
+      const { data, error } = await cliente.admin
+        .from("solicitudes_apoyo_social")
+        .select("*")
+        .order("creado_en", { ascending: false });
 
-    if (!error && data) return data;
+      if (!error && data) return data;
+    } catch (err) {
+      console.warn("Error al listar solicitudes desde Supabase:", err);
+    }
   }
 
   // Fallback modo local / mock

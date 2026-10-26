@@ -1,25 +1,21 @@
 
-
+import shared from "../panel.module.css";
 import { listarContactos } from "@/server/services/admin-seguimiento";
 import SeguimientoAdminTable from "@/components/admin/SeguimientoAdminTable";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Contactos | Admin" };
+
 export default async function ContactosPage() {
   const contactos = await listarContactos();
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-qbInk">Contactos</h1>
-        <p className="text-qbMuted">
-          Consulta y administra los mensajes recibidos.
-        </p>
-      </div>
-      <SeguimientoAdminTable
-        seccion="contacto"
-        registros={contactos}
-      />
-    </section>
+    <>
+      <span className={shared.eye}>Captación</span>
+      <h1 className={shared.title}>Contactos</h1>
+      <p className={shared.sub}>Consulta y administra los mensajes recibidos.</p>
+      <SeguimientoAdminTable seccion="contacto" registros={contactos} />
+    </>
   );
 }
