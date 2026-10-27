@@ -1,10 +1,14 @@
 import shared from "../panel.module.css";
 import { listarConfiguracion } from "@/server/repositories/configuracion";
+import { exigirAdminPrincipalPanel } from "@/server/auth/panel";
 import { TextosForm } from "./TextosForm";
 
 export const metadata = { title: "Textos | Admin" };
 
 export default async function TextosPage() {
+  // La configuración del sitio es exclusiva del administrador principal (000038).
+  await exigirAdminPrincipalPanel();
+
   // SUPABASE (anon/admin): SELECT * FROM configuracion_sitio ORDER BY grupo, clave;
   const configs = await listarConfiguracion();
 

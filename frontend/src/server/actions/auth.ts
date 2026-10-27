@@ -59,7 +59,14 @@ export async function adminLoginAction(formData: FormData) {
   redirect('/admin/dashboard');
 }
 
-// 2. Recuperación de Contraseña para Administrador
+// 2. Cerrar sesión del panel (borra la cookie de Supabase en el servidor)
+export async function cerrarSesionAction() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect('/admin');
+}
+
+// 3. Recuperación de Contraseña para Administrador
 export async function recoverPasswordAction(formData: FormData) {
   const email = formData.get('email') as string;
   const supabase = await createClient();
@@ -75,7 +82,7 @@ export async function recoverPasswordAction(formData: FormData) {
   return { success: 'Se han enviado las instrucciones de recuperación a su correo corporativo.' };
 }
 
-// 3. Login / Registro Público (Módulo de Reseñas)
+// 4. Login / Registro Público (Módulo de Reseñas)
 export async function publicAuthAction(formData: FormData, isRegistering: boolean) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;

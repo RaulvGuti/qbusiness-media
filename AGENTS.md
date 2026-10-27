@@ -283,6 +283,9 @@ Migraciones existentes (`supabase/migrations/`):
 | `000033_galeria_inicio_portada_destacados.sql` | Módulo `inicio`, portadas de galería/empresa y reordenamiento de destacados |
 | `000034_formularios_publicos_y_configuracion.sql` | Funciones de alta para los formularios públicos, solo `service_role`, y claves iniciales de contacto/redes/ubicación |
 | `000035_resenas_empresa_y_vista_publica.sql` | `empresa_id` en reseñas, política de inserción reforzada y vista pública `resenas_publicas` |
+| `000036_dashboard_resumen_y_actividad.sql` | RPC de resumen y actividad del dashboard administrativo |
+| `000037_galeria_backend.sql` | RPC de carpetas, archivos, portadas y destacados de la galería |
+| `000038_roles_y_permisos_administrativos.sql` | Roles `admin_principal` y `secretaria`, RLS por rol, triggers de contenido y RPC de gestión de cuentas |
 
 Decisiones ya tomadas que hay que respetar:
 
@@ -294,10 +297,16 @@ Decisiones ya tomadas que hay que respetar:
   conserva el historial.
 - La identidad vive en Supabase Auth: `administradores` y `clientes` comparten el `id` de
   `auth.users` y las contraseñas **no** se guardan en tablas propias.
+- El equipo interno tiene dos roles (000038): `admin_principal` (acceso total) y
+  `secretaria` (contactos, apoyo social, reseñas y reservas). El contenido, las tarifas, la
+  configuración y las cuentas son exclusivos del principal. La matriz vive en
+  `frontend/src/lib/permisos.ts` y se repite en RLS y triggers.
 
 Estado actual:
 
 - **RLS activo en las 19 tablas** de `public` (migración 000020 y siguientes).
+- **Roles del panel** desde 000038: el layout y cada página sensible validan sesión y rol con
+  `frontend/src/server/auth/`; el proxy solo adelanta la redirección sin sesión.
 - **Buckets de Storage** `galeria` y `logos` públicos (000027) y `comprobantes` privado (000031).
 - El **horario de atención** se configura en `configuracion_sitio` (`estudio / hora_apertura`
   y `estudio / hora_cierre`) y lo aplica el trigger `validar_horario_atencion` (000029); no
