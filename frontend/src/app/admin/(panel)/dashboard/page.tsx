@@ -5,16 +5,53 @@ import { listarLeads } from "@/server/repositories/leads";
 import { listarReservas } from "@/server/repositories/estudio";
 import { listarTodasLasResenas } from "@/server/repositories/resenas";
 import { listarSolicitudes } from "@/server/repositories/solicitudes";
+import { exigirStaffPanel } from "@/server/auth/panel";
+import { puede, type Permiso } from "@/lib/permisos";
 
 export const metadata = { title: "Dashboard | Admin" };
 
-const ATAJOS = [
-  { titulo: "Galería", detalle: "Carpetas y archivos", href: "/admin/galeria" },
-  { titulo: "Textos y configuración", detalle: "Contenido del sitio", href: "/admin/textos" },
-  { titulo: "Destacados", detalle: "Orden del inicio", href: "/admin/destacados" },
-  { titulo: "Contactos", detalle: "Mensajes y apoyo social", href: "/admin/contactos" },
-  { titulo: "Reseñas", detalle: "Aprobar o rechazar", href: "/admin/resenas" },
-  { titulo: "Reservas del estudio", detalle: "Solicitudes y bloqueos", href: "/admin/reservas" },
+const ATAJOS: {
+  titulo: string;
+  detalle: string;
+  href: string;
+  permiso: Permiso;
+}[] = [
+  {
+    titulo: "Galería",
+    detalle: "Carpetas y archivos",
+    href: "/admin/galeria",
+    permiso: "galeria",
+  },
+  {
+    titulo: "Textos y configuración",
+    detalle: "Contenido del sitio",
+    href: "/admin/textos",
+    permiso: "textos",
+  },
+  {
+    titulo: "Destacados",
+    detalle: "Orden del inicio",
+    href: "/admin/destacados",
+    permiso: "destacados",
+  },
+  {
+    titulo: "Contactos",
+    detalle: "Mensajes y apoyo social",
+    href: "/admin/contactos",
+    permiso: "contactos",
+  },
+  {
+    titulo: "Reseñas",
+    detalle: "Aprobar o rechazar",
+    href: "/admin/resenas",
+    permiso: "resenas",
+  },
+  {
+    titulo: "Reservas del estudio",
+    detalle: "Solicitudes y bloqueos",
+    href: "/admin/reservas",
+    permiso: "reservas",
+  },
 ];
 
 // Gráfica decorativa de la semana (sin datos reales todavía).
@@ -31,7 +68,15 @@ const SEMANA = [
 const fmt = (iso: string) =>
   new Date(iso).toLocaleDateString("es-GT", { day: "2-digit", month: "short" });
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ permiso?: string }>;
+}) {
+  const { perfil } = await exigirStaffPanel();
+  const { permiso } = await searchParams;
+  const atajos = ATAJOS.filter((atajo) => puede(perfil.rol, atajo.permiso));
+
   // SUPABASE (admin): conteos sobre leads_contacto, resenas_clientes,
   // solicitudes_apoyo_social y reservas.
   const [leads, reservas, resenas, solicitudes] = await Promise.all([
@@ -81,6 +126,13 @@ export default async function DashboardPage() {
       <h1 className={shared.title}>Dashboard</h1>
       <p className={shared.sub}>Resumen de la actividad administrativa.</p>
 
+      {permiso === "denegado" && (
+        <p className={styles.aviso}>
+          Esa sección es exclusiva del administrador principal. Tu cuenta sigue
+          con acceso a la operación del día a día.
+        </p>
+      )}
+
       <div className={styles.stats}>
         <div className={`${styles.stat} ${styles.statHl}`}>
           <span>Reseñas pendientes</span>
@@ -123,7 +175,7 @@ export default async function DashboardPage() {
           <section className={shared.card}>
             <h2 className={shared.cardTitle}>Accesos rápidos</h2>
             <div className={styles.quick}>
-              {ATAJOS.map((a) => (
+              {atajos.map((a) => (
                 <Link key={a.titulo} href={a.href} className={styles.q}>
                   {a.titulo}
                   <span>{a.detalle}</span>

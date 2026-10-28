@@ -1,27 +1,23 @@
-
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cerrarSesionAction } from "@/server/actions/auth";
+import { ETIQUETAS_ROL, seccionesVisibles } from "@/lib/permisos";
+import type { RolAdministrador } from "@/types/admin";
 import styles from "./AdminHeader.module.css";
 
+interface Props {
+  perfil: {
+    nombre: string;
+    rol: RolAdministrador;
+  };
+}
 
-const SECCIONES = [
-  { href: "/admin/dashboard", texto: "Dashboard" },
-  { href: "/admin/galeria", texto: "Galería" },
-  { href: "/admin/textos", texto: "Textos y configuración" },
-  { href: "/admin/destacados", texto: "Destacados" },
-  { href: "/admin/contactos", texto: "Contactos" },
-  { href: "/admin/apoyo-social", texto: "Apoyo social" },
-  { href: "/admin/resenas", texto: "Reseñas" },
-  { href: "/admin/reservas", texto: "Reservas del estudio" },
-  { href: "/admin/perfil", texto: "Perfil" },
-] as const;
-
-
-export function AdminHeader() {
+export function AdminHeader({ perfil }: Props) {
   const ruta = usePathname();
+  const secciones = seccionesVisibles(perfil.rol);
 
   return (
     <header className={styles.top}>
@@ -36,39 +32,36 @@ export function AdminHeader() {
         />
 
         <nav className={styles.nav} aria-label="Panel administrativo">
-          {SECCIONES.map(({ href, texto }) =>
-            href ? (
-              <Link
-                key={texto}
-                href={href}
-                className={`${styles.link} ${
-                  ruta === href || ruta.startsWith(`${href}/`)
-                    ? styles.linkOn
-                    : ""
-                }`}
-                aria-current={
-                  ruta === href || ruta.startsWith(`${href}/`)
-                    ? "page"
-                    : undefined
-                }
-              >
-                {texto}
-              </Link>
-            ) : (
-              <span
-                key={texto}
-                className={`${styles.link} ${styles.linkOff}`}
-                aria-disabled="true"
-              >
-                {texto}
-              </span>
-            ),
-          )}
+          {secciones.map(({ href, texto }) => (
+            <Link
+              key={texto}
+              href={href}
+              className={`${styles.link} ${
+                ruta === href || ruta.startsWith(`${href}/`)
+                  ? styles.linkOn
+                  : ""
+              }`}
+              aria-current={
+                ruta === href || ruta.startsWith(`${href}/`)
+                  ? "page"
+                  : undefined
+              }
+            >
+              {texto}
+            </Link>
+          ))}
         </nav>
 
-        <Link href="/login" className={styles.logout}>
-          Cerrar sesión
-        </Link>
+        <div className={styles.user}>
+          <span className={styles.userName}>{perfil.nombre}</span>
+          <span className={styles.badge}>{ETIQUETAS_ROL[perfil.rol]}</span>
+        </div>
+
+        <form action={cerrarSesionAction} className={styles.logoutForm}>
+          <button type="submit" className={styles.logout}>
+            Cerrar sesión
+          </button>
+        </form>
       </div>
     </header>
   );

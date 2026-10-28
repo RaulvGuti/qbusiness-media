@@ -83,39 +83,15 @@ export async function GET() {
   const auth = await requireAdmin();
 
   if (!auth.authorized) {
-    // Si no hay sesión admin en local, devolver mock para pruebas locales
-    const { leadsMock, solicitudesMock } = await import("@/server/repositories/datos-mock");
-
-    const contactos = leadsMock.map((c) => ({
-      id: c.id,
-      nombre: c.nombre,
-      correo: c.correo,
-      telefono: c.telefono,
-      mensaje: c.mensaje,
-      estado: c.estado,
-      creado_en: c.creadoEn,
-      origen: "contacto" as const,
-    }));
-
-    const solicitudes = solicitudesMock.map((s) => ({
-      id: s.id,
-      nombre: s.personaContacto,
-      correo: s.correo,
-      telefono: s.telefono,
-      mensaje: s.descripcionProyecto,
-      estado: s.estado,
-      creado_en: s.creadoEn,
-      origen: "apoyo_social" as const,
-      nombre_entidad: s.nombreEntidad,
-    }));
-
-    return NextResponse.json({
-      contactos: [...contactos, ...solicitudes].sort(
-        (a, b) =>
-          new Date(b.creado_en).getTime() -
-          new Date(a.creado_en).getTime()
-      ),
-    });
+    return NextResponse.json(
+      {
+        error:
+          auth.status === 401
+            ? "Inicia sesión para consultar los contactos."
+            : "Tu cuenta no tiene acceso a los contactos.",
+      },
+      { status: auth.status },
+    );
   }
 
   const [resultadoContactos, resultadoApoyo] = await Promise.all([
@@ -135,39 +111,10 @@ export async function GET() {
   ]);
 
   if (resultadoContactos.error || resultadoApoyo.error) {
-    // Si falla Supabase, fallback a mock
-    const { leadsMock, solicitudesMock } = await import("@/server/repositories/datos-mock");
-
-    const contactos = leadsMock.map((c) => ({
-      id: c.id,
-      nombre: c.nombre,
-      correo: c.correo,
-      telefono: c.telefono,
-      mensaje: c.mensaje,
-      estado: c.estado,
-      creado_en: c.creadoEn,
-      origen: "contacto" as const,
-    }));
-
-    const solicitudes = solicitudesMock.map((s) => ({
-      id: s.id,
-      nombre: s.personaContacto,
-      correo: s.correo,
-      telefono: s.telefono,
-      mensaje: s.descripcionProyecto,
-      estado: s.estado,
-      creado_en: s.creadoEn,
-      origen: "apoyo_social" as const,
-      nombre_entidad: s.nombreEntidad,
-    }));
-
-    return NextResponse.json({
-      contactos: [...contactos, ...solicitudes].sort(
-        (a, b) =>
-          new Date(b.creado_en).getTime() -
-          new Date(a.creado_en).getTime()
-      ),
-    });
+    return NextResponse.json(
+      { error: "No se pudieron consultar los contactos." },
+      { status: 500 },
+    );
   }
 
   const contactos = (resultadoContactos.data ?? []).map((contacto) => ({

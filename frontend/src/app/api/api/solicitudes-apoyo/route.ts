@@ -106,22 +106,15 @@ export async function GET() {
   const acceso = await requireAdmin();
 
   if (!acceso.authorized) {
-    // Modo local / offline
-    const { solicitudesMock } = await import("@/server/repositories/datos-mock");
-    return NextResponse.json({
-      solicitudes: solicitudesMock.map((s) => ({
-        id: s.id,
-        nombre_entidad: s.nombreEntidad,
-        persona_contacto: s.personaContacto,
-        correo: s.correo,
-        telefono: s.telefono,
-        descripcion_proyecto: s.descripcionProyecto,
-        tipo_organizacion: s.tipoOrganizacion,
-        fecha_tentativa: s.fechaTentativa,
-        estado: s.estado,
-        creado_en: s.creadoEn,
-      })),
-    });
+    return NextResponse.json(
+      {
+        error:
+          acceso.status === 401
+            ? "Inicia sesión para consultar las solicitudes."
+            : "Tu cuenta no tiene acceso a las solicitudes.",
+      },
+      { status: acceso.status },
+    );
   }
 
   const { data, error } = await acceso.supabase
@@ -132,21 +125,10 @@ export async function GET() {
     .order("creado_en", { ascending: false });
 
   if (error) {
-    const { solicitudesMock } = await import("@/server/repositories/datos-mock");
-    return NextResponse.json({
-      solicitudes: solicitudesMock.map((s) => ({
-        id: s.id,
-        nombre_entidad: s.nombreEntidad,
-        persona_contacto: s.personaContacto,
-        correo: s.correo,
-        telefono: s.telefono,
-        descripcion_proyecto: s.descripcionProyecto,
-        tipo_organizacion: s.tipoOrganizacion,
-        fecha_tentativa: s.fechaTentativa,
-        estado: s.estado,
-        creado_en: s.creadoEn,
-      })),
-    });
+    return NextResponse.json(
+      { error: "No se pudieron consultar las solicitudes." },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ solicitudes: data });
@@ -154,6 +136,18 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   const acceso = await requireAdmin();
+
+  if (!acceso.authorized) {
+    return NextResponse.json(
+      {
+        error:
+          acceso.status === 401
+            ? "Inicia sesión para modificar las solicitudes."
+            : "Tu cuenta no tiene acceso a las solicitudes.",
+      },
+      { status: acceso.status },
+    );
+  }
 
   let body: { id?: string; estado?: string };
 
@@ -176,24 +170,19 @@ export async function PATCH(request: Request) {
     );
   }
 
-  if (acceso.authorized) {
-    const { data, error } = await acceso.supabase
-      .from("solicitudes_apoyo_social")
-      .update({ estado: body.estado })
-      .eq("id", body.id)
-      .select("id, estado")
-      .maybeSingle();
+  const { data, error } = await acceso.supabase
+    .from("solicitudes_apoyo_social")
+    .update({ estado: body.estado })
+    .eq("id", body.id)
+    .select("id, estado")
+    .maybeSingle();
 
-    if (!error && data) {
-      return NextResponse.json({ solicitud: data });
-    }
+  if (error || !data) {
+    return NextResponse.json(
+      { error: "No se pudo actualizar el estado de la solicitud." },
+      { status: 500 }
+    );
   }
 
-  // Modo local / offline
-  const { actualizarEstadoSolicitud } = await import("@/server/repositories/solicitudes");
-  await actualizarEstadoSolicitud(body.id, body.estado as never);
-
-  return NextResponse.json({
-    solicitud: { id: body.id, estado: body.estado },
-  });
+  return NextResponse.json({ solicitud: data });
 }

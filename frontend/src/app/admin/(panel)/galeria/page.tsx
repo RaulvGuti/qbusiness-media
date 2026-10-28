@@ -4,11 +4,15 @@ import {
   listarTodasLasEmpresas,
   listarTodosLosArchivos,
 } from "@/server/repositories/galeria";
+import { exigirAdminPrincipalPanel } from "@/server/auth/panel";
 import { GaleriaPanel } from "./GaleriaPanel";
 
 export const metadata = { title: "Galería | Admin" };
 
 export default async function GaleriaPage() {
+  // La galería es contenido de marca: solo la administra el principal (000038).
+  await exigirAdminPrincipalPanel();
+
   // SUPABASE (admin): carpetas_galeria, archivos_galeria y empresas.
   const [carpetas, archivos, empresas] = await Promise.all([
     listarTodasLasCarpetas(),

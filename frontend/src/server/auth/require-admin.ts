@@ -1,6 +1,38 @@
+import { cache } from "react";
 import { createSupabaseServerClient } from "@/server/supabase/server";
+import {
+  CAMPOS_ADMINISTRADOR,
+  mapearPerfilAdministrador,
+  type FilaAdministrador,
+} from "@/server/repositories/administradores";
+import type { PerfilAdministrador } from "@/types/admin";
 
-export async function requireAdmin() {
+/**
+ * Punto único de autorización para las rutas y acciones del panel (000038).
+ *
+ * `requireAdmin()` valida la sesión de Supabase Auth y que la persona siga
+ * existiendo en `administradores`; devuelve su perfil con el rol. Para las
+ * acciones exclusivas del administrador principal existe
+ * `requireAdminPrincipal()`.
+ *
+ * Las páginas usan los guards de `server/auth/panel.ts`, que redirigen en vez
+ * de devolver un estado HTTP.
+ */
+
+export type AccesoStaff =
+  | {
+      authorized: true;
+      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+      user: { id: string; email: string };
+      perfil: PerfilAdministrador;
+    }
+  | {
+      authorized: false;
+      status: 401 | 403;
+      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+    };
+
+export const requireAdmin = cache(async (): Promise<AccesoStaff> => {
   const supabase = await createSupabaseServerClient();
 
   const {
@@ -16,13 +48,13 @@ export async function requireAdmin() {
     };
   }
 
-  const { data: perfil, error } = await supabase
+  const { data: fila, error } = await supabase
     .from("administradores")
-    .select("id")
+    .select(CAMPOS_ADMINISTRADOR)
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error || !perfil) {
+  if (error || !fila) {
     return {
       authorized: false as const,
       status: 403,
@@ -33,6 +65,26 @@ export async function requireAdmin() {
   return {
     authorized: true as const,
     supabase,
-    user,
+    user: { id: user.id, email: user.email },
+    perfil: mapearPerfilAdministrador(fila as FilaAdministrador),
   };
+});
+
+/** Igual que `requireAdmin()`, pero además exige el rol admin_principal. */
+export async function requireAdminPrincipal(): Promise<AccesoStaff> {
+  const acceso = await requireAdmin();
+
+  if (!acceso.authorized) {
+    return acceso;
+  }
+
+  if (acceso.perfil.rol !== "admin_principal") {
+    return {
+      authorized: false as const,
+      status: 403,
+      supabase: acceso.supabase,
+    };
+  }
+
+  return acceso;
 }

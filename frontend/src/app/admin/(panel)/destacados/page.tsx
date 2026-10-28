@@ -4,12 +4,16 @@ import {
   listarTodasLasCarpetas,
   listarTodasLasEmpresas,
 } from "@/server/repositories/galeria";
+import { exigirAdminPrincipalPanel } from "@/server/auth/panel";
 import { construirCatalogo } from "./datos";
 import { DestacadosPanel } from "./DestacadosPanel";
 
 export const metadata = { title: "Destacados | Admin" };
 
 export default async function DestacadosPage() {
+  // Los destacados del inicio son contenido de marca: solo el principal (000038).
+  await exigirAdminPrincipalPanel();
+
   // SUPABASE (admin): destacados (con joins), carpetas_galeria y empresas.
   const [destacados, carpetas, empresas] = await Promise.all([
     listarDestacados(),

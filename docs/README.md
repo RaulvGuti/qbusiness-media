@@ -22,6 +22,7 @@ el cliente necesita saber para usar el sitio.
 | 04 | [`04-despliegue.md`](./04-despliegue.md) | Cómo se levanta y se publica el sitio, qué variables de entorno se leen en el build y cuáles en runtime, y cómo diagnosticar un build de Docker que falla. |
 | 05 | `05-modulos.md` | Qué hace cada pestaña y en qué punto va. *(pendiente)* |
 | 06 | `06-manual-cliente.md` | Lo que el cliente debe saber para usar el sitio. *(pendiente)* |
+| 07 | [`07_roles_y_permisos.md`](./07_roles_y_permisos.md) | Los roles `admin_principal` y `secretaria`, la matriz de permisos, la migración 000038 y dónde se aplica cada restricción en Supabase y Next.js. |
 
 ## Trabajo interno en curso
 

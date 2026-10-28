@@ -44,7 +44,23 @@ export async function proxy(request: NextRequest) {
 
   // Fuerza la renovacion si el token ya caduco. getClaims() valida la firma
   // del JWT, a diferencia de getSession() que solo lee la cookie sin verificarla.
-  await supabase.auth.getClaims();
+  const { data: sesion } = await supabase.auth.getClaims();
+
+  // Adelanto optimista para /admin/*: si no hay sesion valida, ni siquiera se
+  // renderiza el panel. El rol y la fila en `administradores` se comprueban
+  // despues en el layout y en cada pagina (proxy no es la capa de autorizacion).
+  const ruta = request.nextUrl.pathname;
+  if (ruta.startsWith("/admin/") && !sesion?.claims?.sub) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin";
+    url.search = "";
+
+    const redireccion = NextResponse.redirect(url);
+    // Conserva las cookies renovadas por getClaims() en la respuesta de salida.
+    response.cookies.getAll().forEach((cookie) => redireccion.cookies.set(cookie));
+
+    return redireccion;
+  }
 
   return response;
 }
