@@ -286,6 +286,7 @@ Migraciones existentes (`supabase/migrations/`):
 | `000036_dashboard_resumen_y_actividad.sql` | RPC de resumen y actividad del dashboard administrativo |
 | `000037_galeria_backend.sql` | RPC de carpetas, archivos, portadas y destacados de la galería |
 | `000038_roles_y_permisos_administrativos.sql` | Roles `admin_principal` y `secretaria`, RLS por rol, triggers de contenido y RPC de gestión de cuentas |
+| `000039_configuracion_textos_sitio.sql` | Grupos `general` y `sobre`, textos editables del hero, modal, header y footer, y defaults de contacto/redes/ubicación |
 
 Decisiones ya tomadas que hay que respetar:
 

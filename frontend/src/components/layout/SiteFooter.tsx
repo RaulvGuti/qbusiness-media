@@ -1,8 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
+import { crearEnlaceWhatsApp } from "@/lib/config-sitio";
+import type { ConfiguracionSitio } from "@/types/config";
 
-export function SiteFooter() {
+interface SiteFooterProps {
+  config: ConfiguracionSitio;
+}
+
+export function SiteFooter({ config }: SiteFooterProps) {
+  const anio = new Date().getFullYear();
+  const whatsapp = crearEnlaceWhatsApp(
+    config.contactoWhatsappNumero,
+    config.mensajeWhatsapp,
+  );
+
   return (
     <footer className="border-t border-qbIndigoHover bg-qbIndigo text-[#ECE7DE] mt-16 pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
@@ -16,92 +28,143 @@ export function SiteFooter() {
               className="h-16 sm:h-20 w-auto object-contain"
             />
             <p className="text-xs text-[#ECE7DE]/80 leading-relaxed">
-              Somos una agencia de medios y creatividad dedicada a contar historias que impactan.
-              Quetzaltenango, Guatemala.
+              {config.descripcionFooter}
             </p>
-            <div className="text-xs text-qbTerracotta font-semibold">
-              &quot;Tu historia, nuestra estrategia.&quot;
-            </div>
+            {config.slogan && (
+              <div className="text-xs text-qbTerracotta font-semibold">
+                &quot;{config.slogan}&quot;
+              </div>
+            )}
           </div>
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">Navegación</h4>
             <ul className="space-y-2 text-xs text-[#ECE7DE]/75">
-              <li>
-                <Link className="hover:text-qbTerracotta transition" href="/">
-                  Inicio
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-qbTerracotta transition" href="/portafolio">
-                  Portafolio Multimedia
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-qbTerracotta transition" href="/backstage">
-                  Backstage &amp; Producción
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-qbTerracotta transition" href="/resenas">
-                  Reseñas de Clientes
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-qbTerracotta transition" href="/renta">
-                  Renta de Estudio
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-qbTerracotta transition" href="/apoyo">
-                  Apoyo Social
-                </Link>
-              </li>
+              {config.footerNavegacion.map((enlace) => (
+                <li key={`${enlace.texto}-${enlace.href}`}>
+                  {enlace.href.startsWith("http") ? (
+                    <a
+                      className="hover:text-qbTerracotta transition"
+                      href={enlace.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {enlace.texto}
+                    </a>
+                  ) : (
+                    <Link
+                      className="hover:text-qbTerracotta transition"
+                      href={enlace.href}
+                    >
+                      {enlace.texto}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">Servicios</h4>
             <ul className="space-y-2 text-xs text-[#ECE7DE]/75">
-              <li>Producción Audiovisual 4K</li>
-              <li>Contenido Vertical 9:16</li>
-              <li>Fotografía Comercial de Producto</li>
-              <li>Producción de Podcasts Broadcast</li>
-              <li>Renta de Locación y Ciclorama</li>
-              <li>Cobertura de Eventos con Drone</li>
+              {config.footerServicios.map((servicio) => (
+                <li key={servicio}>{servicio}</li>
+              ))}
             </ul>
           </div>
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">Contacto Directo</h4>
             <ul className="space-y-2.5 text-xs text-[#ECE7DE]/75">
               <li className="flex items-center">
-                <Icon name="location-dot" className="text-qbTerracotta mr-2" /> Quetzaltenango, Guatemala
+                <Icon name="location-dot" className="text-qbTerracotta mr-2" />
+                {config.linkGoogleMaps ? (
+                  <a
+                    className="hover:text-qbTerracotta transition"
+                    href={config.linkGoogleMaps}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {config.ubicacionDireccion}
+                  </a>
+                ) : (
+                  config.ubicacionDireccion
+                )}
               </li>
               <li className="flex items-center">
-                <Icon name="whatsapp" className="text-qbSage mr-2" /> +502 5344 8587
+                <Icon name="whatsapp" className="text-qbSage mr-2" />
+                <a
+                  className="hover:text-qbSage transition"
+                  href={whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {config.contactoWhatsappNumero}
+                </a>
               </li>
               <li className="flex items-center">
-                <Icon name="envelope" className="text-qbTerracotta mr-2" /> contacto@qbusinessmedia.gt
+                <Icon name="envelope" className="text-qbTerracotta mr-2" />
+                <a
+                  className="hover:text-qbTerracotta transition"
+                  href={`mailto:${config.contactoEmail}`}
+                >
+                  {config.contactoEmail}
+                </a>
               </li>
-              <li className="flex items-center">
-                <Icon name="clock" className="text-qbSage mr-2" /> Lunes a Sábado: 8:00 - 18:00
-              </li>
+              {config.horaApertura && config.horaCierre && (
+                <li className="flex items-center">
+                  <Icon name="clock" className="text-qbSage mr-2" /> Lunes a Sábado:{" "}
+                  {config.horaApertura} - {config.horaCierre}
+                </li>
+              )}
             </ul>
           </div>
         </div>
         <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-[#ECE7DE]/60">
-          <p>© 2026 QBusiness Media. Todos los derechos reservados. Dirección General: Luis Gonzales.</p>
+          <p>
+            © {anio} QBusiness Media. Todos los derechos reservados. Dirección
+            General: {config.directorNombre}.
+          </p>
           <div className="flex space-x-4 text-base">
-            <a target="_blank" className="hover:text-qbTerracotta transition" href="https://instagram.com">
-              <Icon name="instagram" />
-            </a>{" "}
-            <a target="_blank" className="hover:text-qbSage transition" href="https://wa.me/50253448587">
+            {config.linkInstagram && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-qbTerracotta transition"
+                href={config.linkInstagram}
+                aria-label="Instagram"
+              >
+                <Icon name="instagram" />
+              </a>
+            )}
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-qbSage transition"
+              href={whatsapp}
+              aria-label="WhatsApp"
+            >
               <Icon name="whatsapp" />
-            </a>{" "}
-            <a target="_blank" className="hover:text-qbTerracotta transition" href="https://youtube.com">
-              <Icon name="youtube" />
-            </a>{" "}
-            <a target="_blank" className="hover:text-white transition" href="https://tiktok.com">
-              <Icon name="tiktok" />
             </a>
+            {config.linkYoutube && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-qbTerracotta transition"
+                href={config.linkYoutube}
+                aria-label="YouTube"
+              >
+                <Icon name="youtube" />
+              </a>
+            )}
+            {config.linkTiktok && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition"
+                href={config.linkTiktok}
+                aria-label="TikTok"
+              >
+                <Icon name="tiktok" />
+              </a>
+            )}
           </div>
         </div>
       </div>

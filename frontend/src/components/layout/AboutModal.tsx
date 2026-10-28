@@ -2,10 +2,48 @@
 
 import Image from "next/image";
 import { Icon } from "@/components/ui/Icon";
+import { interpolarTexto } from "@/lib/config-sitio";
+import type { ConfiguracionSitio } from "@/types/config";
 
-type Props = { open: boolean; onClose: () => void };
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  config: ConfiguracionSitio;
+};
 
-export function AboutModal({ open, onClose }: Props) {
+function TextoConEnfasis({
+  texto,
+  config,
+}: {
+  texto: string;
+  config: ConfiguracionSitio;
+}) {
+  const partes = texto.split(/(\{director\}|\{slogan\})/g);
+
+  return (
+    <>
+      {partes.map((parte, indice) => {
+        if (parte === "{director}") {
+          return (
+            <strong key={indice} className="text-qbInk">
+              {config.directorNombre}
+            </strong>
+          );
+        }
+        if (parte === "{slogan}") {
+          return (
+            <span key={indice} className="text-qbTerracotta font-semibold">
+              {config.slogan}
+            </span>
+          );
+        }
+        return <span key={indice}>{parte}</span>;
+      })}
+    </>
+  );
+}
+
+export function AboutModal({ open, onClose, config }: Props) {
   if (!open) return null;
 
   return (
@@ -37,33 +75,45 @@ export function AboutModal({ open, onClose }: Props) {
             </div>
           </div>
           <div className="space-y-4 text-sm text-qbMuted leading-relaxed">
-            <h3 className="text-2xl font-black text-qbInk">Sobre QBusiness Media</h3>
+            <h3 className="text-2xl font-black text-qbInk">
+              {interpolarTexto(config.sobreNosotrosTitulo, config)}
+            </h3>
             <p>
-              Fundada en Quetzaltenango bajo la visión directiva de{" "}
-              <strong className="text-qbInk">Luis Gonzales</strong>, QBusiness Media se ha consolidado como
-              una de las agencias de producción audiovisual y estrategia digital con mayor crecimiento y rigor
-              técnico en el occidente de Guatemala.
+              <TextoConEnfasis
+                texto={config.sobreNosotrosParrafo1}
+                config={config}
+              />
             </p>
             <p>
-              Nuestro lema{" "}
-              <span className="text-qbTerracotta font-semibold">
-                &quot;Tu historia, nuestra estrategia&quot;
-              </span>{" "}
-              resume el compromiso de convertir las metas de comunicación de marcas corporativas, pymes e
-              instituciones en piezas audiovisuales memorables con calidad cinematográfica.
+              <TextoConEnfasis
+                texto={config.sobreNosotrosParrafo2}
+                config={config}
+              />
             </p>
             <div className="grid grid-cols-3 gap-4 pt-4 border-t border-qbBorder text-center">
               <div className="bg-qbLinen p-3 rounded-xl border border-qbBorder">
-                <div className="text-xl font-bold text-qbTerracotta">+8 Años</div>
-                <div className="text-[11px] text-qbMuted">Trayectoria</div>
+                <div className="text-xl font-bold text-qbTerracotta">
+                  {config.stat1Numero}
+                </div>
+                <div className="text-[11px] text-qbMuted">
+                  {config.stat1Label}
+                </div>
               </div>
               <div className="bg-qbLinen p-3 rounded-xl border border-qbBorder">
-                <div className="text-xl font-bold text-qbSage">Top 1</div>
-                <div className="text-[11px] text-qbMuted">Estudio en Xela</div>
+                <div className="text-xl font-bold text-qbSage">
+                  {config.stat2Numero}
+                </div>
+                <div className="text-[11px] text-qbMuted">
+                  {config.stat2Label}
+                </div>
               </div>
               <div className="bg-qbLinen p-3 rounded-xl border border-qbBorder">
-                <div className="text-xl font-bold text-qbIndigo">4K / Cinema</div>
-                <div className="text-[11px] text-qbMuted">Equipo Pro</div>
+                <div className="text-xl font-bold text-qbIndigo">
+                  {config.stat3Numero}
+                </div>
+                <div className="text-[11px] text-qbMuted">
+                  {config.stat3Label}
+                </div>
               </div>
             </div>
           </div>

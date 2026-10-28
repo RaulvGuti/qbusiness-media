@@ -2,9 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { MediaPlaceholder } from "@/components/ui/MediaPlaceholder";
+import { crearEnlaceWhatsApp, interpolarTexto } from "@/lib/config-sitio";
+import type { ConfiguracionSitio } from "@/types/config";
 import styles from "./page.module.css";
 
-export function Vista() {
+interface VistaProps {
+  config: ConfiguracionSitio;
+}
+
+export function Vista({ config }: VistaProps) {
+  const whatsapp = crearEnlaceWhatsApp(
+    config.contactoWhatsappNumero,
+    config.mensajeWhatsapp,
+  );
   return (
     <section className={styles.page}>
       {/* HERO SECTION */}
@@ -24,14 +34,8 @@ export function Vista() {
           />
         </div>
 
-        <p className="text-lg sm:text-xl text-qbMuted font-normal leading-relaxed max-w-2xl mx-auto">
-          Videos que hacen que{" "}
-          <strong className="text-qbInk font-semibold">
-            tu marca se vea del tamaño que es
-          </strong>
-          . Soluciones audiovisuales profesionales, fotografía comercial,
-          podcasts y locación de estudio en Quetzaltenango bajo la dirección de
-          Luis Gonzales.
+        <p className="text-lg sm:text-xl text-qbMuted font-normal leading-relaxed max-w-2xl mx-auto whitespace-pre-line">
+          {interpolarTexto(config.heroSubtitulo, config)}
         </p>
 
         {/* BOTONES DE ACCIÓN */}
@@ -54,7 +58,7 @@ export function Vista() {
             target="_blank"
             rel="noopener noreferrer"
             className="border border-qbBorder bg-qbChalk text-qbInk hover:text-qbTerracotta font-semibold px-7 py-3.5 rounded-xl transition hover:border-qbTerracotta flex items-center"
-            href="https://wa.me/50212345678?text=Hola%20QBusiness%20Media,%20quisiera%20cotizar%20un%20servicio%20audiovisual"
+            href={whatsapp}
           >
             <Icon name="whatsapp" className="mr-2 text-qbSage" />
             Cotizar WhatsApp
@@ -65,26 +69,26 @@ export function Vista() {
         <div className="grid grid-cols-3 gap-6 pt-8 max-w-xl mx-auto border-t border-qbBorder">
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-qbInk">
-              +150
+              {config.heroStat1Numero}
             </div>
             <div className="text-xs text-qbMuted font-medium">
-              Proyectos Realizados
+              {config.heroStat1Label}
             </div>
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-qbSage">
-              100%
+              {config.heroStat2Numero}
             </div>
             <div className="text-xs text-qbMuted font-medium">
-              Clientes Satisfechos
+              {config.heroStat2Label}
             </div>
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-qbTerracotta">
-              4K Cinema
+              {config.heroStat3Numero}
             </div>
             <div className="text-xs text-qbMuted font-medium">
-              Estándar de Calidad
+              {config.heroStat3Label}
             </div>
           </div>
         </div>
@@ -351,7 +355,7 @@ export function Vista() {
             <div>
               <h3 className="text-xl font-bold text-qbInk">Ubicación del Estudio</h3>
               <span className="text-xs text-qbSage font-semibold">
-                Quetzaltenango, Guatemala
+                {config.ubicacionDireccion}
               </span>
             </div>
           </div>
@@ -367,16 +371,18 @@ export function Vista() {
               Estudio QBusiness Media
             </span>
             <span className="text-xs text-qbMuted">
-              Zona 3 / Quetzaltenango, Guatemala
+              {config.ubicacionDireccion}
             </span>
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 text-xs bg-qbTerracotta/15 text-qbTerracotta hover:bg-qbTerracotta hover:text-white px-3 py-1 rounded-md transition font-semibold"
-              href="https://maps.google.com"
-            >
-              Abrir en Google Maps
-            </a>
+            {config.linkGoogleMaps && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 text-xs bg-qbTerracotta/15 text-qbTerracotta hover:bg-qbTerracotta hover:text-white px-3 py-1 rounded-md transition font-semibold"
+                href={config.linkGoogleMaps}
+              >
+                Abrir en Google Maps
+              </a>
+            )}
           </div>
         </div>
 
@@ -399,57 +405,65 @@ export function Vista() {
           </p>
 
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group"
-              href="https://instagram.com"
-            >
-              <Icon
-                name="instagram"
-                className="text-xl text-pink-600 group-hover:scale-110 transition"
-              />
-              <span className="text-xs font-semibold text-qbInk">@qbusinessmedia</span>
-            </a>
+            {config.linkInstagram && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group"
+                href={config.linkInstagram}
+              >
+                <Icon
+                  name="instagram"
+                  className="text-xl text-pink-600 group-hover:scale-110 transition"
+                />
+                <span className="text-xs font-semibold text-qbInk">@qbusinessmedia</span>
+              </a>
+            )}
 
             <a
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbSage transition group"
-              href="https://wa.me/50259448587"
+              href={whatsapp}
             >
               <Icon
                 name="whatsapp"
                 className="text-xl text-qbSage group-hover:scale-110 transition"
               />
-              <span className="text-xs font-semibold text-qbInk">+502 5944 8587</span>
+              <span className="text-xs font-semibold text-qbInk">
+                {config.contactoWhatsappNumero}
+              </span>
             </a>
 
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group"
-              href="https://youtube.com"
-            >
-              <Icon
-                name="youtube"
-                className="text-xl text-red-600 group-hover:scale-110 transition"
-              />
-              <span className="text-xs font-semibold text-qbInk">YouTube Channel</span>
-            </a>
+            {config.linkYoutube && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group"
+                href={config.linkYoutube}
+              >
+                <Icon
+                  name="youtube"
+                  className="text-xl text-red-600 group-hover:scale-110 transition"
+                />
+                <span className="text-xs font-semibold text-qbInk">YouTube Channel</span>
+              </a>
+            )}
 
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbIndigo transition group"
-              href="https://tiktok.com"
-            >
-              <Icon
-                name="tiktok"
-                className="text-xl text-qbInk group-hover:scale-110 transition"
-              />
-              <span className="text-xs font-semibold text-qbInk">TikTok Shorts</span>
-            </a>
+            {config.linkTiktok && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbIndigo transition group"
+                href={config.linkTiktok}
+              >
+                <Icon
+                  name="tiktok"
+                  className="text-xl text-qbInk group-hover:scale-110 transition"
+                />
+                <span className="text-xs font-semibold text-qbInk">TikTok Shorts</span>
+              </a>
+            )}
           </div>
         </div>
       </div>

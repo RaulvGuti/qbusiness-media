@@ -1,5 +1,6 @@
 import shared from "../panel.module.css";
 import { listarConfiguracion } from "@/server/repositories/configuracion";
+import { valoresInicialesDesdeConfig } from "@/lib/config-sitio";
 import { exigirAdminPrincipalPanel } from "@/server/auth/panel";
 import { TextosForm } from "./TextosForm";
 
@@ -9,13 +10,10 @@ export default async function TextosPage() {
   // La configuración del sitio es exclusiva del administrador principal (000038).
   await exigirAdminPrincipalPanel();
 
-  // SUPABASE (anon/admin): SELECT * FROM configuracion_sitio ORDER BY grupo, clave;
+  // Filas reales + defaults del catálogo para que el formulario nunca quede
+  // con campos vacíos cuando la migración aún no se aplicó.
   const configs = await listarConfiguracion();
-
-  const valoresIniciales: Record<string, string> = {};
-  for (const c of configs) {
-    valoresIniciales[`${c.grupo}:${c.clave}`] = c.valor ?? "";
-  }
+  const valoresIniciales = valoresInicialesDesdeConfig(configs);
 
   return (
     <>
