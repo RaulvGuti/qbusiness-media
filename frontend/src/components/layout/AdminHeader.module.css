@@ -22,16 +22,34 @@
 }
 .nav {
   flex: 1;
+  min-width: 0;
   display: flex;
   justify-content: center;
+  justify-content: safe center;
   gap: 2px;
   overflow-x: auto;
-  scrollbar-width: none;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #5c5c5c #171717;
 }
 .nav::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+.nav::-webkit-scrollbar-track {
+  background: #171717;
+  border-radius: 999px;
+}
+.nav::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 999px;
+}
+.nav::-webkit-scrollbar-thumb:hover {
+  background: #777;
 }
 .link {
+  flex: none;
   border-radius: 12px;
   padding: 9px 13px;
   font-size: 13.5px;
