@@ -1,9 +1,17 @@
 import { Icon } from "@/components/ui/Icon";
-import ContactForm from '@/components/leads/ContactForm';
-import QuoteForm from '@/components/leads/QuoteForm';
-import MapEmbed from '@/components/leads/MapEmbed';
+import ContactForm from "@/components/leads/ContactForm";
+import QuoteForm from "@/components/leads/QuoteForm";
+import MapEmbed from "@/components/leads/MapEmbed";
+import { crearEnlaceWhatsApp } from "@/lib/config-sitio";
+import { obtenerConfiguracionSitio } from "@/server/repositories/configuracion";
 
-export default function ContactanosPage() {
+export default async function ContactanosPage() {
+  const config = await obtenerConfiguracionSitio();
+  const whatsapp = crearEnlaceWhatsApp(
+    config.contactoWhatsappNumero,
+    config.mensajeWhatsapp,
+  );
+
   return (
     <section className="page-stack">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-qbBorder pb-6">
@@ -17,7 +25,10 @@ export default function ContactanosPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <ContactForm />
-          <MapEmbed />
+          <MapEmbed
+            direccion={config.ubicacionDireccion}
+            linkMapa={config.linkGoogleMaps}
+          />
         </div>
         <div className="space-y-6">
           <QuoteForm />
@@ -26,15 +37,24 @@ export default function ContactanosPage() {
             <div className="space-y-2 text-sm text-qbMuted">
               <p className="flex items-center gap-2">
                 <Icon name="envelope" />
-                <span>hola@qbusinessmedia.com</span>
+                <a className="hover:text-qbTerracotta transition" href={`mailto:${config.contactoEmail}`}>
+                  {config.contactoEmail}
+                </a>
               </p>
               <p className="flex items-center gap-2">
                 <Icon name="whatsapp" />
-                <span>+502 5944 8587</span>
+                <a
+                  className="hover:text-qbSage transition"
+                  href={whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {config.contactoWhatsappNumero}
+                </a>
               </p>
               <p className="flex items-center gap-2">
                 <Icon name="location-dot" />
-                <span>Quetzaltenango, Guatemala</span>
+                <span>{config.ubicacionDireccion}</span>
               </p>
             </div>
           </div>

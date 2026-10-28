@@ -18,11 +18,12 @@ el cliente necesita saber para usar el sitio.
 | --- | --- | --- |
 | 01 | [`01-decisiones-tecnicas.md`](./01-decisiones-tecnicas.md) | Por qué Supabase y no Neon, por qué Docker como alternativa, por qué no hay pasarela de pagos todavía y qué tan difícil sería cambiar de base de datos. |
 | 02 | `02-base-de-datos.md` | Cómo se aplican las migraciones paso a paso. *(pendiente)* |
-| 03 | [`03-migraciones_esquema_v2.md`](./03-migraciones_esquema_v2.md) | La arquitectura final de la base de datos y la secuencia completa de migraciones (000001 → 000029). |
+| 03 | [`03_migraciones_esquema_v2.md`](./03_migraciones_esquema_v2.md) | La arquitectura final de la base de datos y la secuencia completa de migraciones (000001 → 000035). |
 | 04 | [`04-despliegue.md`](./04-despliegue.md) | Cómo se levanta y se publica el sitio, qué variables de entorno se leen en el build y cuáles en runtime, y cómo diagnosticar un build de Docker que falla. |
 | 05 | `05-modulos.md` | Qué hace cada pestaña y en qué punto va. *(pendiente)* |
 | 06 | `06-manual-cliente.md` | Lo que el cliente debe saber para usar el sitio. *(pendiente)* |
 | 07 | [`07_roles_y_permisos.md`](./07_roles_y_permisos.md) | Los roles `admin_principal` y `secretaria`, la matriz de permisos, la migración 000038 y dónde se aplica cada restricción en Supabase y Next.js. |
+| 08 | [`08_configuracion_dinamica_sitio.md`](./08_configuracion_dinamica_sitio.md) | Qué textos y enlaces del sitio se editan desde el panel, cómo se guardan, los placeholders y el formato de las listas del footer. |
 
 ## Trabajo interno en curso
 

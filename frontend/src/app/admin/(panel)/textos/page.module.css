@@ -57,6 +57,20 @@
   border-color: #fff;
   outline: 0;
 }
+.help {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6f6f6f;
+}
+.error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #5c1f1f;
+  border-radius: 12px;
+  background: #2a1111;
+  color: #ff9b9b;
+  font-size: 13px;
+}
 textarea.input {
   min-height: 90px;
   resize: vertical;

@@ -2,15 +2,23 @@
 
 import { Icon } from '@/components/ui/Icon';
 
-export default function MapEmbed() {
-  const direccion = 'Quetzaltenango, Guatemala';
-  const embedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3860.456!2d-91.526!3d14.834!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTTCsDUwJzAyLjQiTiA5McKwMzEnMzMuNiJX!5e0!3m2!1ses!2sgt!4v0';
+interface MapEmbedProps {
+  direccion: string;
+  linkMapa: string;
+}
+
+export default function MapEmbed({ direccion, linkMapa }: MapEmbedProps) {
+  const lugar = direccion.trim() || 'Quetzaltenango, Guatemala';
+  const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(lugar)}&output=embed`;
+  const urlMapa =
+    linkMapa.trim() ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lugar)}`;
 
   return (
     <div className="bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden shadow-sm">
       <div className="p-6 border-b border-qbBorder space-y-1">
         <h3 className="text-sm font-bold text-qbInk uppercase tracking-wider">Ubicación</h3>
-        <p className="text-sm text-qbMuted">{direccion}</p>
+        <p className="text-sm text-qbMuted">{lugar}</p>
       </div>
       <div className="aspect-[16/9] w-full bg-black/40">
         <iframe
@@ -21,12 +29,12 @@ export default function MapEmbed() {
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title={`Mapa - ${direccion}`}
+          title={`Mapa - ${lugar}`}
         />
       </div>
       <div className="p-4 border-t border-qbBorder flex justify-end">
         <a
-          href={`https://maps.google.com/?q=${encodeURIComponent(direccion)}`}
+          href={urlMapa}
           target="_blank"
           rel="noopener noreferrer"
           className="px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center"

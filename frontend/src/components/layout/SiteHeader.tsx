@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { crearEnlaceWhatsApp } from "@/lib/config-sitio";
+import type { ConfiguracionSitio } from "@/types/config";
 import { AboutModal } from "./AboutModal";
 
 const SECCIONES = [
@@ -16,13 +18,18 @@ const SECCIONES = [
   { href: "/apoyo", texto: "Apoyo Social" },
 ] as const;
 
-const WHATSAPP =
-  "https://wa.me/50259448587?text=Hola%20QBusiness%20Media,%20quisiera%20cotizar%20un%20servicio%20audiovisual";
+interface SiteHeaderProps {
+  config: ConfiguracionSitio;
+}
 
-export function SiteHeader() {
+export function SiteHeader({ config }: SiteHeaderProps) {
   const ruta = usePathname();
   const [menu, setMenu] = useState(false);
   const [sobre, setSobre] = useState(false);
+  const whatsapp = crearEnlaceWhatsApp(
+    config.contactoWhatsappNumero,
+    config.mensajeWhatsapp,
+  );
 
   return (
     <>
@@ -62,15 +69,15 @@ export function SiteHeader() {
               onClick={() => setSobre(true)}
               className="hidden items-center rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-white/20 md:inline-flex"
             >
-              <Icon name="info-circle" className="mr-1.5" /> Sobre Qbusiness MEDIA
+              <Icon name="info-circle" className="mr-1.5" /> {config.headerSobre}
             </button>
             <a
-              href={WHATSAPP}
+              href={whatsapp}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center rounded-xl bg-qbSage px-4 py-2.5 text-xs font-bold text-white transition duration-200 hover:bg-qbSageHover sm:text-sm"
             >
-              <Icon name="whatsapp" className="mr-1.5 text-base" /> Cotizar WhatsApp
+              <Icon name="whatsapp" className="mr-1.5 text-base" /> {config.headerCtaWhatsapp}
             </a>
             <Link
               href="/login"
@@ -113,12 +120,16 @@ export function SiteHeader() {
               }}
               className="block w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-white hover:bg-white/10"
             >
-              Sobre Qbusiness MEDIA
+              {config.headerSobre}
             </button>
           </div>
         )}
       </header>
-      <AboutModal open={sobre} onClose={() => setSobre(false)} />
+      <AboutModal
+        open={sobre}
+        onClose={() => setSobre(false)}
+        config={config}
+      />
     </>
   );
 }
