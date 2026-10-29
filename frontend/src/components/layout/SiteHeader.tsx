@@ -81,7 +81,7 @@ export function SiteHeader({ config }: SiteHeaderProps) {
             </a>
             <Link
               href="/login"
-              aria-label="Acceso administrativo"
+              aria-label="Acceso de clientes"
               className="nav-btn inline-flex rounded-xl p-2.5 text-sm"
             >
               <Icon name="lock" />
