@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
+import type { PerfilUsuario } from '@/types/config';
 
 export interface ReservaModalData {
   horas: number;
@@ -28,6 +30,8 @@ interface ReservaModalProps {
   isOpen: boolean;
   onClose: () => void;
   resumen: ReservaModalData;
+  /** Perfil del cliente autenticado; si es `null`, se bloquea el envío y se envía a registro. */
+  cliente?: PerfilUsuario | null;
   onSubmit?: (form: ReservaModalForm) => void | Promise<void>;
 }
 
@@ -45,13 +49,21 @@ export default function ReservaModal({
   isOpen,
   onClose,
   resumen,
+  cliente = null,
   onSubmit,
 }: ReservaModalProps) {
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState<ReservaModalForm>(() => ({
+    ...initialForm,
+    nombre: cliente?.nombreCompleto ?? '',
+    correo: cliente?.correo ?? '',
+    telefono: cliente?.telefono ?? '',
+  }));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const usuarioRegistrado = Boolean(cliente?.id);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -62,6 +74,10 @@ export default function ReservaModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!usuarioRegistrado) {
+      setError('Debes registrarte e iniciar sesión para poder solicitar una reserva.');
+      return;
+    }
     setEnviando(true);
     setError(null);
     try {
@@ -84,7 +100,12 @@ export default function ReservaModal({
   };
 
   const handleClose = () => {
-    setForm(initialForm);
+    setForm({
+      ...initialForm,
+      nombre: cliente?.nombreCompleto ?? '',
+      correo: cliente?.correo ?? '',
+      telefono: cliente?.telefono ?? '',
+    });
     setError(null);
     onClose();
   };
@@ -116,6 +137,37 @@ export default function ReservaModal({
           </button>
         </div>
 
+        {!usuarioRegistrado ? (
+          <div className="p-8 text-center space-y-4">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-qbLinen border border-qbBorder">
+              <Icon name="lock" className="text-qbMuted text-xl" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-qbInk">
+                Cuenta requerida para reservar
+              </h3>
+              <p className="text-sm text-qbMuted max-w-sm mx-auto">
+                Para solicitar la reserva del estudio debes estar registrado e iniciar sesión con tu cuenta de cliente.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="px-5 py-2.5 rounded-xl border border-qbBorder bg-qbChalk text-qbInk text-xs font-semibold hover:bg-qbChalkHover transition"
+              >
+                Cancelar
+              </button>
+              <Link
+                href="/login?registro=1&next=/renta"
+                className="px-6 py-2.5 rounded-xl bg-qbTerracotta text-white text-xs font-bold hover:bg-qbTerracotta/90 transition inline-flex items-center gap-2"
+              >
+                <Icon name="lock" />
+                Ir a registrarme
+              </Link>
+            </div>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
@@ -277,6 +329,7 @@ export default function ReservaModal({
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );
