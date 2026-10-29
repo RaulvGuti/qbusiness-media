@@ -24,6 +24,7 @@ el cliente necesita saber para usar el sitio.
 | 06 | `06-manual-cliente.md` | Lo que el cliente debe saber para usar el sitio. *(pendiente)* |
 | 07 | [`07_roles_y_permisos.md`](./07_roles_y_permisos.md) | Los roles `admin_principal` y `secretaria`, la matriz de permisos, la migración 000038 y dónde se aplica cada restricción en Supabase y Next.js. |
 | 08 | [`08_configuracion_dinamica_sitio.md`](./08_configuracion_dinamica_sitio.md) | Qué textos y enlaces del sitio se editan desde el panel, cómo se guardan, los placeholders y el formato de las listas del footer. |
+| 09 | [`09_reservas_con_cuenta.md`](./09_reservas_con_cuenta.md) | Por qué solicitar una reserva del estudio exige una cuenta de cliente, dónde se valida en cliente y servidor, y cómo se relaciona con el login de `/login` y `/admin`. |
 
 ## Trabajo interno en curso
 

@@ -1,6 +1,7 @@
 'use server';
 
 import { createSupabaseServerClient } from '@/server/supabase/server';
+import type { PerfilUsuario } from '@/types/config';
 import type {
   ConfiguracionEstudio,
   EquipoEstudio,
@@ -242,6 +243,14 @@ interface ConfiguracionRow {
   valor: string | null;
 }
 
+interface ClienteRow {
+  id: string;
+  nombre_completo: string;
+  correo: string;
+  telefono: string | null;
+  creado_en: string;
+}
+
 interface HorarioOcupadoRow {
   inicio: string;
   fin: string;
@@ -351,9 +360,52 @@ function mapearConfiguracionEstudio(filas: ConfiguracionRow[]): ConfiguracionEst
   };
 }
 
+function mapearCliente(row: ClienteRow): PerfilUsuario {
+  return {
+    id: row.id,
+    nombreCompleto: row.nombre_completo,
+    correo: row.correo,
+    telefono: row.telefono ?? null,
+    creadoEn: row.creado_en,
+  };
+}
+
 /* ==========================================================================
  * Consultas y mutaciones del repositorio de estudio
  * ========================================================================== */
+
+/**
+ * Obtiene el perfil del cliente autenticado en la sesión actual.
+ * Devuelve `null` si no hay sesión activa o si el usuario no está registrado
+ * en la tabla `clientes` (000012 / 000013).
+ */
+export async function obtenerPerfilClienteActual(): Promise<PerfilUsuario | null> {
+  if (!tieneConexionSupabase()) {
+    return null;
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return null;
+  }
+
+  const { data: fila, error } = await supabase
+    .from('clientes')
+    .select('id, nombre_completo, correo, telefono, creado_en')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (error || !fila) {
+    return null;
+  }
+
+  return mapearCliente(fila as ClienteRow);
+}
 
 export async function listarServiciosActivos(): Promise<ServicioEstudio[]> {
   if (!tieneConexionSupabase()) {
