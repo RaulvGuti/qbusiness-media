@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { crearEnlaceWhatsApp } from "@/lib/config-sitio";
+import { obtenerSupabase } from "@/lib/supabase/client";
 import type { ConfiguracionSitio } from "@/types/config";
 import { AboutModal } from "./AboutModal";
 
@@ -20,12 +21,53 @@ const SECCIONES = [
 
 interface SiteHeaderProps {
   config: ConfiguracionSitio;
+  sesionActiva?: boolean;
 }
 
-export function SiteHeader({ config }: SiteHeaderProps) {
+export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
   const ruta = usePathname();
+  const router = useRouter();
   const [menu, setMenu] = useState(false);
   const [sobre, setSobre] = useState(false);
+  const [autenticado, setAutenticado] = useState(sesionActiva);
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
+
+  useEffect(() => {
+    let sub: { unsubscribe: () => void } | null = null;
+    try {
+      const supabase = obtenerSupabase();
+      supabase.auth.getSession().then((res: { data: { session: unknown } }) => {
+        setAutenticado(Boolean(res.data.session));
+      });
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        (_event: string, session: unknown) => {
+          setAutenticado(Boolean(session));
+        },
+      );
+      sub = listener.subscription;
+    } catch {
+      // Sin variables de entorno de Supabase en build o modo offline
+    }
+    return () => {
+      sub?.unsubscribe();
+    };
+  }, []);
+
+  const handleCerrarSesion = async () => {
+    setCerrandoSesion(true);
+    try {
+      const supabase = obtenerSupabase();
+      await supabase.auth.signOut();
+      setAutenticado(false);
+      setMenu(false);
+      router.refresh();
+    } catch {
+      // Ignorar si no hay cliente configurado
+    } finally {
+      setCerrandoSesion(false);
+    }
+  };
+
   const whatsapp = crearEnlaceWhatsApp(
     config.contactoWhatsappNumero,
     config.mensajeWhatsapp,
@@ -79,13 +121,23 @@ export function SiteHeader({ config }: SiteHeaderProps) {
             >
               <Icon name="whatsapp" className="mr-1.5 text-base" /> {config.headerCtaWhatsapp}
             </a>
-            <Link
-              href="/login"
-              aria-label="Acceso administrativo"
-              className="nav-btn inline-flex rounded-xl p-2.5 text-sm"
-            >
-              <Icon name="lock" />
-            </Link>
+            {autenticado ? (
+              <button
+                type="button"
+                onClick={handleCerrarSesion}
+                disabled={cerrandoSesion}
+                className="nav-btn inline-flex items-center rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-white/20 disabled:opacity-60 cursor-pointer sm:text-sm"
+              >
+                {cerrandoSesion ? "Cerrando..." : "Cerrar sesión"}
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="nav-btn inline-flex items-center rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-white/20 sm:text-sm"
+              >
+                Iniciar sesión
+              </Link>
+            )}
             <button
               type="button"
               aria-label="Abrir menú"
@@ -122,6 +174,24 @@ export function SiteHeader({ config }: SiteHeaderProps) {
             >
               {config.headerSobre}
             </button>
+            {autenticado ? (
+              <button
+                type="button"
+                onClick={handleCerrarSesion}
+                disabled={cerrandoSesion}
+                className="block w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-white hover:bg-white/10 disabled:opacity-60"
+              >
+                {cerrandoSesion ? "Cerrando..." : "Cerrar sesión"}
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMenu(false)}
+                className="block w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-white hover:bg-white/10"
+              >
+                Iniciar sesión
+              </Link>
+            )}
           </div>
         )}
       </header>

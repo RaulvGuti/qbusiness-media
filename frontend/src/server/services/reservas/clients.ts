@@ -8,6 +8,7 @@ import {
   listarServiciosActivos,
   obtenerConfiguracionEstudio,
   obtenerHorariosOcupados,
+  obtenerPerfilClienteActual,
   solicitarReserva,
   subirComprobantePagoDeCliente,
 } from '@/server/repositories/estudio';
@@ -17,6 +18,7 @@ import {
   horarioDisponible,
   servicioDisponible,
 } from '@/server/services/reserva';
+import type { PerfilUsuario } from '@/types/config';
 import type {
   ConfiguracionEstudio,
   EquipoEstudio,
@@ -40,14 +42,20 @@ export async function obtenerCatalogoEstudioCliente(): Promise<{
   servicios: ServicioEstudio[];
   equipos: EquipoEstudio[];
   configuracion: ConfiguracionEstudio;
+  cliente: PerfilUsuario | null;
 }> {
-  const [servicios, equipos, configuracion] = await Promise.all([
+  const [servicios, equipos, configuracion, cliente] = await Promise.all([
     listarServiciosActivos(),
     listarEquiposActivos(),
     obtenerConfiguracionEstudio(),
+    obtenerPerfilClienteActual(),
   ]);
 
-  return { servicios, equipos, configuracion };
+  return { servicios, equipos, configuracion, cliente };
+}
+
+export async function obtenerSesionClienteReserva(): Promise<PerfilUsuario | null> {
+  return obtenerPerfilClienteActual();
 }
 
 export async function verificarDisponibilidadHorarioCliente(
@@ -116,6 +124,11 @@ export async function verificarDisponibilidadHorarioCliente(
 export async function enviarSolicitudReservaCliente(
   input: SolicitarReservaInput,
 ): Promise<{ reservaId: string }> {
+  const cliente = await obtenerPerfilClienteActual();
+  if (!cliente) {
+    throw new Error('Debes registrarte e iniciar sesión con tu cuenta para reservar el estudio.');
+  }
+
   const nombre = input.nombre?.trim() ?? '';
   const correo = input.correo?.trim() ?? '';
   const telefono = input.telefono?.trim() ?? '';

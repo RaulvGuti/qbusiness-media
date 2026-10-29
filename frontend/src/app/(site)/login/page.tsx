@@ -1,13 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { obtenerSupabase } from '@/lib/supabase/client';
 
-export default function LoginPage() {
-  const [isRegistering, setIsRegistering] = useState(false);
+const RUTAS_DESTINO_PERMITIDAS = new Set(['/renta', '/resenas', '/']);
+
+function normalizarDestino(nextParam: string | null): string {
+  if (nextParam && RUTAS_DESTINO_PERMITIDAS.has(nextParam)) {
+    return nextParam;
+  }
+  return '/resenas';
+}
+
+function LoginContenido() {
+  const searchParams = useSearchParams();
+  const registroInicial = searchParams.get('registro') === '1';
+  const destinoPosterior = normalizarDestino(searchParams.get('next'));
+
+  const [isRegistering, setIsRegistering] = useState(registroInicial);
   const [form, setForm] = useState({ email: '', password: '' });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,13 +42,19 @@ export default function LoginPage() {
       const supabase = obtenerSupabase();
 
       if (isRegistering) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
         });
 
         if (signUpError) {
           setError(signUpError.message);
+          return;
+        }
+
+        if (signUpData.session) {
+          router.push(destinoPosterior);
+          router.refresh();
           return;
         }
 
@@ -58,10 +77,11 @@ export default function LoginPage() {
           .eq('id', data.user.id)
           .single();
 
-        if (adminCheck) {
+        if (adminCheck && destinoPosterior !== '/renta') {
           router.push('/admin/dashboard');
         } else {
-          router.push('/resenas');
+          router.push(destinoPosterior);
+          router.refresh();
         }
       }
     } catch {
@@ -118,9 +138,14 @@ export default function LoginPage() {
           </h1>
           <p className="text-sm text-qbMuted">
             {isRegistering 
-              ? 'Regístrate para dejar reseñas y acceder a QBusiness Media.' 
+              ? 'Regístrate para reservar el estudio, dejar reseñas y acceder a QBusiness Media.' 
               : 'Acceso para administradores y clientes de QBusiness Media.'}
           </p>
+          {destinoPosterior === '/renta' && (
+            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
+              Para reservar el estudio debes registrarte o iniciar sesión con tu cuenta.
+            </p>
+          )}
         </div>
 
         <div className="bg-qbChalk border border-qbBorder rounded-3xl shadow-sm p-6 sm:p-8 space-y-5">
@@ -245,5 +270,13 @@ export default function LoginPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<section className="page-stack" />}>
+      <LoginContenido />
+    </Suspense>
   );
 }
