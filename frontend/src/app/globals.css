@@ -1,10 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #000000;
   --foreground: #f2f2f2;
+}
+
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jakarta), Inter, system-ui, sans-serif;
@@ -39,7 +40,8 @@ body {
   display: none;
 }
 
-/* Bloque de pagina estandar: misma geometria que tenian los page.module.css duplicados (.page { display:flex; flex-direction:column; gap:2rem }). */
+/* Bloque de pagina estandar: misma geometria que tenian los page.module.css
+   duplicados (.page { display:flex; flex-direction:column; gap:2rem }). */
 .page-stack {
   display: flex;
   flex-direction: column;
