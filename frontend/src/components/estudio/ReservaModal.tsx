@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
+import type { PerfilUsuario } from '@/types/config';
 
 export interface ReservaModalData {
   horas: number;
@@ -28,6 +29,8 @@ interface ReservaModalProps {
   isOpen: boolean;
   onClose: () => void;
   resumen: ReservaModalData;
+  /** Perfil del cliente autenticado; si es `null`, se bloquea el envío y se envía a registro. */
+  cliente?: PerfilUsuario | null;
   onSubmit?: (form: ReservaModalForm) => void | Promise<void>;
 }
 
@@ -45,13 +48,21 @@ export default function ReservaModal({
   isOpen,
   onClose,
   resumen,
+  cliente = null,
   onSubmit,
 }: ReservaModalProps) {
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState<ReservaModalForm>(() => ({
+    ...initialForm,
+    nombre: cliente?.nombreCompleto ?? '',
+    correo: cliente?.correo ?? '',
+    telefono: cliente?.telefono ?? '',
+  }));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const usuarioRegistrado = Boolean(cliente?.id);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -62,6 +73,10 @@ export default function ReservaModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!usuarioRegistrado) {
+      setError('Debes registrarte e iniciar sesión para poder solicitar una reserva.');
+      return;
+    }
     setEnviando(true);
     setError(null);
     try {
@@ -84,7 +99,12 @@ export default function ReservaModal({
   };
 
   const handleClose = () => {
-    setForm(initialForm);
+    setForm({
+      ...initialForm,
+      nombre: cliente?.nombreCompleto ?? '',
+      correo: cliente?.correo ?? '',
+      telefono: cliente?.telefono ?? '',
+    });
     setError(null);
     onClose();
   };

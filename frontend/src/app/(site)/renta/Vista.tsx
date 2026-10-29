@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import RentalCalculator from '@/components/estudio/RentalCalculator';
 import ReservaModal, { type ReservaModalData, type ReservaModalForm } from '@/components/estudio/ReservaModal';
 import { enviarSolicitudReservaCliente } from '@/server/services/reservas/clients';
+import type { PerfilUsuario } from '@/types/config';
 import type { EquipoEstudio, ServicioEstudio } from '@/types/estudio';
 
 /** Elemento multimedia que vendrá del Gestor de galería (módulo "Renta de estudio"). */
@@ -21,6 +23,8 @@ interface VistaProps {
   tarifaHora: number | null;
   /** Opcional: si no se pasa, solo se muestran los espacios vacíos. */
   medios?: MedioEstudio[];
+  /** Perfil del cliente autenticado; `null` si no ha iniciado sesión o no está registrado. */
+  cliente?: PerfilUsuario | null;
 }
 
 const defaultResumen: ReservaModalData = {
@@ -135,15 +139,29 @@ function GaleriaEstudio({ medios }: { medios: MedioEstudio[] }) {
 /* Vista                                                               */
 /* ------------------------------------------------------------------ */
 
-export function Vista({ servicios, equipos, tarifaHora, medios = [] }: VistaProps) {
+export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = null }: VistaProps) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [resumen, setResumen] = useState<ReservaModalData>(defaultResumen);
   const [exito, setExito] = useState(false);
 
   const tarifa = tarifaHora ?? 0;
   const sinTarifa = tarifaHora === null || tarifaHora <= 0;
+  const usuarioRegistrado = Boolean(cliente?.id);
+
+  const handleClickReservar = () => {
+    if (!usuarioRegistrado) {
+      router.push('/login?registro=1&next=/renta');
+      return;
+    }
+    setModalOpen(true);
+  };
 
   const handleReserva = async (form: ReservaModalForm) => {
+    if (!usuarioRegistrado) {
+      router.push('/login?registro=1&next=/renta');
+      return;
+    }
     await enviarSolicitudReservaCliente({
       nombre: form.nombre,
       correo: form.correo,
@@ -227,7 +245,7 @@ export function Vista({ servicios, equipos, tarifaHora, medios = [] }: VistaProp
             </dl>
             <button
               type="button"
-              onClick={() => setModalOpen(true)}
+              onClick={handleClickReservar}
               disabled={sinTarifa}
               className="w-full mt-2 px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center justify-center disabled:opacity-50"
             >
@@ -242,6 +260,7 @@ export function Vista({ servicios, equipos, tarifaHora, medios = [] }: VistaProp
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         resumen={resumen}
+        cliente={cliente}
         onSubmit={handleReserva}
       />
     </section>

@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { crearEnlaceWhatsApp } from "@/lib/config-sitio";
+import { obtenerSupabase } from "@/lib/supabase/client";
 import type { ConfiguracionSitio } from "@/types/config";
 import { AboutModal } from "./AboutModal";
 import { ScrollableNav, navLinkClass } from "./ScrollableNav";
@@ -21,11 +22,51 @@ const SECCIONES = [
 
 interface SiteHeaderProps {
   config: ConfiguracionSitio;
+  sesionActiva?: boolean;
 }
 
-export function SiteHeader({ config }: SiteHeaderProps) {
+export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
   const ruta = usePathname();
+  const router = useRouter();
   const [sobre, setSobre] = useState(false);
+  const [autenticado, setAutenticado] = useState(sesionActiva);
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
+
+  useEffect(() => {
+    let sub: { unsubscribe: () => void } | null = null;
+    try {
+      const supabase = obtenerSupabase();
+      supabase.auth.getSession().then((res: { data: { session: unknown } }) => {
+        setAutenticado(Boolean(res.data.session));
+      });
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        (_event: string, session: unknown) => {
+          setAutenticado(Boolean(session));
+        },
+      );
+      sub = listener.subscription;
+    } catch {
+      // Sin variables de entorno de Supabase en build o modo offline
+    }
+    return () => {
+      sub?.unsubscribe();
+    };
+  }, []);
+
+  const handleCerrarSesion = async () => {
+    setCerrandoSesion(true);
+    try {
+      const supabase = obtenerSupabase();
+      await supabase.auth.signOut();
+      setAutenticado(false);
+      router.refresh();
+    } catch {
+      // Ignorar si no hay cliente configurado
+    } finally {
+      setCerrandoSesion(false);
+    }
+  };
+
   const whatsapp = crearEnlaceWhatsApp(
     config.contactoWhatsappNumero,
     config.mensajeWhatsapp,
@@ -86,13 +127,25 @@ export function SiteHeader({ config }: SiteHeaderProps) {
                 {config.headerCtaWhatsapp}
               </span>
             </a>
-            <Link
-              href="/login"
-              aria-label="Acceso de clientes"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm text-white transition-colors hover:text-white/70"
-            >
-              <Icon name="lock" />
-            </Link>
+            {autenticado ? (
+              <button
+                type="button"
+                onClick={handleCerrarSesion}
+                disabled={cerrandoSesion}
+                aria-label="Cerrar sesión"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-sm text-white transition-colors hover:text-white/70 disabled:opacity-60"
+              >
+                <Icon name="lock" />
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                aria-label="Acceso de clientes"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-sm text-white transition-colors hover:text-white/70"
+              >
+                <Icon name="lock" />
+              </Link>
+            )}
           </div>
         </div>
       </header>
