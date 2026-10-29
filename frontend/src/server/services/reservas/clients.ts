@@ -54,10 +54,6 @@ export async function obtenerCatalogoEstudioCliente(): Promise<{
   return { servicios, equipos, configuracion, cliente };
 }
 
-export async function obtenerSesionClienteReserva(): Promise<PerfilUsuario | null> {
-  return obtenerPerfilClienteActual();
-}
-
 export async function verificarDisponibilidadHorarioCliente(
   fecha: string,
   horaInicio: string,

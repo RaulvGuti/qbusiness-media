@@ -22,6 +22,9 @@ Reglas de asignación:
 - Debe existir **al menos un** `admin_principal`: la base de datos impide degradar o quitar
   al último.
 - Una persona no puede quitarse su propio acceso al panel.
+- El único punto de entrada para las cuentas administrativas es `/admin`. El login público
+  `/login` es solo para clientes: si una cuenta de `administradores` intenta iniciar sesión
+  allí, se cierra su sesión y se le indica usar `/admin`.
 
 ## 2. Matriz de permisos
 
@@ -121,6 +124,9 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
 - **Perfil** (`/admin/perfil`): lee la fila real del usuario conectado. El principal ve además
   el equipo, puede crear cuentas, cambiar roles y quitar accesos; la secretaria ve su cuenta,
   su rol y el resumen de lo que puede hacer.
+- **`frontend/src/app/(site)/login/page.tsx`**: login público solo para clientes. Después de
+  autenticar, comprueba si la cuenta está en `administradores`; si lo está, cierra la sesión
+  local y le indica que use `/admin`, sin abrir el panel.
 - **`frontend/src/proxy.ts`**: si no hay sesión válida, redirige `/admin/*` a `/admin` antes de
   renderizar. No decide permisos: eso queda en el layout y en cada página, que sí consultan
   la base de datos.
@@ -141,11 +147,13 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
    - Ve el equipo, crea una cuenta nueva con rol Secretaría y recibe el mensaje de éxito.
    - Puede cambiar el rol de otra cuenta.
    - No puede quitarse su propio acceso ni dejar el sistema sin principal.
-3. Sin sesión:
+   - Si intenta entrar por `/login`, se cierra su sesión y se le indica usar `/admin`.
+3. Un cliente entra por `/login` y llega a `/resenas`.
+4. Sin sesión:
    - `/admin/dashboard` redirige a `/admin`.
    - Los endpoints `GET /api/api/contactos` y `GET/PATCH /api/api/solicitudes-apoyo`
      responden `401` en lugar de devolver datos de prueba.
-4. Cerrar sesión desde el botón del header vuelve a `/admin` y ya no permite entrar al panel.
+5. Cerrar sesión desde el botón del header vuelve a `/admin` y ya no permite entrar al panel.
 
 ## 7. Reglas para el futuro
 

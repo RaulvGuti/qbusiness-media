@@ -134,3 +134,22 @@
 .sitio .text-qbBorderDark {
     color: #E4E4E7 !important;
 }
+
+/* Las flechas del navbar público son botones, pero no deben heredar el
+   rectángulo negro con borde blanco de la regla general de botones. */
+.sitio .site-nav-arrow {
+    background-color: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.sitio .site-nav-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    border: 0 !important;
+    color: #ffffff !important;
+}
+
+.sitio .site-nav-arrow:hover * {
+    color: #ffffff !important;
+}
