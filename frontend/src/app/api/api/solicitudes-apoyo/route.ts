@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { requireAdmin } from "@/server/auth/require-admin";
+import { createSupabaseServerClient } from "@/server/supabase/server";
 
 const ESTADOS = [
   "nueva",
@@ -11,6 +12,13 @@ const ESTADOS = [
 
 export async function POST(request: Request) {
   try {
+    // Verify user session (any logged-in user)
+    const supabaseSrv = await createSupabaseServerClient();
+    const { data: { user }, error: authError } = await supabaseSrv.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Inicia sesión para enviar una solicitud de apoyo." }, { status: 401 });
+    }
+
     const body = await request.json();
 
     const nombreEntidad = String(body.nombreEntidad ?? body.nombreOrganizacion ?? "").trim();
@@ -21,16 +29,8 @@ export async function POST(request: Request) {
     const tipoEntidad = String(body.tipoEntidad ?? "").trim() || null;
     const fechaEvento = String(body.fechaEvento ?? "").trim() || null;
 
-    if (
-      !nombreEntidad ||
-      !personaContacto ||
-      !correo ||
-      !descripcion
-    ) {
-      return NextResponse.json(
-        { error: "Completa los campos obligatorios." },
-        { status: 400 }
-      );
+    if (!nombreEntidad || !personaContacto || !correo || !descripcion) {
+      return NextResponse.json({ error: "Completa los campos obligatorios." }, { status: 400 });
     }
 
     if (
@@ -41,10 +41,7 @@ export async function POST(request: Request) {
       descripcion.length > 5000 ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)
     ) {
-      return NextResponse.json(
-        { error: "Los datos ingresados no son válidos." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Los datos ingresados no son válidos." }, { status: 400 });
     }
 
     let guardadoEnDb = false;
@@ -64,7 +61,6 @@ export async function POST(request: Request) {
             fecha_tentativa: fechaEvento || null,
             estado: "nueva",
           });
-
         if (!error) {
           guardadoEnDb = true;
         } else {
@@ -76,7 +72,6 @@ export async function POST(request: Request) {
     }
 
     if (!guardadoEnDb) {
-      // Guardado local / offline
       const { crearSolicitud } = await import("@/server/repositories/solicitudes");
       await crearSolicitud({
         nombreEntidad,
@@ -89,16 +84,10 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json(
-      { mensaje: "Solicitud enviada correctamente." },
-      { status: 201 }
-    );
+    return NextResponse.json({ mensaje: "Solicitud enviada correctamente." }, { status: 201 });
   } catch (error) {
     console.error("Error procesando solicitud de apoyo:", error);
-    return NextResponse.json(
-      { error: "No se pudo procesar la solicitud." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "No se pudo procesar la solicitud." }, { status: 400 });
   }
 }
 
@@ -125,10 +114,7 @@ export async function GET() {
     .order("creado_en", { ascending: false });
 
   if (error) {
-    return NextResponse.json(
-      { error: "No se pudieron consultar las solicitudes." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "No se pudieron consultar las solicitudes." }, { status: 500 });
   }
 
   return NextResponse.json({ solicitudes: data });
@@ -154,20 +140,11 @@ export async function PATCH(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "La solicitud no contiene JSON válido." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "La solicitud no contiene JSON válido." }, { status: 400 });
   }
 
-  if (
-    !body.id ||
-    !ESTADOS.includes(body.estado as (typeof ESTADOS)[number])
-  ) {
-    return NextResponse.json(
-      { error: "Debes indicar una solicitud y un estado válido." },
-      { status: 400 }
-    );
+  if (!body.id || !ESTADOS.includes(body.estado as (typeof ESTADOS)[number])) {
+    return NextResponse.json({ error: "Debes indicar una solicitud y un estado válido." }, { status: 400 });
   }
 
   const { data, error } = await acceso.supabase
@@ -178,10 +155,7 @@ export async function PATCH(request: Request) {
     .maybeSingle();
 
   if (error || !data) {
-    return NextResponse.json(
-      { error: "No se pudo actualizar el estado de la solicitud." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "No se pudo actualizar el estado de la solicitud." }, { status: 500 });
   }
 
   return NextResponse.json({ solicitud: data });

@@ -1,10 +1,31 @@
+import Link from 'next/link';
 import EventosRealizados from './EventosRealizados';
 import SolicitudApoyoForm from '@/components/social/SolicitudApoyoForm';
 import { listarCarpetasPublicadasConPortada } from '@/server/repositories/galeria';
+import { createSupabaseServerClient } from '@/server/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ApoyoPage() {
+  // Verify user session; only logged‑in users can view the support form
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return (
+      <section className="page-stack">
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <p className="text-sm text-qbMuted">
+            Inicia sesión para acceder al formulario de apoyo social.
+          </p>
+          <Link href="/login" className="text-primary underline">
+            Ir al login
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   // carpetas_galeria estado='publicado' modulo='apoyo_social' + su portada
   const carpetas = await listarCarpetasPublicadasConPortada('apoyo_social');
 
