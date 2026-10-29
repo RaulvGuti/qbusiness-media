@@ -172,17 +172,6 @@ export const PESTANAS: PestanaConfig[] = [
               'Producción Audiovisual 4K\nContenido Vertical 9:16\nFotografía Comercial de Producto\nProducción de Podcasts Broadcast\nRenta de Locación y Ciclorama\nCobertura de Eventos con Drone',
             ayuda: 'Escribe un servicio por línea.',
           },
-          {
-            grupo: 'general',
-            clave: 'footer_navegacion',
-            etiqueta: 'Enlaces de navegación',
-            tipo: 'lineas',
-            alto: 170,
-            full: true,
-            defecto:
-              'Inicio | /\nPortafolio Multimedia | /portafolio\nBackstage & Producción | /backstage\nReseñas de Clientes | /resenas\nRenta de Estudio | /renta\nApoyo Social | /apoyo',
-            ayuda: 'Una línea por enlace con el formato: Texto | /ruta.',
-          },
         ],
       },
       {
@@ -426,6 +415,14 @@ export function parseEnlacesFooter(texto: string): EnlaceFooter[] {
 }
 
 /**
+ * Enlaces fijos del footer. Ya no se editan desde el panel de textos; la fila
+ * histórica de `configuracion_sitio` se sigue leyendo para conservar lo que ya
+ * estaba publicado, y este valor es el respaldo si no existe.
+ */
+const NAVEGACION_FOOTER_POR_DEFECTO =
+  'Inicio | /\nPortafolio Multimedia | /portafolio\nBackstage & Producción | /backstage\nReseñas de Clientes | /resenas\nRenta de Estudio | /renta\nApoyo Social | /apoyo';
+
+/**
  * Normaliza las filas de `configuracion_sitio` a un objeto tipado. Las claves
  * ausentes o con `null` usan el default del catálogo; una cadena vacía se
  * respeta porque el administrador pudo haber limpiado el campo.
@@ -473,7 +470,7 @@ export function construirConfiguracionSitio(
 
     footerServicios: parseLineas(leer('general', 'footer_servicios')),
     footerNavegacion: parseEnlacesFooter(
-      leer('general', 'footer_navegacion'),
+      leer('general', 'footer_navegacion') || NAVEGACION_FOOTER_POR_DEFECTO,
     ),
 
     sobreNosotrosTitulo: leer('sobre', 'sobre_nosotros_titulo'),
@@ -557,32 +554,6 @@ function validarLineas(campo: CampoConfig, valor: string): void {
 
   if (lineas.length > 30) {
     throw new Error(`"${campo.etiqueta}" admite como máximo 30 líneas.`);
-  }
-
-  if (campo.clave === 'footer_navegacion') {
-    for (const linea of lineas) {
-      const separador = linea.indexOf('|');
-      if (separador === -1) {
-        throw new Error(
-          'Cada enlace debe tener el formato: Texto | /ruta.',
-        );
-      }
-
-      const textoEnlace = linea.slice(0, separador).trim();
-      const href = linea.slice(separador + 1).trim();
-
-      if (!textoEnlace || !href) {
-        throw new Error(
-          'Cada enlace debe tener un texto y una ruta o URL.',
-        );
-      }
-
-      if ((!href.startsWith('/') || href.startsWith('//')) && !REGEX_URL.test(href)) {
-        throw new Error(
-          'Las rutas de navegación deben empezar con "/" o ser una URL https://.',
-        );
-      }
-    }
   }
 
   if (campo.clave === 'footer_servicios') {
