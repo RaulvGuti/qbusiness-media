@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [{ servicios, equipos, configuracion, cliente }, medios] = await Promise.all([
+  const [{ servicios, equipos, configuracion }, medios] = await Promise.all([
     obtenerCatalogoEstudioCliente(),
     // archivos de las carpetas publicadas del módulo "estudio"
     listarMediosPublicos("estudio"),
@@ -29,7 +29,6 @@ export default async function Page() {
       equipos={equipos}
       tarifaHora={configuracion.tarifaHora}
       medios={mediosEstudio}
-      cliente={cliente}
     />
   );
 }
