@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     .from("reservas")
     .select("id")
     .eq("cliente_id", user.id)
-    .neq("estado", "cancelada")
+    .eq("estado", "confirmada")
     .limit(1)
     .single();
 
@@ -34,12 +34,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Campos faltantes o inválidos" }, { status: 400 });
   }
 
+  // 3.1️⃣ Validar que la reserva_id (si se envía) pertenece al usuario y está confirmada
+  let reservaId = reserva.id;
+  if (reserva_id) {
+    const { data: reservaValid, error: errValid } = await supabase
+      .from("reservas")
+      .select("id")
+      .eq("id", reserva_id)
+      .eq("cliente_id", user.id)
+      .eq("estado", "confirmada")
+      .single();
+    if (errValid || !reservaValid) {
+      return NextResponse.json({ error: "La reserva indicada no es válida o no pertenece a tu cuenta" }, { status: 403 });
+    }
+    reservaId = reservaValid.id;
+  }
+
+  // 3.2️⃣ Evitar reseña duplicada para la misma reserva
+  const { data: existente, error: existenteError } = await supabase
+    .from("resenas_clientes")
+    .select("id")
+    .eq("reserva_id", reservaId)
+    .eq("cliente_id", user.id)
+    .limit(1)
+    .single();
+  if (existente) {
+    return NextResponse.json({ error: "Ya has dejado una reseña para esta reserva" }, { status: 409 });
+  }
+
   // 4️⃣ Insertar la reseña (se asume tabla resenas_clientes)
   const { data, error } = await supabase
     .from("resenas_clientes")
     .insert({
       cliente_id: user.id,
-      reserva_id: reserva_id ?? reserva.id,
+      reserva_id: reservaId,
       comentario,
       calificacion,
       estado: "pendiente",
@@ -56,30 +84,18 @@ export async function POST(request: Request) {
 }
 
 
+export async function GET(request: Request) {
   const auth = await requireAdmin();
-
   if (!auth.authorized) {
-    return NextResponse.json(
-      { error: "No autorizado" },
-      { status: auth.status },
-    );
+    return NextResponse.json({ error: "No autorizado" }, { status: auth.status });
   }
-
   const { data, error } = await auth.supabase
     .from("resenas_clientes")
     .select("*")
     .order("creado_en", { ascending: false });
-
   if (error) {
     console.error("Error al consultar reseñas:", error);
-
-    return NextResponse.json(
-      { error: "No se pudieron cargar las reseñas" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "No se pudieron cargar las reseñas" }, { status: 500 });
   }
-
-  return NextResponse.json({
-    resenas: data ?? [],
-  });
+  return NextResponse.json({ resenas: data ?? [] });
 }
