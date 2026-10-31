@@ -9,23 +9,36 @@ import { motivoBloqueoResena } from '@/server/services/resenas';
 
 interface VistaProps {
   resenas: ResenaCliente[];
+  tieneSesion: boolean;
+  reservaCompletada: { id: string; estado: 'completada' } | null;
 }
 
-export function Vista({ resenas }: VistaProps) {
+export function Vista({ resenas, tieneSesion, reservaCompletada }: VistaProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
-  // SUPABASE (al conectar): comprobar sesión con supabase.auth.getClaims()
-  // y buscar la reserva más reciente completada del cliente.
-  const tieneSesion = false;
-  const reservaCompletada = null;
   const bloqueo = motivoBloqueoResena(tieneSesion, reservaCompletada);
 
   const handleSubmitReview = async (form: ResenaClienteInput) => {
-    // SUPABASE (al conectar):
-    //   supabase.from('resenas_clientes').insert({ ...form, origen: 'cliente', estado: 'pendiente' })
-    // La RLS exige reserva propia COMPLETADA. La reseña nace 'pendiente'
-    // y un administrador la aprueba.
-    void form;
+    const respuesta = await fetch('/api/api/resenas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reserva_id: form.reservaId || reservaCompletada?.id,
+        autor: form.autor,
+        empresa_autor: form.empresaAutor ?? null,
+        comentario: form.comentario,
+        calificacion: form.calificacion,
+        video_url: form.videoUrl ?? null,
+        video_proporcion: form.videoUrl ? form.videoProporcion ?? null : null,
+      }),
+    });
+
+    const datos = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+      throw new Error(datos.error ?? 'No se pudo enviar la reseña.');
+    }
+
     setModalOpen(false);
   };
 
@@ -62,6 +75,7 @@ export function Vista({ resenas }: VistaProps) {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         bloqueo={bloqueo}
+        reservaId={reservaCompletada?.id}
         onSubmit={handleSubmitReview}
       />
     </section>
