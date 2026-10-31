@@ -19,6 +19,7 @@ function LoginContenido() {
   const searchParams = useSearchParams();
   const registroInicial = searchParams.get('registro') === '1';
   const destinoPosterior = normalizarDestino(searchParams.get('next'));
+  const errorOauth = searchParams.get('error') === 'oauth';
 
   const [isRegistering, setIsRegistering] = useState(registroInicial);
   const [form, setForm] = useState({ email: '', password: '' });
@@ -109,7 +110,7 @@ function LoginContenido() {
       const { error: googleError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destinoPosterior)}`,
         },
       });
 
@@ -224,6 +225,12 @@ function LoginContenido() {
                 className="w-full bg-white border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbInk transition shadow-sm"
               />
             </div>
+
+            {errorOauth && !error && (
+              <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                No se pudo completar el inicio de sesión con Google. Intenta de nuevo.
+              </p>
+            )}
 
             {error && (
               <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
