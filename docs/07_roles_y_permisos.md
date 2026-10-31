@@ -24,7 +24,8 @@ Reglas de asignación:
 - Una persona no puede quitarse su propio acceso al panel.
 - El único punto de entrada para las cuentas administrativas es `/admin`. El login público
   `/login` es solo para clientes: si una cuenta de `administradores` intenta iniciar sesión
-  allí, se cierra su sesión y se le indica usar `/admin`.
+  allí, se cierra su sesión y solo se muestra un aviso de que no hay acceso administrativo
+  desde el login de usuarios, sin revelar la ruta del panel.
 
 ## 2. Matriz de permisos
 
@@ -126,7 +127,7 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
   su rol y el resumen de lo que puede hacer.
 - **`frontend/src/app/(site)/login/page.tsx`**: login público solo para clientes. Después de
   autenticar, comprueba si la cuenta está en `administradores`; si lo está, cierra la sesión
-  local y le indica que use `/admin`, sin abrir el panel.
+  local y solo muestra el aviso de que no hay acceso administrativo desde ese login.
 - **`frontend/src/proxy.ts`**: si no hay sesión válida, redirige `/admin/*` a `/admin` antes de
   renderizar. No decide permisos: eso queda en el layout y en cada página, que sí consultan
   la base de datos.
@@ -147,7 +148,8 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
    - Ve el equipo, crea una cuenta nueva con rol Secretaría y recibe el mensaje de éxito.
    - Puede cambiar el rol de otra cuenta.
    - No puede quitarse su propio acceso ni dejar el sistema sin principal.
-   - Si intenta entrar por `/login`, se cierra su sesión y se le indica usar `/admin`.
+   - Si intenta entrar por `/login`, se cierra su sesión y solo ve el aviso de que no hay
+     acceso administrativo desde el login de usuarios.
 3. Un cliente entra por `/login` y llega a `/resenas`.
 4. Sin sesión:
    - `/admin/dashboard` redirige a `/admin`.

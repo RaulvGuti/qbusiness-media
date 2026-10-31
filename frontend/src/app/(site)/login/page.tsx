@@ -25,7 +25,6 @@ function LoginContenido() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [errorAdmin, setErrorAdmin] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
 
@@ -38,7 +37,6 @@ function LoginContenido() {
     e.preventDefault();
     setEnviando(true);
     setError(null);
-    setErrorAdmin(false);
     setSuccessMessage(null);
 
     try {
@@ -88,8 +86,7 @@ function LoginContenido() {
 
         if (adminCheck) {
           await supabase.auth.signOut({ scope: 'local' });
-          setError('El acceso administrativo se realiza únicamente en /admin.');
-          setErrorAdmin(true);
+          setError('No hay acceso administrativo desde el inicio de sesión de usuarios.');
           return;
         }
 
@@ -238,15 +235,6 @@ function LoginContenido() {
               </p>
             )}
 
-            {errorAdmin && (
-              <Link
-                href="/admin"
-                className="block text-center text-xs font-semibold text-qbIndigo hover:underline"
-              >
-                Ir al acceso administrativo
-              </Link>
-            )}
-
             {successMessage && (
               <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                 {successMessage}
@@ -275,7 +263,6 @@ function LoginContenido() {
                 onClick={() => {
                   setIsRegistering(!isRegistering);
                   setError(null);
-                  setErrorAdmin(false);
                   setSuccessMessage(null);
                 }}
                 className="text-sm text-qbMuted hover:text-qbInk transition cursor-pointer font-medium"
