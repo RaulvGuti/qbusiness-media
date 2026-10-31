@@ -9,8 +9,6 @@ interface ReviewModalProps {
   onClose: () => void;
   /** Motivo por el que no se puede dejar reseña (sesión / reserva completada). */
   bloqueo?: string | null;
-  /** Reserva completada detectada en el servidor; se precarga en el formulario. */
-  reservaId?: string;
   onSubmit?: (form: ResenaClienteInput) => Promise<void> | void;
 }
 
@@ -24,19 +22,9 @@ const initialForm = {
   reservaId: '',
 };
 
-export default function ReviewModal({
-  isOpen,
-  onClose,
-  bloqueo,
-  reservaId,
-  onSubmit,
-}: ReviewModalProps) {
-  const [form, setForm] = useState(() => ({
-    ...initialForm,
-    reservaId: reservaId ?? '',
-  }));
+export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: ReviewModalProps) {
+  const [form, setForm] = useState(initialForm);
   const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -66,11 +54,10 @@ export default function ReviewModal({
     e.preventDefault();
     if (bloqueo) return;
     setEnviando(true);
-    setError('');
     try {
       const input: ResenaClienteInput = {
-        // reserva_id debe ser una reserva propia en estado 'completada'
-        // (lo vuelve a validar el endpoint y la RLS de resenas_clientes).
+        // SUPABASE (al conectar): reserva_id debe ser una reserva propia
+        // en estado 'completada' (RLS de resenas_clientes).
         reservaId: form.reservaId,
         autor: form.autor,
         empresaAutor: form.empresaAutor || undefined,
@@ -80,12 +67,8 @@ export default function ReviewModal({
         videoProporcion: form.videoUrl ? form.videoProporcion : undefined,
       };
       await onSubmit?.(input);
-      setForm({ ...initialForm, reservaId: reservaId ?? '' });
+      setForm(initialForm);
       onClose();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'No se pudo enviar la reseña.'
-      );
     } finally {
       setEnviando(false);
     }
@@ -93,7 +76,6 @@ export default function ReviewModal({
 
   const handleClose = () => {
     setForm(initialForm);
-    setError('');
     onClose();
   };
 
@@ -263,15 +245,6 @@ export default function ReviewModal({
                 )}
               </div>
             </div>
-
-            {error ? (
-              <p
-                role="alert"
-                className="text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3"
-              >
-                {error}
-              </p>
-            ) : null}
 
             <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-qbBorder">
               <button

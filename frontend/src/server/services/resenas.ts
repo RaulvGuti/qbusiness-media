@@ -8,14 +8,14 @@ import type { ReservaEstudio } from '@/types/estudio';
  */
 export function puedeDejarResena(
   tieneSesion: boolean,
-  reservaPropia: Pick<ReservaEstudio, 'estado'> | null,
+  reservaPropia: ReservaEstudio | null,
 ): boolean {
   return tieneSesion && reservaPropia !== null && reservaPropia.estado === 'completada';
 }
 
 export function motivoBloqueoResena(
   tieneSesion: boolean,
-  reservaPropia: Pick<ReservaEstudio, 'estado'> | null,
+  reservaPropia: ReservaEstudio | null,
 ): string | null {
   if (!tieneSesion) {
     return 'Inicia sesión con tu cuenta de cliente para dejar una reseña.';

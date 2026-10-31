@@ -1,120 +1,18 @@
-import { createSupabaseServerClient } from '@/server/supabase/server';
 import type { EstadoResena, ResenaCliente, ResenaClienteInput } from '@/types/resenas';
 import { resenasMock } from './datos-mock';
 
 /**
  * Repositorio de resenas_clientes (000009 + 000026).
+ * Hoy: datos mock. Al conectar Supabase:
+ *   supabase.from('resenas_clientes').select(...)
  * Lectura pública solo de estado='aprobada' (RLS resenas_lectura_aprobadas).
  * INSERT de cliente: solo con sesión y reserva COMPLETADA (RLS).
  * INSERT/UPDATE de admin (origen='admin') salta esa restricción.
  */
-
-interface ResenaPublicaRow {
-  id: string;
-  autor: string;
-  empresa_autor: string | null;
-  comentario: string;
-  calificacion: number | null;
-  video_url: string | null;
-  video_proporcion: '16/9' | '9/16' | null;
-  origen: 'cliente' | 'admin';
-  carpeta_id: string | null;
-  creado_en: string;
-}
-
-export interface ReservaResenable {
-  id: string;
-  estado: 'completada';
-}
-
-function tieneConexionSupabase(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
-  return (
-    Boolean(url && anonKey) &&
-    !url.includes('tu-proyecto.supabase.co') &&
-    anonKey !== 'tu-anon-key-publica'
-  );
-}
-
 export async function listarResenasAprobadas(): Promise<ResenaCliente[]> {
-  if (!tieneConexionSupabase()) {
-    return resenasMock.filter((r) => r.estado === 'aprobada');
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from('resenas_publicas')
-    .select(
-      'id, autor, empresa_autor, comentario, calificacion, video_url, video_proporcion, origen, carpeta_id, creado_en',
-    )
-    .order('creado_en', { ascending: false });
-
-  if (error) {
-    throw new Error('No se pudieron cargar las reseñas.');
-  }
-
-  return ((data ?? []) as ResenaPublicaRow[]).map((row) => ({
-    id: row.id,
-    reservaId: null,
-    clienteId: null,
-    autor: row.autor,
-    empresaAutor: row.empresa_autor,
-    comentario: row.comentario,
-    calificacion: row.calificacion,
-    estado: 'aprobada',
-    carpetaId: row.carpeta_id,
-    videoUrl: row.video_url,
-    videoProporcion: row.video_proporcion,
-    origen: row.origen,
-    creadoEn: row.creado_en,
-  }));
-}
-
-/**
- * Reserva completada del cliente que aún no tiene reseña. Es la que se ofrece
- * en el formulario público; el endpoint vuelve a validar propiedad y estado.
- */
-export async function obtenerReservaResenable(
-  clienteId: string,
-): Promise<ReservaResenable | null> {
-  if (!tieneConexionSupabase()) {
-    return null;
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const { data: reservas, error } = await supabase
-    .from('reservas')
-    .select('id')
-    .eq('cliente_id', clienteId)
-    .eq('estado', 'completada')
-    .order('fecha_hora_fin', { ascending: false });
-
-  if (error) {
-    throw new Error('No se pudieron consultar las reservas del cliente.');
-  }
-
-  const ids = ((reservas ?? []) as { id: string }[]).map((r) => r.id);
-  if (ids.length === 0) {
-    return null;
-  }
-
-  const { data: resenas, error: errorResenas } = await supabase
-    .from('resenas_clientes')
-    .select('reserva_id')
-    .eq('cliente_id', clienteId)
-    .in('reserva_id', ids);
-
-  if (errorResenas) {
-    throw new Error('No se pudieron consultar las reseñas del cliente.');
-  }
-
-  const usadas = new Set(
-    ((resenas ?? []) as { reserva_id: string | null }[]).map((r) => r.reserva_id),
-  );
-  const libre = ids.find((id) => !usadas.has(id));
-
-  return libre ? { id: libre, estado: 'completada' } : null;
+  // SUPABASE (anon/auth): SELECT * FROM resenas_clientes
+  // WHERE estado = 'aprobada' ORDER BY creado_en DESC;
+  return Promise.resolve(resenasMock.filter((r) => r.estado === 'aprobada'));
 }
 
 export async function listarTodasLasResenas(): Promise<ResenaCliente[]> {
