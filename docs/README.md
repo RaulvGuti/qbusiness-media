@@ -25,6 +25,8 @@ el cliente necesita saber para usar el sitio.
 | 07 | [`07_roles_y_permisos.md`](./07_roles_y_permisos.md) | Los roles `admin_principal` y `secretaria`, la matriz de permisos, la migración 000038 y dónde se aplica cada restricción en Supabase y Next.js. |
 | 08 | [`08_configuracion_dinamica_sitio.md`](./08_configuracion_dinamica_sitio.md) | Qué textos y enlaces del sitio se editan desde el panel, cómo se guardan, los placeholders y el formato de las listas del footer. |
 | 09 | [`09_reservas_con_cuenta.md`](./09_reservas_con_cuenta.md) | Por qué solicitar una reserva del estudio exige una cuenta de cliente, dónde se valida en cliente y servidor, y cómo se relaciona con el login de `/login` y `/admin`. |
+| 10 | [`10_cuenta_de_clientes_compartida.md`](./10_cuenta_de_clientes_compartida.md) | La cuenta de cliente compartida por el equipo: qué es, cómo se creó, riesgos, rotación y verificación. |
+| 11 | [`11_login_google_callback.md`](./11_login_google_callback.md) | Cómo se completa el inicio de sesión con Google, la ruta `/auth/callback` y la configuración requerida en Supabase. |
 
 ## Trabajo interno en curso
 
