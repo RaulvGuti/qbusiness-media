@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { crearEnlaceWhatsApp } from "@/lib/config-sitio";
 import { obtenerSupabase } from "@/lib/supabase/client";
@@ -20,6 +20,10 @@ const SECCIONES = [
   { href: "/apoyo", texto: "Apoyo Social" },
 ] as const;
 
+const suscribirNada = () => () => {};
+const valorCliente = () => true;
+const valorServidor = () => false;
+
 interface SiteHeaderProps {
   config: ConfiguracionSitio;
   sesionActiva?: boolean;
@@ -31,6 +35,12 @@ export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
   const [sobre, setSobre] = useState(false);
   const [autenticado, setAutenticado] = useState(sesionActiva);
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
+  const montado = useSyncExternalStore(
+    suscribirNada,
+    valorCliente,
+    valorServidor,
+  );
+  const rutaCliente = montado ? ruta : null;
 
   useEffect(() => {
     let sub: { unsubscribe: () => void } | null = null;
@@ -71,6 +81,11 @@ export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
     config.contactoWhatsappNumero,
     config.mensajeWhatsapp,
   );
+
+  const hrefAcceso =
+    rutaCliente === "/renta" || rutaCliente === "/resenas"
+      ? `/login?next=${encodeURIComponent(rutaCliente)}`
+      : "/login";
 
   return (
     <>
@@ -142,11 +157,7 @@ export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
               </button>
             ) : (
               <Link
-                href={
-                  ruta === "/renta" || ruta === "/resenas"
-                    ? `/login?next=${encodeURIComponent(ruta)}`
-                    : "/login"
-                }
+                href={hrefAcceso}
                 aria-label="Acceso de clientes"
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm text-white transition-colors hover:bg-white/10 sm:px-3"
               >
