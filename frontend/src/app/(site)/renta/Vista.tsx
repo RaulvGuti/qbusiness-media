@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import RentalCalculator from '@/components/estudio/RentalCalculator';
 import ReservaModal, { type ReservaModalData, type ReservaModalForm } from '@/components/estudio/ReservaModal';
+import { obtenerSupabase } from '@/lib/supabase/client';
 import { enviarSolicitudReservaCliente } from '@/server/services/reservas/clients';
 import type { PerfilUsuario } from '@/types/config';
 import type { EquipoEstudio, ServicioEstudio } from '@/types/estudio';
@@ -139,15 +140,109 @@ function GaleriaEstudio({ medios }: { medios: MedioEstudio[] }) {
 /* Vista                                                               */
 /* ------------------------------------------------------------------ */
 
+function perfilDesdeSesionUsuario(user: {
+  id?: string;
+  email?: string;
+  phone?: string;
+  created_at?: string;
+  user_metadata?: Record<string, unknown>;
+} | null | undefined): PerfilUsuario | null {
+  if (!user?.id) return null;
+  const meta = user.user_metadata ?? {};
+  const nombre =
+    (typeof meta.nombre_completo === 'string' && meta.nombre_completo.trim()) ||
+    (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+    (typeof meta.name === 'string' && meta.name.trim()) ||
+    (user.email ? user.email.split('@')[0] : 'Cliente');
+  const telefono =
+    typeof meta.telefono === 'string' && meta.telefono.trim()
+      ? meta.telefono.trim()
+      : user.phone ?? null;
+
+  return {
+    id: user.id,
+    nombreCompleto: nombre,
+    correo: user.email ?? '',
+    telefono,
+    creadoEn: user.created_at ?? new Date().toISOString(),
+  };
+}
+
 export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = null }: VistaProps) {
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [resumen, setResumen] = useState<ReservaModalData>(defaultResumen);
-  const [exito, setExito] = useState(false);
-
   const tarifa = tarifaHora ?? 0;
   const sinTarifa = tarifaHora === null || tarifaHora <= 0;
-  const usuarioRegistrado = Boolean(cliente?.id);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [resumen, setResumen] = useState<ReservaModalData>(() => ({
+    ...defaultResumen,
+    tarifaBase: tarifa * 2,
+    total: tarifa * 2,
+  }));
+  const [exito, setExito] = useState(false);
+  const [clienteSesion, setClienteSesion] = useState<PerfilUsuario | null>(cliente);
+
+  useEffect(() => {
+    let sub: { unsubscribe: () => void } | null = null;
+    try {
+      const supabase = obtenerSupabase();
+      supabase.auth
+        .getSession()
+        .then(
+          (res: {
+            data: {
+              session: {
+                user?: {
+                  id?: string;
+                  email?: string;
+                  phone?: string;
+                  created_at?: string;
+                  user_metadata?: Record<string, unknown>;
+                };
+              } | null;
+            };
+          }) => {
+            const u = res.data.session?.user;
+            if (u) {
+              setClienteSesion((prev) => prev ?? perfilDesdeSesionUsuario(u));
+            } else {
+              setClienteSesion(null);
+            }
+          },
+        )
+        .catch(() => undefined);
+
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        (
+          _event: string,
+          session: {
+            user?: {
+              id?: string;
+              email?: string;
+              phone?: string;
+              created_at?: string;
+              user_metadata?: Record<string, unknown>;
+            };
+          } | null,
+        ) => {
+          if (session?.user) {
+            setClienteSesion((prev) => prev ?? perfilDesdeSesionUsuario(session.user));
+          } else {
+            setClienteSesion(null);
+          }
+        },
+      );
+      sub = listener.subscription;
+    } catch {
+      // Sin variables de entorno de Supabase en build o modo offline
+    }
+    return () => {
+      sub?.unsubscribe();
+    };
+  }, []);
+
+  const clienteActivo = cliente ?? clienteSesion;
+  const usuarioRegistrado = Boolean(clienteActivo?.id);
 
   const handleClickReservar = () => {
     if (!usuarioRegistrado) {
@@ -247,7 +342,7 @@ export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = n
               type="button"
               onClick={handleClickReservar}
               disabled={sinTarifa}
-              className="w-full mt-2 px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center justify-center disabled:opacity-50 cursor-pointer"
+              className="w-full mt-2 px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <Icon name={usuarioRegistrado ? "calendar" : "lock"} className="mr-2" />
               {usuarioRegistrado ? "Solicitar reserva" : "Regístrate para reservar"}
@@ -263,10 +358,11 @@ export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = n
       </div>
 
       <ReservaModal
+        key={clienteActivo?.id ?? 'anon'}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         resumen={resumen}
-        cliente={cliente}
+        cliente={clienteActivo}
         onSubmit={handleReserva}
       />
     </section>

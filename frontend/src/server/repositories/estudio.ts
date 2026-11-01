@@ -347,12 +347,15 @@ function mapearConfiguracionEstudio(filas: ConfiguracionRow[]): ConfiguracionEst
   const tarifaRaw = mapa.get('tarifa_hora');
   const tarifaNum =
     tarifaRaw !== undefined && tarifaRaw !== null && tarifaRaw.trim() !== ''
-      ? Number(tarifaRaw)
+      ? Number(tarifaRaw.replace(',', '.'))
       : null;
   const maxPendRaw = Number(mapa.get('max_pendientes_por_cliente'));
 
   return {
-    tarifaHora: tarifaNum !== null && Number.isFinite(tarifaNum) ? tarifaNum : null,
+    tarifaHora:
+      tarifaNum !== null && Number.isFinite(tarifaNum) && tarifaNum > 0
+        ? tarifaNum
+        : null,
     maxPendientesPorCliente:
       Number.isFinite(maxPendRaw) && maxPendRaw > 0 ? maxPendRaw : 3,
     horaApertura: mapa.get('hora_apertura') || '08:00',
@@ -376,8 +379,10 @@ function mapearCliente(row: ClienteRow): PerfilUsuario {
 
 /**
  * Obtiene el perfil del cliente autenticado en la sesión actual.
- * Devuelve `null` si no hay sesión activa o si el usuario no está registrado
- * en la tabla `clientes` (000012 / 000013).
+ * Si el usuario tiene sesión válida en Supabase Auth pero aún no tenía fila en
+ * `clientes` (por ejemplo, cuentas previas al trigger 000013 o cuentas del
+ * equipo), construye el perfil a partir de Auth. La fila se crea en la base de
+ * datos al solicitar la reserva mediante `solicitar_reserva()` (000040).
  */
 export async function obtenerPerfilClienteActual(): Promise<PerfilUsuario | null> {
   if (!tieneConexionSupabase()) {
@@ -394,17 +399,35 @@ export async function obtenerPerfilClienteActual(): Promise<PerfilUsuario | null
     return null;
   }
 
-  const { data: fila, error } = await supabase
+  const { data: fila } = await supabase
     .from('clientes')
     .select('id, nombre_completo, correo, telefono, creado_en')
     .eq('id', user.id)
     .maybeSingle();
 
-  if (error || !fila) {
-    return null;
+  if (fila) {
+    return mapearCliente(fila as ClienteRow);
   }
 
-  return mapearCliente(fila as ClienteRow);
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const nombreMeta =
+    (typeof meta.nombre_completo === 'string' && meta.nombre_completo.trim()) ||
+    (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+    (typeof meta.name === 'string' && meta.name.trim()) ||
+    (user.email ? user.email.split('@')[0] : 'Cliente');
+  const telefonoMeta =
+    typeof meta.telefono === 'string' && meta.telefono.trim()
+      ? meta.telefono.trim()
+      : user.phone ?? null;
+  const correoUsuario = user.email ?? '';
+
+  return {
+    id: user.id,
+    nombreCompleto: nombreMeta,
+    correo: correoUsuario,
+    telefono: telefonoMeta,
+    creadoEn: user.created_at ?? new Date().toISOString(),
+  };
 }
 
 export async function listarServiciosActivos(): Promise<ServicioEstudio[]> {
@@ -706,6 +729,7 @@ export async function solicitarReserva(input: SolicitarReservaInput): Promise<st
       }
 
       const supabase = await createSupabaseServerClient();
+
       const equiposJsonb = input.equipos.map((e) => ({
         equipo_id: e.equipoId,
         cantidad: e.cantidad,
