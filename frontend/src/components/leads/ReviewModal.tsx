@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
 import type { ProporcionVideo, ResenaClienteInput } from '@/types/resenas';
 
@@ -9,6 +10,10 @@ interface ReviewModalProps {
   onClose: () => void;
   /** Motivo por el que no se puede dejar reseña (sesión / reserva completada). */
   bloqueo?: string | null;
+  /** Reserva completada detectada en el servidor; se precarga en el formulario. */
+  reservaId?: string;
+  /** Cuando el bloqueo es por falta de sesión, enlace al inicio de sesión. */
+  hrefInicioSesion?: string;
   onSubmit?: (form: ResenaClienteInput) => Promise<void> | void;
 }
 
@@ -19,12 +24,19 @@ const initialForm = {
   calificacion: 5,
   videoUrl: '',
   videoProporcion: '16/9' as ProporcionVideo,
-  reservaId: '',
 };
 
-export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: ReviewModalProps) {
+export default function ReviewModal({
+  isOpen,
+  onClose,
+  bloqueo,
+  reservaId,
+  hrefInicioSesion,
+  onSubmit,
+}: ReviewModalProps) {
   const [form, setForm] = useState(initialForm);
   const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -54,11 +66,12 @@ export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: Revi
     e.preventDefault();
     if (bloqueo) return;
     setEnviando(true);
+    setError('');
     try {
       const input: ResenaClienteInput = {
-        // SUPABASE (al conectar): reserva_id debe ser una reserva propia
-        // en estado 'completada' (RLS de resenas_clientes).
-        reservaId: form.reservaId,
+        // reserva_id debe ser una reserva propia en estado 'completada'
+        // (lo vuelve a validar el endpoint y la RLS de resenas_clientes).
+        reservaId: reservaId ?? '',
         autor: form.autor,
         empresaAutor: form.empresaAutor || undefined,
         comentario: form.comentario,
@@ -69,6 +82,10 @@ export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: Revi
       await onSubmit?.(input);
       setForm(initialForm);
       onClose();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No se pudo enviar la reseña.'
+      );
     } finally {
       setEnviando(false);
     }
@@ -76,6 +93,7 @@ export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: Revi
 
   const handleClose = () => {
     setForm(initialForm);
+    setError('');
     onClose();
   };
 
@@ -116,13 +134,31 @@ export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: Revi
               <Icon name="lock" className="text-qbMuted text-xl" />
             </div>
             <p className="text-sm text-qbMuted max-w-sm mx-auto">{bloqueo}</p>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-5 py-2.5 rounded-xl bg-qbTerracotta text-white text-xs font-bold hover:bg-qbTerracotta/90 transition"
-            >
-              Entendido
-            </button>
+            {hrefInicioSesion ? (
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href={hrefInicioSesion}
+                  className="px-5 py-2.5 rounded-xl bg-qbTerracotta text-white text-xs font-bold hover:bg-qbTerracotta/90 transition"
+                >
+                  Iniciar sesión
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-5 py-2.5 rounded-xl border border-qbBorder bg-qbChalk text-qbInk text-xs font-bold hover:bg-qbChalkHover transition"
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleClose}
+                className="px-5 py-2.5 rounded-xl bg-qbTerracotta text-white text-xs font-bold hover:bg-qbTerracotta/90 transition"
+              >
+                Entendido
+              </button>
+            )}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6">
@@ -197,21 +233,6 @@ export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: Revi
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
-                  ID de tu reserva completada <span className="text-qbTerracotta">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="reservaId"
-                  required
-                  placeholder="uuid de la reserva"
-                  value={form.reservaId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50"
-                />
-              </div>
-
               <div className="pt-2 border-t border-qbBorder/60 space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
@@ -245,6 +266,15 @@ export default function ReviewModal({ isOpen, onClose, bloqueo, onSubmit }: Revi
                 )}
               </div>
             </div>
+
+            {error ? (
+              <p
+                role="alert"
+                className="text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3"
+              >
+                {error}
+              </p>
+            ) : null}
 
             <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-qbBorder">
               <button
