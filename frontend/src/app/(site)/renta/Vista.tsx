@@ -170,8 +170,8 @@ function perfilDesdeSesionUsuario(user: {
 
 export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = null }: VistaProps) {
   const router = useRouter();
-  const tarifa = tarifaHora !== null && tarifaHora > 0 ? tarifaHora : 500;
-  const sinTarifa = tarifa <= 0;
+  const tarifa = tarifaHora ?? 0;
+  const sinTarifa = tarifaHora === null || tarifaHora <= 0;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [resumen, setResumen] = useState<ReservaModalData>(() => ({

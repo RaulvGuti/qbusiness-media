@@ -1,6 +1,5 @@
 'use server';
 
-import { createSupabaseAdminClient } from '@/server/supabase/admin';
 import { createSupabaseServerClient } from '@/server/supabase/server';
 import type { PerfilUsuario } from '@/types/config';
 import type {
@@ -38,15 +37,6 @@ function tieneConexionSupabase(): boolean {
     Boolean(url && anonKey) &&
     !url.includes('tu-proyecto.supabase.co') &&
     anonKey !== 'tu-anon-key-publica'
-  );
-}
-
-function tieneServiceRoleSupabase(): boolean {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
-  return (
-    tieneConexionSupabase() &&
-    Boolean(serviceKey) &&
-    serviceKey !== 'tu-service-role-key-secreta'
   );
 }
 
@@ -365,7 +355,7 @@ function mapearConfiguracionEstudio(filas: ConfiguracionRow[]): ConfiguracionEst
     tarifaHora:
       tarifaNum !== null && Number.isFinite(tarifaNum) && tarifaNum > 0
         ? tarifaNum
-        : 500,
+        : null,
     maxPendientesPorCliente:
       Number.isFinite(maxPendRaw) && maxPendRaw > 0 ? maxPendRaw : 3,
     horaApertura: mapa.get('hora_apertura') || '08:00',
@@ -391,8 +381,8 @@ function mapearCliente(row: ClienteRow): PerfilUsuario {
  * Obtiene el perfil del cliente autenticado en la sesión actual.
  * Si el usuario tiene sesión válida en Supabase Auth pero aún no tenía fila en
  * `clientes` (por ejemplo, cuentas previas al trigger 000013 o cuentas del
- * equipo), construye el perfil a partir de Auth y sincroniza la fila cuando
- * el servidor dispone de service role.
+ * equipo), construye el perfil a partir de Auth. La fila se crea en la base de
+ * datos al solicitar la reserva mediante `solicitar_reserva()` (000040).
  */
 export async function obtenerPerfilClienteActual(): Promise<PerfilUsuario | null> {
   if (!tieneConexionSupabase()) {
@@ -430,23 +420,6 @@ export async function obtenerPerfilClienteActual(): Promise<PerfilUsuario | null
       ? meta.telefono.trim()
       : user.phone ?? null;
   const correoUsuario = user.email ?? '';
-
-  if (tieneServiceRoleSupabase() && correoUsuario) {
-    try {
-      const admin = createSupabaseAdminClient();
-      await admin.from('clientes').upsert(
-        {
-          id: user.id,
-          nombre_completo: nombreMeta,
-          correo: correoUsuario,
-          telefono: telefonoMeta,
-        },
-        { onConflict: 'id', ignoreDuplicates: true },
-      );
-    } catch {
-      // Si falla la sincronización oportunista, se continúa con el perfil de Auth
-    }
-  }
 
   return {
     id: user.id,
@@ -756,48 +729,6 @@ export async function solicitarReserva(input: SolicitarReservaInput): Promise<st
       }
 
       const supabase = await createSupabaseServerClient();
-
-      if (tieneServiceRoleSupabase()) {
-        try {
-          const admin = createSupabaseAdminClient();
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-
-          if (user) {
-            await admin.from('clientes').upsert(
-              {
-                id: user.id,
-                nombre_completo: input.nombre.trim() || (user.email ? user.email.split('@')[0] : 'Cliente'),
-                correo: user.email || input.correo.trim(),
-                telefono: input.telefono.trim() || null,
-              },
-              { onConflict: 'id', ignoreDuplicates: true },
-            );
-          }
-
-          const { data: filaTarifa } = await admin
-            .from('configuracion_sitio')
-            .select('valor')
-            .eq('grupo', 'estudio')
-            .eq('clave', 'tarifa_hora')
-            .maybeSingle();
-
-          const valorActual = (filaTarifa as { valor?: string | null } | null)?.valor;
-          if (!valorActual || Number(valorActual) <= 0) {
-            await admin.from('configuracion_sitio').upsert(
-              {
-                grupo: 'estudio',
-                clave: 'tarifa_hora',
-                valor: '500',
-              },
-              { onConflict: 'grupo,clave' },
-            );
-          }
-        } catch {
-          // Si falla la preparación con service role, la RPC validará el estado actual
-        }
-      }
 
       const equiposJsonb = input.equipos.map((e) => ({
         equipo_id: e.equipoId,
