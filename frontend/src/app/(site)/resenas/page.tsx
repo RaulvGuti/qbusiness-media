@@ -1,14 +1,33 @@
 import type { Metadata } from "next";
 import { Vista } from "./Vista";
-import { listarResenasAprobadas } from "@/server/repositories/resenas";
+import {
+  listarResenasAprobadas,
+  obtenerReservaResenable,
+} from "@/server/repositories/resenas";
+import { createSupabaseServerClient } from "@/server/supabase/server";
 
 export const metadata: Metadata = {
   title: { absolute: "Reseñas | QBusiness Media" },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
-  // SUPABASE (anon): SELECT * FROM resenas_clientes WHERE estado='aprobada'
-  // ORDER BY creado_en DESC;  (lectura pública por RLS)
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const resenas = await listarResenasAprobadas();
-  return <Vista resenas={resenas} />;
+  const reservaCompletada = user
+    ? await obtenerReservaResenable(user.id)
+    : null;
+
+  return (
+    <Vista
+      resenas={resenas}
+      tieneSesion={Boolean(user)}
+      reservaCompletada={reservaCompletada}
+    />
+  );
 }
