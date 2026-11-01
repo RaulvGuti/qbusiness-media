@@ -142,7 +142,11 @@ export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
               </button>
             ) : (
               <Link
-                href="/login"
+                href={
+                  ruta === "/renta" || ruta === "/resenas"
+                    ? `/login?next=${encodeURIComponent(ruta)}`
+                    : "/login"
+                }
                 aria-label="Acceso de clientes"
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm text-white transition-colors hover:bg-white/10 sm:px-3"
               >

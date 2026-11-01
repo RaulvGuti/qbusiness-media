@@ -1,5 +1,6 @@
 'use server';
 
+import { createSupabaseAdminClient } from '@/server/supabase/admin';
 import { createSupabaseServerClient } from '@/server/supabase/server';
 import type { PerfilUsuario } from '@/types/config';
 import type {
@@ -37,6 +38,15 @@ function tieneConexionSupabase(): boolean {
     Boolean(url && anonKey) &&
     !url.includes('tu-proyecto.supabase.co') &&
     anonKey !== 'tu-anon-key-publica'
+  );
+}
+
+function tieneServiceRoleSupabase(): boolean {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
+  return (
+    tieneConexionSupabase() &&
+    Boolean(serviceKey) &&
+    serviceKey !== 'tu-service-role-key-secreta'
   );
 }
 
@@ -347,12 +357,15 @@ function mapearConfiguracionEstudio(filas: ConfiguracionRow[]): ConfiguracionEst
   const tarifaRaw = mapa.get('tarifa_hora');
   const tarifaNum =
     tarifaRaw !== undefined && tarifaRaw !== null && tarifaRaw.trim() !== ''
-      ? Number(tarifaRaw)
+      ? Number(tarifaRaw.replace(',', '.'))
       : null;
   const maxPendRaw = Number(mapa.get('max_pendientes_por_cliente'));
 
   return {
-    tarifaHora: tarifaNum !== null && Number.isFinite(tarifaNum) ? tarifaNum : null,
+    tarifaHora:
+      tarifaNum !== null && Number.isFinite(tarifaNum) && tarifaNum > 0
+        ? tarifaNum
+        : 500,
     maxPendientesPorCliente:
       Number.isFinite(maxPendRaw) && maxPendRaw > 0 ? maxPendRaw : 3,
     horaApertura: mapa.get('hora_apertura') || '08:00',
@@ -376,8 +389,10 @@ function mapearCliente(row: ClienteRow): PerfilUsuario {
 
 /**
  * Obtiene el perfil del cliente autenticado en la sesión actual.
- * Devuelve `null` si no hay sesión activa o si el usuario no está registrado
- * en la tabla `clientes` (000012 / 000013).
+ * Si el usuario tiene sesión válida en Supabase Auth pero aún no tenía fila en
+ * `clientes` (por ejemplo, cuentas previas al trigger 000013 o cuentas del
+ * equipo), construye el perfil a partir de Auth y sincroniza la fila cuando
+ * el servidor dispone de service role.
  */
 export async function obtenerPerfilClienteActual(): Promise<PerfilUsuario | null> {
   if (!tieneConexionSupabase()) {
@@ -394,17 +409,52 @@ export async function obtenerPerfilClienteActual(): Promise<PerfilUsuario | null
     return null;
   }
 
-  const { data: fila, error } = await supabase
+  const { data: fila } = await supabase
     .from('clientes')
     .select('id, nombre_completo, correo, telefono, creado_en')
     .eq('id', user.id)
     .maybeSingle();
 
-  if (error || !fila) {
-    return null;
+  if (fila) {
+    return mapearCliente(fila as ClienteRow);
   }
 
-  return mapearCliente(fila as ClienteRow);
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const nombreMeta =
+    (typeof meta.nombre_completo === 'string' && meta.nombre_completo.trim()) ||
+    (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+    (typeof meta.name === 'string' && meta.name.trim()) ||
+    (user.email ? user.email.split('@')[0] : 'Cliente');
+  const telefonoMeta =
+    typeof meta.telefono === 'string' && meta.telefono.trim()
+      ? meta.telefono.trim()
+      : user.phone ?? null;
+  const correoUsuario = user.email ?? '';
+
+  if (tieneServiceRoleSupabase() && correoUsuario) {
+    try {
+      const admin = createSupabaseAdminClient();
+      await admin.from('clientes').upsert(
+        {
+          id: user.id,
+          nombre_completo: nombreMeta,
+          correo: correoUsuario,
+          telefono: telefonoMeta,
+        },
+        { onConflict: 'id', ignoreDuplicates: true },
+      );
+    } catch {
+      // Si falla la sincronización oportunista, se continúa con el perfil de Auth
+    }
+  }
+
+  return {
+    id: user.id,
+    nombreCompleto: nombreMeta,
+    correo: correoUsuario,
+    telefono: telefonoMeta,
+    creadoEn: user.created_at ?? new Date().toISOString(),
+  };
 }
 
 export async function listarServiciosActivos(): Promise<ServicioEstudio[]> {
@@ -706,6 +756,49 @@ export async function solicitarReserva(input: SolicitarReservaInput): Promise<st
       }
 
       const supabase = await createSupabaseServerClient();
+
+      if (tieneServiceRoleSupabase()) {
+        try {
+          const admin = createSupabaseAdminClient();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          if (user) {
+            await admin.from('clientes').upsert(
+              {
+                id: user.id,
+                nombre_completo: input.nombre.trim() || (user.email ? user.email.split('@')[0] : 'Cliente'),
+                correo: user.email || input.correo.trim(),
+                telefono: input.telefono.trim() || null,
+              },
+              { onConflict: 'id', ignoreDuplicates: true },
+            );
+          }
+
+          const { data: filaTarifa } = await admin
+            .from('configuracion_sitio')
+            .select('valor')
+            .eq('grupo', 'estudio')
+            .eq('clave', 'tarifa_hora')
+            .maybeSingle();
+
+          const valorActual = (filaTarifa as { valor?: string | null } | null)?.valor;
+          if (!valorActual || Number(valorActual) <= 0) {
+            await admin.from('configuracion_sitio').upsert(
+              {
+                grupo: 'estudio',
+                clave: 'tarifa_hora',
+                valor: '500',
+              },
+              { onConflict: 'grupo,clave' },
+            );
+          }
+        } catch {
+          // Si falla la preparación con service role, la RPC validará el estado actual
+        }
+      }
+
       const equiposJsonb = input.equipos.map((e) => ({
         equipo_id: e.equipoId,
         cantidad: e.cantidad,

@@ -56,8 +56,8 @@ function LoginContenido() {
         }
 
         if (signUpData.session) {
-          router.push(destinoPosterior);
           router.refresh();
+          router.push(destinoPosterior);
           return;
         }
 
@@ -93,8 +93,8 @@ function LoginContenido() {
           return;
         }
 
-        router.push(destinoPosterior);
         router.refresh();
+        router.push(destinoPosterior);
       }
     } catch {
       setError('Ocurrió un error inesperado.');

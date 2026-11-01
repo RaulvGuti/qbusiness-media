@@ -50,6 +50,7 @@ Action no registra la reserva sin sesión.
 
 ## 5. Notas
 
-- No hay migración nueva: la tabla `clientes` y su vínculo con Auth ya existían
-  (`000012`, `000013`).
+- La tabla `clientes` y su vínculo con Auth ya existían (`000012`, `000013`).
+- La migración `000040_estudio_tarifa_y_clientes_reserva.sql` asegura el valor inicial de `estudio / tarifa_hora` (`500`) en `configuracion_sitio`, sincroniza cuentas previas de `auth.users` hacia `clientes` y respalda el perfil en `solicitar_reserva()`.
+- En el servidor y en la vista de `/renta`, si la sesión de Supabase Auth es válida pero aún no se había sincronizado la fila de `clientes`, se toma el perfil desde la sesión para no bloquear ni deshabilitar el botón de reserva.
 - El tope de reservas pendientes por cliente sigue en la migración `000022`.
