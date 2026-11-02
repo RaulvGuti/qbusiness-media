@@ -1,12 +1,16 @@
 import Link from "next/link";
 import shared from "../panel.module.css";
 import styles from "./page.module.css";
-import { listarLeads } from "@/server/repositories/leads";
-import { listarReservas } from "@/server/repositories/estudio";
-import { listarTodasLasResenas } from "@/server/repositories/resenas";
-import { listarSolicitudes } from "@/server/repositories/solicitudes";
+import {
+  obtenerActividadReciente,
+  obtenerActividadSemanal,
+  obtenerResumenDashboard,
+  type ActividadDashboard,
+} from "@/server/repositories/dashboard";
 import { exigirStaffPanel } from "@/server/auth/panel";
 import { puede, type Permiso } from "@/lib/permisos";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Dashboard | Admin" };
 
@@ -54,71 +58,77 @@ const ATAJOS: {
   },
 ];
 
-// Gráfica decorativa de la semana (sin datos reales todavía).
-const SEMANA = [
-  { dia: "L", alto: 40 },
-  { dia: "M", alto: 65 },
-  { dia: "X", alto: 50 },
-  { dia: "J", alto: 85 },
-  { dia: "V", alto: 100, hoy: true },
-  { dia: "S", alto: 30 },
-  { dia: "D", alto: 45 },
-];
-
 const fmt = (iso: string) =>
   new Date(iso).toLocaleDateString("es-GT", { day: "2-digit", month: "short" });
+
+function textoActividad(item: ActividadDashboard): string {
+  switch (item.tipo) {
+    case "contacto":
+      return `Mensaje de ${item.titulo} en el formulario de contacto.`;
+    case "apoyo_social":
+      return `Solicitud de apoyo de ${item.titulo}.`;
+    case "resena":
+      return `Reseña ${item.estado === "pendiente" ? "pendiente" : "de"} ${item.titulo}.`;
+    case "reserva":
+      return `Reserva de ${item.titulo}${
+        item.detalle ? ` para el ${item.detalle}` : ""
+      }.`;
+    default:
+      return item.titulo;
+  }
+}
+
+function esActividadNueva(item: ActividadDashboard): boolean {
+  if (item.tipo === "contacto") return item.estado === "nuevo";
+  if (item.tipo === "apoyo_social") return item.estado === "nueva";
+  return item.estado === "pendiente";
+}
 
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<{ permiso?: string }>;
 }) {
-  const { perfil } = await exigirStaffPanel();
+  const { perfil, supabase } = await exigirStaffPanel();
   const { permiso } = await searchParams;
   const atajos = ATAJOS.filter((atajo) => puede(perfil.rol, atajo.permiso));
 
-  // SUPABASE (admin): conteos sobre leads_contacto, resenas_clientes,
-  // solicitudes_apoyo_social y reservas.
-  const [leads, reservas, resenas, solicitudes] = await Promise.all([
-    listarLeads(),
-    listarReservas(),
-    listarTodasLasResenas(),
-    listarSolicitudes(),
+  const [resumen, actividad, semana] = await Promise.all([
+    obtenerResumenDashboard(supabase),
+    obtenerActividadReciente(supabase, 6),
+    obtenerActividadSemanal(supabase),
   ]);
 
-  const stats = {
-    resenasPendientes: resenas.filter((r) => r.estado === "pendiente").length,
-    leadsNuevos: leads.filter((l) => l.estado === "nuevo").length,
-    reservasPendientes: reservas.filter((r) => r.estado === "pendiente").length,
-    solicitudesNuevas: solicitudes.filter((s) => s.estado === "nueva").length,
-  };
+  const stats = [
+    {
+      etiqueta: "Reseñas pendientes",
+      valor: resumen.resenasPendientes,
+      detalle: "Por moderar",
+      destacada: true,
+    },
+    {
+      etiqueta: "Mensajes nuevos",
+      valor: resumen.mensajesNuevos,
+      detalle: "Sin gestionar",
+    },
+    {
+      etiqueta: "Reservas pendientes",
+      valor: resumen.reservasPendientes,
+      detalle: "Por confirmar",
+    },
+    {
+      etiqueta: "Apoyo social (nuevas)",
+      valor: resumen.apoyoSocialNuevo,
+      detalle: "Por revisar",
+    },
+    {
+      etiqueta: "Comprobantes por revisar",
+      valor: resumen.pagosPorRevisar,
+      detalle: "Subidos por el cliente",
+    },
+  ];
 
-  const actividad = [
-    ...leads.map((l) => ({
-      texto: `Mensaje de ${l.nombre} en el formulario de contacto.`,
-      cuando: fmt(l.creadoEn),
-      nuevo: l.estado === "nuevo",
-    })),
-    ...resenas
-      .filter((r) => r.estado === "pendiente")
-      .map((r) => ({
-        texto: `Reseña pendiente de ${r.autor}.`,
-        cuando: fmt(r.creadoEn),
-        nuevo: true,
-      })),
-    ...solicitudes.map((s) => ({
-      texto: `Solicitud de apoyo de ${s.nombreEntidad}.`,
-      cuando: fmt(s.creadoEn),
-      nuevo: s.estado === "nueva",
-    })),
-    ...reservas.map((r) => ({
-      texto: `Reserva de ${r.nombre} para el ${fmt(r.fechaHoraInicio)}.`,
-      cuando: fmt(r.creadoEn),
-      nuevo: r.estado === "pendiente",
-    })),
-  ]
-    .sort((a, b) => Number(b.nuevo) - Number(a.nuevo))
-    .slice(0, 6);
+  const maximoSemana = Math.max(1, ...semana.map((dia) => dia.total));
 
   return (
     <>
@@ -134,26 +144,16 @@ export default async function DashboardPage({
       )}
 
       <div className={styles.stats}>
-        <div className={`${styles.stat} ${styles.statHl}`}>
-          <span>Reseñas pendientes</span>
-          <b>{stats.resenasPendientes}</b>
-          <small>Por moderar</small>
-        </div>
-        <div className={styles.stat}>
-          <span>Mensajes nuevos</span>
-          <b>{stats.leadsNuevos}</b>
-          <small>Sin gestionar</small>
-        </div>
-        <div className={styles.stat}>
-          <span>Reservas pendientes</span>
-          <b>{stats.reservasPendientes}</b>
-          <small>Por confirmar</small>
-        </div>
-        <div className={styles.stat}>
-          <span>Apoyo social (nuevas)</span>
-          <b>{stats.solicitudesNuevas}</b>
-          <small>Por revisar</small>
-        </div>
+        {stats.map((stat) => (
+          <div
+            key={stat.etiqueta}
+            className={`${styles.stat} ${stat.destacada ? styles.statHl : ""}`}
+          >
+            <span>{stat.etiqueta}</span>
+            <b>{stat.valor}</b>
+            <small>{stat.detalle}</small>
+          </div>
+        ))}
       </div>
 
       <div className={styles.row}>
@@ -162,13 +162,19 @@ export default async function DashboardPage({
           {actividad.length === 0 && (
             <p style={{ color: "#8a8a8a", fontSize: 13 }}>Sin actividad registrada.</p>
           )}
-          {actividad.map((a) => (
-            <div key={a.texto} className={styles.act}>
-              <i className={`${styles.dot} ${a.nuevo ? "" : styles.dotOld}`} />
-              <p>{a.texto}</p>
-              <time>{a.cuando}</time>
-            </div>
-          ))}
+          {actividad.map((item) => {
+            const nuevo = esActividadNueva(item);
+            return (
+              <div
+                key={`${item.tipo}-${item.entidadId}`}
+                className={styles.act}
+              >
+                <i className={`${styles.dot} ${nuevo ? "" : styles.dotOld}`} />
+                <p>{textoActividad(item)}</p>
+                <time>{fmt(item.creadoEn)}</time>
+              </div>
+            );
+          })}
         </section>
 
         <div className={styles.stack}>
@@ -187,17 +193,25 @@ export default async function DashboardPage({
           <section className={shared.card}>
             <h2 className={shared.cardTitle}>Actividad de la semana</h2>
             <div className={styles.bars}>
-              {SEMANA.map((d) => (
+              {semana.map((dia) => (
                 <i
-                  key={d.dia}
-                  className={d.hoy ? styles.barHoy : undefined}
-                  style={{ height: `${d.alto}%` }}
+                  key={dia.clave}
+                  className={dia.esHoy ? styles.barHoy : undefined}
+                  style={{
+                    height: `${Math.max(
+                      6,
+                      Math.round((dia.total / maximoSemana) * 100),
+                    )}%`,
+                  }}
+                  title={`${dia.etiqueta}: ${dia.total} ${
+                    dia.total === 1 ? "registro" : "registros"
+                  }`}
                 />
               ))}
             </div>
             <div className={styles.days}>
-              {SEMANA.map((d) => (
-                <span key={d.dia}>{d.dia}</span>
+              {semana.map((dia) => (
+                <span key={dia.clave}>{dia.etiqueta}</span>
               ))}
             </div>
           </section>
