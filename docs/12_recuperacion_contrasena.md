@@ -32,8 +32,8 @@ confirmación que crea la sesión antes de mostrar el formulario.
    - con `code` llama a `exchangeCodeForSession(code, { flowId })` cuando el enlace trae
      `sb_flow_id`;
    - guarda las cookies de sesión en la respuesta;
-   - redirige a `/restablecer-password?recuperacion=1`.
-5. `frontend/src/app/restablecer-password/page.tsx` comprueba que exista una sesión válida y
+   - redirige a `/restablecer-contrasena?recuperacion=1`.
+5. `frontend/src/app/restablecer-contrasena/page.tsx` comprueba que exista una sesión válida y
    consulta si la cuenta está en `administradores`.
 6. El formulario pide la contraseña nueva y su confirmación, exige un mínimo de 8 caracteres
    y llama a `supabase.auth.updateUser({ password })`.
@@ -50,8 +50,8 @@ La pantalla nunca muestra el enlace a `/admin` a una cuenta que no esté en
 | Archivo | Cambio |
 | --- | --- |
 | `frontend/src/app/auth/confirm/route.ts` | Ruta nueva: confirma `token_hash` o `code`, crea la sesión y redirige a la pantalla compartida. |
-| `frontend/src/app/restablecer-password/page.tsx` | Pantalla pública nueva: valida la sesión y el rol, y muestra el aviso o el formulario. |
-| `frontend/src/app/restablecer-password/FormularioRestablecer.tsx` | Formulario de contraseña nueva, confirmación, `updateUser` y cierre de sesiones. |
+| `frontend/src/app/restablecer-contrasena/page.tsx` | Pantalla pública nueva: valida la sesión y el rol, y muestra el aviso o el formulario. |
+| `frontend/src/app/restablecer-contrasena/FormularioRestablecer.tsx` | Formulario de contraseña nueva, confirmación, `updateUser` y cierre de sesiones. |
 | `frontend/src/app/(site)/login/page.tsx` | El enlace de recuperación apunta a `/auth/confirm`. |
 | `frontend/src/app/admin/page.tsx` | El enlace de recuperación apunta a `/auth/confirm`. |
 | `frontend/src/server/actions/auth.ts` | `recoverPasswordAction` también apunta a `/auth/confirm`. |
@@ -123,7 +123,7 @@ la política de contraseñas del proyecto).
 - No se usa `service_role` ni se expone ninguna llave privada.
 - Después del cambio se cierran las sesiones abiertas. Si el cierre global falla por red, la
   contraseña ya quedó guardada y el siguiente inicio de sesión la valida.
-- El endpoint `/auth/confirm` solo redirige a `/restablecer-password`; no acepta un destino
+- El endpoint `/auth/confirm` solo redirige a `/restablecer-contrasena`; no acepta un destino
   arbitrario, así que no se puede usar como redirección abierta.
 
 ## 6. Cómo probar

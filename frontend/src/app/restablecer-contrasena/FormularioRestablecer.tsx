@@ -130,13 +130,13 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
         <label
-          htmlFor="restablecer-password"
+          htmlFor="restablecer-contrasena"
           className="text-sm font-semibold text-white"
         >
           Nueva contraseña
         </label>
         <input
-          id="restablecer-password"
+          id="restablecer-contrasena"
           name="password"
           type="password"
           required

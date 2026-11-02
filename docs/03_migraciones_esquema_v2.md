@@ -164,7 +164,7 @@ Notas:
   la sesión la crea el enlace enviado por correo. Es el único camino soportado, y aplica igual a
   administradores y clientes.
 - **Recuperación:** el enlace del correo se confirma en `/auth/confirm`, que crea la sesión
-  temporal y lleva a `/restablecer-password`. El flujo completo está en
+  temporal y lleva a `/restablecer-contrasena`. El flujo completo está en
   [`12_recuperacion_contrasena.md`](./12_recuperacion_contrasena.md).
 - **Reset de otro usuario:** con el service role (`auth.admin.updateUserById`), solo desde el
   servidor. Nunca desde el navegador.

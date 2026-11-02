@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const DESTINO_RECUPERACION = "/restablecer-password";
+const DESTINO_RECUPERACION = "/restablecer-contrasena";
 
 function respuestaDeError(request: NextRequest) {
   const respuesta = NextResponse.redirect(
