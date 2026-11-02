@@ -159,9 +159,13 @@ Notas:
 - La contraseña se guarda **cifrada en `auth.users.encrypted_password`**, una tabla a la que
   `anon` y `authenticated` **no tienen ningún privilegio**. El equipo no la ve ni la guarda en
   `administradores`/`clientes`.
-- **Cambio de contraseña propio:** por el SDK de Supabase Auth (`updateUser`), que exige la sesión
-  y valida la contraseña actual. Es el único camino soportado, y aplica igual a administradores y
-  clientes.
+- **Cambio de contraseña propio:** por el SDK de Supabase Auth (`updateUser`), que exige una
+  sesión válida. En el flujo normal se puede exigir la contraseña actual; durante la recuperación,
+  la sesión la crea el enlace enviado por correo. Es el único camino soportado, y aplica igual a
+  administradores y clientes.
+- **Recuperación:** el enlace del correo se confirma en `/auth/confirm`, que crea la sesión
+  temporal y lleva a `/restablecer-contrasena`. El flujo completo está en
+  [`12_recuperacion_contrasena.md`](./12_recuperacion_contrasena.md).
 - **Reset de otro usuario:** con el service role (`auth.admin.updateUserById`), solo desde el
   servidor. Nunca desde el navegador.
 - **Correo de acceso:** se cambia desde Auth, no desde las tablas de perfil. Por eso el trigger de

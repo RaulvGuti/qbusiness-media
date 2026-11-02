@@ -27,6 +27,7 @@ el cliente necesita saber para usar el sitio.
 | 09 | [`09_reservas_con_cuenta.md`](./09_reservas_con_cuenta.md) | Por qué solicitar una reserva del estudio exige una cuenta de cliente, dónde se valida en cliente y servidor, y cómo se relaciona con el login de `/login` y `/admin`. |
 | 10 | [`10_cuenta_de_clientes_compartida.md`](./10_cuenta_de_clientes_compartida.md) | La cuenta de cliente compartida por el equipo: qué es, cómo se creó, riesgos, rotación y verificación. |
 | 11 | [`11_login_google_callback.md`](./11_login_google_callback.md) | Cómo se completa el inicio de sesión con Google, la ruta `/auth/callback` y la configuración requerida en Supabase. |
+| 12 | [`12_recuperacion_contrasena.md`](./12_recuperacion_contrasena.md) | Cómo funciona la recuperación de contraseña de clientes y administradores, la ruta `/auth/confirm`, la pantalla compartida y la configuración de Supabase Auth. |
 
 ## Trabajo interno en curso
 

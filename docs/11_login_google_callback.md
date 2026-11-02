@@ -55,7 +55,8 @@ Sin ese registro, Supabase rechaza el retorno aunque la ruta exista.
 
 El callback sirve para el login público de **clientes**. Las cuentas del panel siguen
 entrando por `/admin` con correo y contraseña; si una cuenta de `administradores` intenta
-entrar por `/login`, se cierra su sesión y se le indica usar `/admin`.
+entrar por `/login`, se cierra su sesión y se muestra que no hay acceso administrativo
+desde ese formulario.
 
-> Pendiente conocido, fuera de este cambio: el enlace de recuperación del panel apunta a
-> `/admin/reset-password`, que todavía no existe.
+La recuperación de contraseña de clientes y administradores se documenta en
+[`12_recuperacion_contrasena.md`](./12_recuperacion_contrasena.md).
