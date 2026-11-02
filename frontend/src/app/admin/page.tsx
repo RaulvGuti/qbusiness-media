@@ -65,7 +65,9 @@ export default function AdminLoginPage() {
     const supabase = obtenerSupabase();
 
     const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
-      redirectTo: `${window.location.origin}/admin/reset-password`,
+      // La pantalla de recuperación es compartida y vive fuera de /admin para
+      // que el proxy no borre el enlace antes de crear la sesión.
+      redirectTo: `${window.location.origin}/auth/confirm`,
     });
 
     if (error) {

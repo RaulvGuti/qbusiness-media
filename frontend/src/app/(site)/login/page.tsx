@@ -128,7 +128,9 @@ function LoginContenido() {
     const supabase = obtenerSupabase();
 
     const { error: recoverError } = await supabase.auth.resetPasswordForEmail(form.email, {
-      redirectTo: `${window.location.origin}/login`,
+      // /auth/confirm crea la sesión de recuperación y luego muestra la
+      // pantalla compartida de clientes y administradores.
+      redirectTo: `${window.location.origin}/auth/confirm`,
     });
 
     if (recoverError) {
