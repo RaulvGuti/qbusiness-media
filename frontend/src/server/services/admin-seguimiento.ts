@@ -53,26 +53,43 @@ async function abrirSesion() {
 
 export async function listarContactos() {
   const acceso = await abrirSesion();
-  if (!acceso) return [];
+  if (!acceso) {
+    throw new Error("Tu sesión expiró. Vuelve a iniciar sesión.");
+  }
 
   const { data, error } = await acceso.supabase
     .from("leads_contacto")
     .select("*")
     .order("creado_en", { ascending: false });
 
-  return error ? [] : data ?? [];
+  if (error) {
+    console.error("No se pudieron cargar los contactos:", error.code);
+    throw new Error("No se pudieron cargar los contactos.");
+  }
+
+  return data ?? [];
 }
 
 export async function listarApoyoSocial() {
   const acceso = await abrirSesion();
-  if (!acceso) return [];
+  if (!acceso) {
+    throw new Error("Tu sesión expiró. Vuelve a iniciar sesión.");
+  }
 
   const { data, error } = await acceso.supabase
     .from("solicitudes_apoyo_social")
     .select("*")
     .order("creado_en", { ascending: false });
 
-  return error ? [] : data ?? [];
+  if (error) {
+    console.error(
+      "No se pudieron cargar las solicitudes de apoyo:",
+      error.code,
+    );
+    throw new Error("No se pudieron cargar las solicitudes de apoyo.");
+  }
+
+  return data ?? [];
 }
 
 export async function listarResenas() {

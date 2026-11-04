@@ -31,50 +31,46 @@ export async function POST(request: Request) {
       );
     }
 
-    let guardadoEnDb = false;
-
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      try {
-        const supabase = createSupabaseAdminClient();
-        const { error } = await supabase.from("leads_contacto").insert({
-          nombre,
-          correo,
-          telefono: telefono || null,
-          mensaje,
-          estado: "nuevo",
-        });
-
-        if (!error) {
-          guardadoEnDb = true;
-        } else {
-          console.warn("Fallo guardado en Supabase, usando repositorio local:", error.message);
-        }
-      } catch (err) {
-        console.warn("Error con cliente Supabase, usando repositorio local:", err);
-      }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error(
+        "No se puede guardar el contacto: falta SUPABASE_SERVICE_ROLE_KEY en el servidor.",
+      );
+      return NextResponse.json(
+        {
+          error:
+            "El formulario no está disponible en este momento. Escríbenos por WhatsApp.",
+        },
+        { status: 503 },
+      );
     }
 
-    if (!guardadoEnDb) {
-      // Guardado local / offline
-      const { crearLead } = await import("@/server/repositories/leads");
-      await crearLead({
-        nombre,
-        correo,
-        telefono: telefono || undefined,
-        mensaje,
-      });
+    const supabase = createSupabaseAdminClient();
+    const { error } = await supabase.from("leads_contacto").insert({
+      nombre,
+      correo,
+      telefono: telefono || null,
+      mensaje,
+      estado: "nuevo",
+    });
+
+    if (error) {
+      console.error("No se pudo guardar el contacto:", error.code);
+      return NextResponse.json(
+        { error: "No se pudo guardar el contacto. Intenta de nuevo." },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(
       { mensaje: "Contacto recibido correctamente." },
       { status: 201 }
     );
-  } catch (error) {
-    console.error("Error procesando formulario de contacto:", error);
+  } catch {
+    console.error("Error procesando el formulario de contacto.");
 
     return NextResponse.json(
       { error: "No se pudo procesar la solicitud." },
-      { status: 400 }
+      { status: 500 }
     );
   }
 }

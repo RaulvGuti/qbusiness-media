@@ -128,6 +128,7 @@ export default function SeguimientoAdminTable({
 
         const correo = registro.correo ?? "";
         const telefono = registro.telefono ?? "";
+        const telefonoDigitos = telefono.replace(/\D/g, "");
         const fecha = registro.creado_en
           ? new Date(registro.creado_en).toLocaleString("es-GT")
           : "Sin fecha";
@@ -147,8 +148,31 @@ export default function SeguimientoAdminTable({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-1">
                 <h2 className="font-bold text-qbInk">{nombre}</h2>
-                {correo && <p className="text-sm">{correo}</p>}
-                {telefono && <p className="text-sm">{telefono}</p>}
+                {correo && (
+                  <p className="text-sm">
+                    <a
+                      href={`mailto:${correo}`}
+                      className="text-qbSage underline-offset-2 hover:underline"
+                    >
+                      {correo}
+                    </a>
+                  </p>
+                )}
+                {telefono &&
+                  (telefonoDigitos ? (
+                    <p className="text-sm">
+                      <a
+                        href={`https://wa.me/${telefonoDigitos}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-qbSage underline-offset-2 hover:underline"
+                      >
+                        {telefono}
+                      </a>
+                    </p>
+                  ) : (
+                    <p className="text-sm">{telefono}</p>
+                  ))}
                 <p className="text-xs text-qbMuted">{fecha}</p>
               </div>
 

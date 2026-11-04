@@ -44,50 +44,48 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Los datos ingresados no son válidos." }, { status: 400 });
     }
 
-    let guardadoEnDb = false;
-
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      try {
-        const supabase = createSupabaseAdminClient();
-        const { error } = await supabase
-          .from("solicitudes_apoyo_social")
-          .insert({
-            nombre_entidad: nombreEntidad,
-            persona_contacto: personaContacto,
-            correo,
-            telefono: telefono || null,
-            descripcion_proyecto: descripcion,
-            tipo_organizacion: tipoEntidad,
-            fecha_tentativa: fechaEvento || null,
-            estado: "nueva",
-          });
-        if (!error) {
-          guardadoEnDb = true;
-        } else {
-          console.warn("Fallo guardado en Supabase, usando repositorio local:", error.message);
-        }
-      } catch (err) {
-        console.warn("Error con cliente Supabase, usando repositorio local:", err);
-      }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error(
+        "No se puede guardar la solicitud de apoyo: falta SUPABASE_SERVICE_ROLE_KEY en el servidor.",
+      );
+      return NextResponse.json(
+        {
+          error:
+            "El formulario no está disponible en este momento. Intenta más tarde.",
+        },
+        { status: 503 },
+      );
     }
 
-    if (!guardadoEnDb) {
-      const { crearSolicitud } = await import("@/server/repositories/solicitudes");
-      await crearSolicitud({
-        nombreEntidad,
-        personaContacto,
+    const supabase = createSupabaseAdminClient();
+    const { error } = await supabase
+      .from("solicitudes_apoyo_social")
+      .insert({
+        nombre_entidad: nombreEntidad,
+        persona_contacto: personaContacto,
         correo,
-        telefono: telefono || undefined,
-        descripcionProyecto: descripcion,
-        tipoEntidad: tipoEntidad || undefined,
-        fechaEvento: fechaEvento || undefined,
+        telefono: telefono || null,
+        descripcion_proyecto: descripcion,
+        tipo_organizacion: tipoEntidad,
+        fecha_tentativa: fechaEvento || null,
+        estado: "nueva",
       });
+
+    if (error) {
+      console.error("No se pudo guardar la solicitud de apoyo:", error.code);
+      return NextResponse.json(
+        { error: "No se pudo guardar la solicitud. Intenta de nuevo." },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ mensaje: "Solicitud enviada correctamente." }, { status: 201 });
-  } catch (error) {
-    console.error("Error procesando solicitud de apoyo:", error);
-    return NextResponse.json({ error: "No se pudo procesar la solicitud." }, { status: 400 });
+  } catch {
+    console.error("Error procesando la solicitud de apoyo.");
+    return NextResponse.json(
+      { error: "No se pudo procesar la solicitud." },
+      { status: 500 },
+    );
   }
 }
 

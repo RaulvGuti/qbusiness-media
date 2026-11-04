@@ -7,7 +7,18 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Apoyo social | Admin" };
 
 export default async function ApoyoSocialPage() {
-  const solicitudes = await listarApoyoSocial();
+  let solicitudes: Awaited<ReturnType<typeof listarApoyoSocial>> = [];
+  let error: string | null = null;
+
+  try {
+    solicitudes = await listarApoyoSocial();
+  } catch (e) {
+    error =
+      e instanceof Error
+        ? e.message
+        : "No se pudieron cargar las solicitudes de apoyo.";
+    console.error("Error cargando apoyo social en el panel:", error);
+  }
 
   return (
     <>
@@ -16,7 +27,20 @@ export default async function ApoyoSocialPage() {
       <p className={shared.sub}>
         Consulta y administra las solicitudes de fundaciones y bomberos.
       </p>
-      <SeguimientoAdminTable seccion="apoyo_social" registros={solicitudes} />
+      {error && (
+        <p
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+        >
+          {error}
+        </p>
+      )}
+      {!error && (
+        <SeguimientoAdminTable
+          seccion="apoyo_social"
+          registros={solicitudes}
+        />
+      )}
     </>
   );
 }
