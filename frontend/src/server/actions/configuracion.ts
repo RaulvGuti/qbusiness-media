@@ -97,6 +97,10 @@ export async function guardarConfiguracionSitio(
   }
 
   revalidatePath('/', 'layout');
+  // El sitio público vive en el grupo (site); invalidar su layout cubre header,
+  // footer, WhatsApp y cualquier página que lea la configuración.
+  revalidatePath('/(site)', 'layout');
+  revalidatePath('/contactanos');
   revalidatePath('/admin/textos');
 
   return { ok: true, guardados };

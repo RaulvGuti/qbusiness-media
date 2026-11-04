@@ -5,6 +5,9 @@ import { obtenerConfiguracionSitio } from "@/server/repositories/configuracion";
 import { obtenerPerfilClienteActual } from "@/server/repositories/estudio";
 import "../styles/sitio.css";
 
+// La configuración, la sesión y los destacados cambian desde el panel.
+export const dynamic = "force-dynamic";
+
 export default async function SiteLayout({
   children,
 }: {

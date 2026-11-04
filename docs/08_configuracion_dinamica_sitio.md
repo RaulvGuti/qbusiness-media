@@ -73,8 +73,10 @@ color terracota). Si el administrador borra el placeholder, el texto se muestra 
    en el catálogo. También valida correo, URL, teléfono, hora, números y listas.
 3. El repositorio hace un `upsert` por lote en `configuracion_sitio` con
    `onConflict: "grupo,clave"`.
-4. La acción invalida `/` y `/admin/textos` con `revalidatePath`.
-5. El sitio público vuelve a leer la configuración y aplica los valores.
+4. La acción invalida `/`, el layout del grupo `(site)`, `/contactanos` y
+   `/admin/textos` con `revalidatePath`.
+5. El sitio público vuelve a leer la configuración y aplica los valores. El layout
+   público es `force-dynamic`, así que header, footer y WhatsApp usan el valor vigente.
 
 ## Seguridad
 
