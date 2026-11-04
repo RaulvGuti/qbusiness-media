@@ -27,3 +27,15 @@ export interface CarpetaConMedios {
   carpeta: CarpetaConPortada;
   medios: MedioPublico[];
 }
+
+/** Destacado del inicio ya resuelto para la tarjeta pública. */
+export interface DestacadoPublico {
+  id: string;
+  tipo: 'carpeta' | 'empresa';
+  titulo: string;
+  descripcion: string | null;
+  etiqueta: string | null;
+  imagenUrl: string | null;
+  imagenTipo: 'imagen' | 'video' | null;
+  href: string;
+}

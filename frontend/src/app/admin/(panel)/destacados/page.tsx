@@ -29,7 +29,9 @@ export default async function DestacadosPage() {
       <h1 className={shared.title}>Administración de destacados</h1>
       <p className={shared.sub}>
         Selecciona las carpetas y empresas destacadas del inicio. El orden se
-        guarda en la tabla <code>destacados</code> (posicion única).
+        guarda en la tabla <code>destacados</code> (posicion única). Para mostrar
+        una imagen, crea una carpeta en Galería → Inicio, súbele una portada y
+        publícala; después selecciónala aquí.
       </p>
       <DestacadosPanel
         catalogo={construirCatalogo(carpetas, empresas)}

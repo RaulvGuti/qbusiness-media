@@ -13,6 +13,7 @@ import { construirUrlStorage, esUuid, urlEmbed } from '@/lib/utils/galeria-publi
 import type {
   CarpetaConMedios,
   CarpetaConPortada,
+  DestacadoPublico,
   MedioPublico,
   TipoMedio,
 } from '@/types/galeria-publica';
@@ -33,6 +34,7 @@ import type {
 /* ------------------------------------------------------------------ */
 
 const BUCKET = 'galeria';
+const BUCKET_LOGOS = 'logos';
 
 function tieneConexionSupabase(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
@@ -387,6 +389,43 @@ function resolverArchivo(valor: string | null): string | null {
   return construirUrlStorage(BUCKET, valor);
 }
 
+/**
+ * Portada o logo de una empresa. La ruta puede venir sin bucket (se asume
+ * `logos`) o con el prefijo `logos/` o `galeria/`, como en los datos mock.
+ */
+function resolverLogo(valor: string | null): string | null {
+  if (!valor) return null;
+  if (/^https?:\/\//i.test(valor)) return valor;
+
+  const limpia = valor.replace(/^\/+/, '');
+  const [posibleBucket, ...resto] = limpia.split('/');
+
+  if (
+    (posibleBucket === BUCKET || posibleBucket === BUCKET_LOGOS) &&
+    resto.length > 0
+  ) {
+    return construirUrlStorage(posibleBucket, resto.join('/'));
+  }
+
+  return construirUrlStorage(BUCKET_LOGOS, limpia);
+}
+
+/** A dónde lleva una tarjeta destacada según el módulo de su carpeta. */
+function hrefDestacado(modulo: ModuloCarpeta, carpetaId: string): string {
+  switch (modulo) {
+    case 'portafolio':
+      return `/portafolio/${carpetaId}`;
+    case 'backstage':
+      return '/backstage';
+    case 'estudio':
+      return '/renta';
+    case 'apoyo_social':
+      return '/apoyo';
+    default:
+      return '/portafolio';
+  }
+}
+
 function aMedio(a: ArchivoGaleria): MedioPublico | null {
   const tipo = a.tipo as TipoMedio;
   const base = {
@@ -473,6 +512,66 @@ export async function listarCarpetasPublicadasConPortada(
   const carpetas = await listarCarpetasPublicadas(modulo);
   const porCarpeta = await archivosPorCarpeta(carpetas.map((c) => c.id));
   return carpetas.map((c) => conPortada(c, porCarpeta.get(c.id) ?? []));
+}
+
+/**
+ * Destacados del inicio con su portada ya resuelta. Usa las carpetas publicadas
+ * del módulo que corresponda y, para empresas, su portada o logo.
+ */
+export async function listarDestacadosPublicosConPortada(): Promise<
+  DestacadoPublico[]
+> {
+  try {
+    const destacados = await listarDestacadosPublicos();
+    if (destacados.length === 0) return [];
+
+    const carpetas = await listarCarpetasPublicadasConPortada();
+    const portadas = new Map(carpetas.map((carpeta) => [carpeta.id, carpeta]));
+
+    return destacados.flatMap((destacado): DestacadoPublico[] => {
+      if (destacado.carpeta) {
+        const carpeta = destacado.carpeta;
+        const portada = portadas.get(carpeta.id);
+        return [
+          {
+            id: destacado.id,
+            tipo: 'carpeta' as const,
+            titulo: carpeta.nombre,
+            descripcion: carpeta.descripcion,
+            etiqueta: carpeta.etiqueta,
+            imagenUrl:
+              portada?.portadaUrl ?? resolverLogo(carpeta.logoEmpresa ?? null),
+            imagenTipo: portada?.portadaTipo ?? null,
+            href: hrefDestacado(carpeta.modulo, carpeta.id),
+          },
+        ];
+      }
+
+      if (destacado.empresa) {
+        const empresa = destacado.empresa;
+        return [
+          {
+            id: destacado.id,
+            tipo: 'empresa' as const,
+            titulo: empresa.nombre,
+            descripcion: empresa.descripcion,
+            etiqueta: 'Empresa',
+            imagenUrl:
+              resolverLogo(empresa.portadaRuta) ??
+              resolverLogo(empresa.logoRuta),
+            imagenTipo: 'imagen' as const,
+            href: '/portafolio',
+          },
+        ];
+      }
+
+      return [];
+    });
+  } catch {
+    // El inicio no debe romperse si la galería o la tabla no responden.
+    console.error('No se pudieron cargar los destacados públicos.');
+    return [];
+  }
 }
 
 /** Una carpeta publicada con todos sus archivos; null si no existe, no está publicada o es de otro módulo. */

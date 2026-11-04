@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { obtenerConfiguracionSitio } from "@/server/repositories/configuracion";
+import { listarDestacadosPublicosConPortada } from "@/server/repositories/galeria";
 import { Vista } from "./Vista";
 
 export const metadata: Metadata = {
@@ -7,6 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const config = await obtenerConfiguracionSitio();
-  return <Vista config={config} />;
+  const [config, destacados] = await Promise.all([
+    obtenerConfiguracionSitio(),
+    listarDestacadosPublicosConPortada(),
+  ]);
+  return <Vista config={config} destacados={destacados} />;
 }
