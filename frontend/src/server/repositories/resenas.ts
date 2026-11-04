@@ -1,5 +1,10 @@
 import { createSupabaseServerClient } from '@/server/supabase/server';
-import type { EstadoResena, ResenaCliente, ResenaClienteInput } from '@/types/resenas';
+import type {
+  EstadoResena,
+  ResenaCliente,
+  ResenaClienteInput,
+  ResenaClienteResumen,
+} from '@/types/resenas';
 import { resenasMock } from './datos-mock';
 
 /**
@@ -21,6 +26,30 @@ interface ResenaPublicaRow {
   origen: 'cliente' | 'admin';
   carpeta_id: string | null;
   creado_en: string;
+}
+
+interface ResenaRow extends ResenaPublicaRow {
+  reserva_id: string | null;
+  cliente_id: string | null;
+  estado: EstadoResena;
+}
+
+function mapearResena(row: ResenaRow): ResenaCliente {
+  return {
+    id: row.id,
+    reservaId: row.reserva_id,
+    clienteId: row.cliente_id,
+    autor: row.autor,
+    empresaAutor: row.empresa_autor,
+    comentario: row.comentario,
+    calificacion: row.calificacion,
+    estado: row.estado,
+    carpetaId: row.carpeta_id,
+    videoUrl: row.video_url,
+    videoProporcion: row.video_proporcion,
+    origen: row.origen,
+    creadoEn: row.creado_en,
+  };
 }
 
 export interface ReservaResenable {
@@ -118,9 +147,63 @@ export async function obtenerReservaResenable(
   return libre ? { id: libre, estado: 'completada' } : null;
 }
 
+/** Reseñas propias del cliente (cualquier estado) para mostrar su seguimiento. */
+export async function listarResenasDeCliente(
+  clienteId: string,
+): Promise<ResenaClienteResumen[]> {
+  if (!tieneConexionSupabase()) {
+    return resenasMock
+      .filter((r) => r.clienteId === clienteId)
+      .map((r) => ({
+        id: r.id,
+        reservaId: r.reservaId,
+        estado: r.estado,
+        creadoEn: r.creadoEn,
+      }));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from('resenas_clientes')
+    .select('id, reserva_id, estado, creado_en')
+    .eq('cliente_id', clienteId)
+    .order('creado_en', { ascending: false });
+
+  if (error) {
+    throw new Error('No se pudieron consultar tus reseñas.');
+  }
+
+  return (
+    (data ?? []) as {
+      id: string;
+      reserva_id: string | null;
+      estado: EstadoResena;
+      creado_en: string;
+    }[]
+  ).map((row) => ({
+    id: row.id,
+    reservaId: row.reserva_id,
+    estado: row.estado,
+    creadoEn: row.creado_en,
+  }));
+}
+
 export async function listarTodasLasResenas(): Promise<ResenaCliente[]> {
-  // SUPABASE (admin): SELECT * FROM resenas_clientes ORDER BY creado_en DESC;
-  return Promise.resolve([...resenasMock]);
+  if (!tieneConexionSupabase()) {
+    return [...resenasMock];
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from('resenas_clientes')
+    .select('*')
+    .order('creado_en', { ascending: false });
+
+  if (error) {
+    throw new Error('No se pudieron cargar las reseñas.');
+  }
+
+  return ((data ?? []) as ResenaRow[]).map(mapearResena);
 }
 
 export async function crearResenaCliente(input: ResenaClienteInput): Promise<ResenaCliente> {

@@ -1,14 +1,24 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import RentalCalculator from '@/components/estudio/RentalCalculator';
 import ReservaModal, { type ReservaModalData, type ReservaModalForm } from '@/components/estudio/ReservaModal';
 import { obtenerSupabase } from '@/lib/supabase/client';
 import { enviarSolicitudReservaCliente } from '@/server/services/reservas/clients';
+import {
+  etiquetaEstadoResena,
+  etiquetaEstadoReserva,
+} from '@/server/services/resenas';
 import type { PerfilUsuario } from '@/types/config';
-import type { EquipoEstudio, ServicioEstudio } from '@/types/estudio';
+import type {
+  EquipoEstudio,
+  ReservaEstudio,
+  ServicioEstudio,
+} from '@/types/estudio';
+import type { ResenaClienteResumen } from '@/types/resenas';
 
 /** Elemento multimedia que vendrá del Gestor de galería (módulo "Renta de estudio"). */
 export interface MedioEstudio {
@@ -26,6 +36,10 @@ interface VistaProps {
   medios?: MedioEstudio[];
   /** Perfil del cliente autenticado; `null` si no ha iniciado sesión o no está registrado. */
   cliente?: PerfilUsuario | null;
+  /** Reservas propias del cliente, de la más reciente a la más antigua. */
+  reservas?: ReservaEstudio[];
+  /** Reseñas propias para indicar qué reservas ya fueron reseñadas. */
+  resenasPropias?: ResenaClienteResumen[];
 }
 
 const defaultResumen: ReservaModalData = {
@@ -137,6 +151,101 @@ function GaleriaEstudio({ medios }: { medios: MedioEstudio[] }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Mis reservas                                                        */
+/* ------------------------------------------------------------------ */
+
+function MisReservas({
+  reservas,
+  resenasPropias,
+}: {
+  reservas: ReservaEstudio[];
+  resenasPropias: ResenaClienteResumen[];
+}) {
+  const resenasPorReserva = new Map(
+    resenasPropias
+      .filter((resena) => resena.reservaId)
+      .map((resena) => [resena.reservaId, resena]),
+  );
+
+  if (reservas.length === 0) {
+    return (
+      <div className="rounded-2xl border border-qbBorder bg-qbChalk p-5 text-sm text-qbMuted">
+        Aún no tienes reservas. Usa el resumen de la derecha para solicitar la
+        primera.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-qbBorder bg-qbChalk p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-bold text-qbInk">Mis reservas</h3>
+        <Link
+          href="/resenas"
+          className="text-xs font-semibold text-qbTerracotta underline-offset-2 hover:underline"
+        >
+          Ir a reseñas
+        </Link>
+      </div>
+
+      <ul className="space-y-2">
+        {reservas.slice(0, 3).map((reserva) => {
+          const resena = resenasPorReserva.get(reserva.id);
+          const fecha = new Date(reserva.fechaHoraInicio).toLocaleString(
+            "es-GT",
+            {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "America/Guatemala",
+            },
+          );
+
+          return (
+            <li
+              key={reserva.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-qbBorder/70 px-3 py-2 text-xs"
+            >
+              <div className="space-y-0.5">
+                <p className="font-semibold text-qbInk">{fecha}</p>
+                <p className="text-qbMuted">
+                  Estado: {etiquetaEstadoReserva(reserva.estado)}
+                </p>
+              </div>
+
+              {reserva.estado === "completada" ? (
+                resena ? (
+                  <span className="text-qbMuted">
+                    Reseña {etiquetaEstadoResena(resena.estado)}
+                  </span>
+                ) : (
+                  <Link
+                    href="/resenas"
+                    className="rounded-lg bg-qbTerracotta px-3 py-1.5 font-semibold text-white transition hover:bg-qbTerracotta/90"
+                  >
+                    Dejar reseña
+                  </Link>
+                )
+              ) : (
+                <span className="text-qbMuted">
+                  La reseña se habilita al completar
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      {reservas.length > 3 && (
+        <p className="text-[11px] text-qbMuted">
+          Hay {reservas.length - 3} reserva{reservas.length - 3 === 1 ? "" : "s"}{" "}
+          más.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Vista                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -168,7 +277,15 @@ function perfilDesdeSesionUsuario(user: {
   };
 }
 
-export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = null }: VistaProps) {
+export function Vista({
+  servicios,
+  equipos,
+  tarifaHora,
+  medios = [],
+  cliente = null,
+  reservas = [],
+  resenasPropias = [],
+}: VistaProps) {
   const router = useRouter();
   const tarifa = tarifaHora ?? 0;
   const sinTarifa = tarifaHora === null || tarifaHora <= 0;
@@ -270,6 +387,7 @@ export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = n
     });
     setModalOpen(false);
     setExito(true);
+    router.refresh();
   };
 
   return (
@@ -289,6 +407,21 @@ export function Vista({ servicios, equipos, tarifaHora, medios = [], cliente = n
             Hemos registrado tu solicitud de reserva. El equipo te contactará para
             confirmar la disponibilidad. Tu reserva está en estado <strong>pendiente</strong>.
           </p>
+        </div>
+      )}
+
+      {usuarioRegistrado ? (
+        <MisReservas reservas={reservas} resenasPropias={resenasPropias} />
+      ) : (
+        <div className="rounded-2xl border border-qbBorder bg-qbChalk p-5 text-sm text-qbMuted">
+          ¿Ya rentaste el estudio?{" "}
+          <Link
+            href="/login?next=/renta"
+            className="font-semibold text-qbTerracotta underline-offset-2 hover:underline"
+          >
+            Inicia sesión
+          </Link>{" "}
+          para ver tus reservas y dejar una reseña.
         </div>
       )}
 

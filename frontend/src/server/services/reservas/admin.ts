@@ -58,6 +58,7 @@ export async function cambiarEstadoReservaAdminAction(
   revalidatePath('/admin/reservas');
   revalidatePath('/admin/dashboard');
   revalidatePath('/renta');
+  revalidatePath('/resenas');
 }
 
 export async function cambiarEstadoPagoReservaAdminAction(
