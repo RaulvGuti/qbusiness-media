@@ -6,7 +6,7 @@ import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
 import { obtenerSupabase } from '@/lib/supabase/client';
 
-const RUTAS_DESTINO_PERMITIDAS = new Set(['/renta', '/resenas', '/']);
+const RUTAS_DESTINO_PERMITIDAS = new Set(['/renta', '/resenas', '/apoyo', '/']);
 
 function normalizarDestino(nextParam: string | null): string {
   if (nextParam && RUTAS_DESTINO_PERMITIDAS.has(nextParam)) {

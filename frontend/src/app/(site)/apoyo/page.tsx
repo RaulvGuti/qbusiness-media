@@ -18,7 +18,10 @@ export default async function ApoyoPage() {
           <p className="text-sm text-qbMuted">
             Inicia sesión para acceder al formulario de apoyo social.
           </p>
-          <Link href="/login" className="text-qbTerracotta underline">
+          <Link
+            href="/login?next=/apoyo"
+            className="text-qbTerracotta underline"
+          >
             Ir al login
           </Link>
         </div>

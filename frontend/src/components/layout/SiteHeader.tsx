@@ -83,7 +83,9 @@ export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
   );
 
   const hrefAcceso =
-    rutaCliente === "/renta" || rutaCliente === "/resenas"
+    rutaCliente === "/renta" ||
+    rutaCliente === "/resenas" ||
+    rutaCliente === "/apoyo"
       ? `/login?next=${encodeURIComponent(rutaCliente)}`
       : "/login";
 
