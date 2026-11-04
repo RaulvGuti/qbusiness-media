@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import { Vista } from "./Vista";
 import {
   listarResenasAprobadas,
+  listarResenasDeCliente,
   obtenerReservaResenable,
 } from "@/server/repositories/resenas";
-import { createSupabaseServerClient } from "@/server/supabase/server";
+import {
+  listarReservasDeCliente,
+  obtenerPerfilClienteActual,
+} from "@/server/repositories/estudio";
 
 export const metadata: Metadata = {
   title: { absolute: "Reseñas | QBusiness Media" },
@@ -13,21 +17,25 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const cliente = await obtenerPerfilClienteActual();
 
-  const resenas = await listarResenasAprobadas();
-  const reservaCompletada = user
-    ? await obtenerReservaResenable(user.id)
-    : null;
+  const [resenas, reservaCompletada, reservas, resenasPropias] =
+    await Promise.all([
+      listarResenasAprobadas(),
+      cliente
+        ? obtenerReservaResenable(cliente.id)
+        : Promise.resolve(null),
+      cliente ? listarReservasDeCliente(cliente.id) : Promise.resolve([]),
+      cliente ? listarResenasDeCliente(cliente.id) : Promise.resolve([]),
+    ]);
 
   return (
     <Vista
       resenas={resenas}
-      tieneSesion={Boolean(user)}
+      tieneSesion={Boolean(cliente)}
       reservaCompletada={reservaCompletada}
+      reservas={reservas}
+      resenasPropias={resenasPropias}
     />
   );
 }

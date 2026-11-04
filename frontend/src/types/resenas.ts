@@ -28,6 +28,14 @@ export interface ResenaCliente {
   creadoEn: string;
 }
 
+/** Resumen de una reseña propia, para saber qué reservas ya fueron reseñadas. */
+export interface ResenaClienteResumen {
+  id: string;
+  reservaId: string | null;
+  estado: EstadoResena;
+  creadoEn: string;
+}
+
 /** Formulario de reseña de cliente (requiere sesión + reserva completada). */
 export interface ResenaClienteInput {
   reservaId: string;

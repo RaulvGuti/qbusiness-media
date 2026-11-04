@@ -29,6 +29,7 @@ el cliente necesita saber para usar el sitio.
 | 11 | [`11_login_google_callback.md`](./11_login_google_callback.md) | Cómo se completa el inicio de sesión con Google, la ruta `/auth/callback` y la configuración requerida en Supabase. |
 | 12 | [`12_recuperacion_contrasena.md`](./12_recuperacion_contrasena.md) | Cómo funciona la recuperación de contraseña de clientes y administradores, la ruta `/auth/confirm`, la pantalla compartida y la configuración de Supabase Auth. |
 | 13 | [`13_dashboard_datos_reales.md`](./13_dashboard_datos_reales.md) | De dónde salen los contadores, la actividad reciente y la gráfica semanal del dashboard, y cómo se respetan los permisos del panel. |
+| 14 | [`14_correcciones_flujo_portillo.md`](./14_correcciones_flujo_portillo.md) | Correcciones de Apoyo Social, reseñas, destacados del inicio, contactos del panel y el enlace de WhatsApp. |
 
 ## Trabajo interno en curso
 

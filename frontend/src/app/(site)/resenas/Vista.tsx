@@ -1,25 +1,43 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import ReviewsList from '@/components/leads/ReviewsList';
 import ReviewModal from '@/components/leads/ReviewModal';
-import type { ResenaCliente, ResenaClienteInput } from '@/types/resenas';
-import { motivoBloqueoResena } from '@/server/services/resenas';
+import type {
+  ResenaCliente,
+  ResenaClienteInput,
+  ResenaClienteResumen,
+} from '@/types/resenas';
+import type { ReservaEstudio } from '@/types/estudio';
+import { motivoBloqueoResenaDetallado } from '@/server/services/resenas';
 
 interface VistaProps {
   resenas: ResenaCliente[];
   tieneSesion: boolean;
   reservaCompletada: { id: string; estado: 'completada' } | null;
+  reservas: ReservaEstudio[];
+  resenasPropias: ResenaClienteResumen[];
 }
 
-export function Vista({ resenas, tieneSesion, reservaCompletada }: VistaProps) {
+export function Vista({
+  resenas,
+  tieneSesion,
+  reservaCompletada,
+  reservas,
+  resenasPropias,
+}: VistaProps) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
 
-  const bloqueo = motivoBloqueoResena(tieneSesion, reservaCompletada);
+  const bloqueo = motivoBloqueoResenaDetallado(
+    tieneSesion,
+    reservas,
+    resenasPropias,
+  );
 
   const handleSubmitReview = async (form: ResenaClienteInput) => {
     const respuesta = await fetch('/api/api/resenas', {
@@ -73,6 +91,18 @@ export function Vista({ resenas, tieneSesion, reservaCompletada }: VistaProps) {
           Dejar una reseña
         </button>
       </div>
+
+      {tieneSesion && bloqueo ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <p>{bloqueo}</p>
+          <Link
+            href="/renta"
+            className="mt-2 inline-flex text-xs font-semibold text-qbTerracotta underline-offset-2 hover:underline"
+          >
+            Ver mis reservas en Renta de Estudio
+          </Link>
+        </div>
+      ) : null}
 
       {mensajeExito ? (
         <p

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Vista, type MedioEstudio } from "./Vista";
 import { obtenerCatalogoEstudioCliente } from "@/server/services/reservas/clients";
 import { listarMediosPublicos } from "@/server/repositories/galeria";
+import { listarReservasDeCliente } from "@/server/repositories/estudio";
+import { listarResenasDeCliente } from "@/server/repositories/resenas";
 
 export const metadata: Metadata = {
   title: { absolute: "Renta de Estudio | QBusiness Media" },
@@ -10,11 +12,19 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [{ servicios, equipos, configuracion, cliente }, medios] = await Promise.all([
-    obtenerCatalogoEstudioCliente(),
-    // archivos de las carpetas publicadas del módulo "estudio"
-    listarMediosPublicos("estudio"),
-  ]);
+  const [{ servicios, equipos, configuracion, cliente }, medios] =
+    await Promise.all([
+      obtenerCatalogoEstudioCliente(),
+      // archivos de las carpetas publicadas del módulo "estudio"
+      listarMediosPublicos("estudio"),
+    ]);
+
+  const [reservas, resenasPropias] = cliente
+    ? await Promise.all([
+        listarReservasDeCliente(cliente.id),
+        listarResenasDeCliente(cliente.id),
+      ])
+    : [[], []];
 
   const mediosEstudio: MedioEstudio[] = medios.map((m) => ({
     id: m.id,
@@ -30,6 +40,8 @@ export default async function Page() {
       tarifaHora={configuracion.tarifaHora}
       medios={mediosEstudio}
       cliente={cliente}
+      reservas={reservas}
+      resenasPropias={resenasPropias}
     />
   );
 }

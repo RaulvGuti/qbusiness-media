@@ -1,16 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PortadaCarpeta } from "@/components/galeria/PortadaCarpeta";
 import { Icon } from "@/components/ui/Icon";
-import { MediaPlaceholder } from "@/components/ui/MediaPlaceholder";
 import { crearEnlaceWhatsApp, interpolarTexto } from "@/lib/config-sitio";
 import type { ConfiguracionSitio } from "@/types/config";
+import type { DestacadoPublico } from "@/types/galeria-publica";
 import styles from "./page.module.css";
 
 interface VistaProps {
   config: ConfiguracionSitio;
+  destacados: DestacadoPublico[];
 }
 
-export function Vista({ config }: VistaProps) {
+export function Vista({ config, destacados }: VistaProps) {
   const whatsapp = crearEnlaceWhatsApp(
     config.contactoWhatsappNumero,
     config.mensajeWhatsapp,
@@ -118,100 +120,51 @@ export function Vista({ config }: VistaProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Tarjeta McDía Feliz */}
-          <div className="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 cursor-pointer shadow-sm">
-            <div className="aspect-video relative overflow-hidden bg-black/40">
-              <MediaPlaceholder
-                label="McDía Feliz"
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
-              <span className="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                McDía Feliz
-              </span>
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="w-12 h-12 rounded-full text-[#ECE7DE]/85 hover:text-white hover:bg-white/10 flex items-center justify-center">
-                  <Icon name="play" className="text-sm ml-0.5" />
-                </span>
-              </div>
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">
-                McDía Feliz
-              </h3>
-              <p className="text-xs text-qbMuted mt-1">
-                Campaña de recaudación solidaria, spots comerciales de televisión
-                y cobertura en vivo en restaurantes.
-              </p>
-              <span className="inline-block mt-3 text-xs font-semibold text-qbSage">
-                Ver proyectos McDía Feliz →
-              </span>
-            </div>
+        {destacados.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-qbBorder bg-qbChalk p-8 text-center text-sm text-qbMuted">
+            Estamos preparando los próximos proyectos destacados.
           </div>
-
-          {/* Tarjeta Lanivar Xela */}
-          <div className="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 cursor-pointer shadow-sm">
-            <div className="aspect-video relative overflow-hidden bg-black/40">
-              <MediaPlaceholder
-                label="Lanivar Xela"
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
-              <span className="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                Lanivar Xela
-              </span>
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="w-12 h-12 rounded-full text-[#ECE7DE]/85 hover:text-white hover:bg-white/10 flex items-center justify-center">
-                  <Icon name="play" className="text-sm ml-0.5" />
-                </span>
-              </div>
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">
-                Lanivar Xela
-              </h3>
-              <p className="text-xs text-qbMuted mt-1">
-                Spots institucionales, campaña de admisiones universitarias y
-                cobertura de vida estudiantil en el campus.
-              </p>
-              <span className="inline-block mt-3 text-xs font-semibold text-qbSage">
-                Ver proyectos Lanivar Xela →
-              </span>
-            </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {destacados.map((destacado) => (
+              <Link
+                key={destacado.id}
+                href={destacado.href}
+                className="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 shadow-sm"
+              >
+                <div className="aspect-video relative overflow-hidden bg-black/40">
+                  <PortadaCarpeta
+                    url={destacado.imagenUrl}
+                    tipo={destacado.imagenTipo}
+                    titulo={destacado.titulo}
+                    className="transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                  <span className="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                    {destacado.etiqueta ?? destacado.titulo}
+                  </span>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="w-12 h-12 rounded-full text-[#ECE7DE]/85 hover:text-white hover:bg-white/10 flex items-center justify-center">
+                      <Icon name="arrow-right" className="text-sm" />
+                    </span>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">
+                    {destacado.titulo}
+                  </h3>
+                  <p className="text-xs text-qbMuted mt-1 line-clamp-3">
+                    {destacado.descripcion ??
+                      "Conoce este proyecto realizado por QBusiness Media."}
+                  </p>
+                  <span className="inline-block mt-3 text-xs font-semibold text-qbSage">
+                    Ver proyecto →
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
-
-          {/* Tarjeta Teatro Municipal */}
-          <div className="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 cursor-pointer shadow-sm">
-            <div className="aspect-video relative overflow-hidden bg-black/40">
-              <MediaPlaceholder
-                label="Teatro Municipal"
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
-              <span className="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                Teatro Municipal
-              </span>
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="w-12 h-12 rounded-full text-[#ECE7DE]/85 hover:text-white hover:bg-white/10 flex items-center justify-center">
-                  <Icon name="play" className="text-sm ml-0.5" />
-                </span>
-              </div>
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">
-                Teatro Municipal
-              </h3>
-              <p className="text-xs text-qbMuted mt-1">
-                Producción cinematográfica, registro de obras escénicas, galas y
-                puesta en valor del patrimonio de Xela.
-              </p>
-              <span className="inline-block mt-3 text-xs font-semibold text-qbSage">
-                Ver proyectos Teatro Municipal →
-              </span>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* SECCIÓN DE SERVICIOS */}
