@@ -69,7 +69,7 @@ export async function guardarEquipoAction(
     ? await actualizarEquipoEstudio(id, datos)
     : await crearEquipoEstudio(datos);
 
-  revalidatePath('/admin/equipo');
+  revalidatePath('/admin/textos');
   revalidatePath('/renta');
   return equipo;
 }
@@ -80,6 +80,6 @@ export async function cambiarActivoEquipoAction(
 ): Promise<void> {
   await exigirPrincipal();
   await cambiarActivoEquipoEstudio(id, activo);
-  revalidatePath('/admin/equipo');
+  revalidatePath('/admin/textos');
   revalidatePath('/renta');
 }

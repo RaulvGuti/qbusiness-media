@@ -40,7 +40,7 @@ Reglas de asignación:
 | Destacados del inicio | Sí | No |
 | Textos y configuración del sitio | Sí | No |
 | Paquetes de renta y tarifas de servicios | Sí | No |
-| Renta de equipo (inventario) | Sí | No |
+| Renta de equipo (dentro de Textos y configuración) | Sí | No |
 | Gestión de cuentas del equipo | Sí | No |
 | Buckets `galeria` y `logos` (escritura) | Sí | No |
 
@@ -119,8 +119,9 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
   rol no alcanza.
 - **`frontend/src/app/admin/(panel)/layout.tsx`**: valida sesión y equipo antes de renderizar
   cualquier pantalla del panel.
-- **Páginas exclusivas** (`galeria`, `textos`, `destacados`, `equipo`): llaman a
-  `exigirAdminPrincipalPanel()` antes de consultar datos.
+- **Páginas exclusivas** (`galeria`, `textos`, `destacados`): llaman a
+  `exigirAdminPrincipalPanel()` antes de consultar datos. El inventario de equipo se
+  administra dentro de `textos`.
 - **`AdminHeader`**: filtra el menú según el rol, muestra el nombre y la etiqueta del rol, y
   cierra la sesión con un Server Action real.
 - **Perfil** (`/admin/perfil`): lee la fila real del usuario conectado. El principal ve además
@@ -139,9 +140,10 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
 ## 6. Qué revisar al probar
 
 1. Con una cuenta `secretaria`:
-   - El menú no muestra Galería, Textos, Destacados ni Renta de equipo.
-   - Entrar directo a `/admin/galeria`, `/admin/textos`, `/admin/destacados` o
-     `/admin/equipo` redirige al dashboard con el aviso de permiso.
+   - El menú no muestra Galería, Textos ni Destacados. La renta de equipo queda dentro de
+     Textos y configuración, así que tampoco aparece como sección aparte.
+   - Entrar directo a `/admin/galeria`, `/admin/textos` o `/admin/destacados` redirige al
+     dashboard con el aviso de permiso.
    - `/admin/perfil` muestra “Secretaría” y no muestra la gestión de equipo.
    - Puede moderar una reseña y gestionar reservas o apoyo social.
    - No puede escribir en la galería, en `paquetes_estudio`, en `inventario_equipos` ni en

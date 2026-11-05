@@ -4,9 +4,10 @@ import { useId, useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { guardarConfiguracionSitio } from "@/server/actions/configuracion";
 import type { CambioConfigSitio, GrupoConfig } from "@/types/config";
-import type { PaqueteEstudio } from "@/types/estudio";
+import type { EquipoEstudio, PaqueteEstudio } from "@/types/estudio";
 import shared from "../panel.module.css";
 import { PESTANAS } from "./datos";
+import { EquipoPanel } from "./EquipoPanel";
 import { PaquetesEditor } from "./PaquetesEditor";
 import styles from "./page.module.css";
 
@@ -15,11 +16,14 @@ interface TextosFormProps {
   valoresIniciales: Record<string, string>;
   /** Catálogo de paquetes de renta que se edita dentro de la pestaña de estudio. */
   paquetesIniciales: PaqueteEstudio[];
+  /** Inventario de equipos que se edita dentro de la pestaña de estudio. */
+  equiposIniciales: EquipoEstudio[];
 }
 
 export function TextosForm({
   valoresIniciales,
   paquetesIniciales,
+  equiposIniciales,
 }: TextosFormProps) {
   const base = useId();
   const toast = useToast();
@@ -95,7 +99,10 @@ export function TextosForm({
       {PESTANAS.map((p) => (
         <div key={p.id} role="tabpanel" hidden={activa !== p.id}>
           {p.id === "estudio" && (
-            <PaquetesEditor paquetesIniciales={paquetesIniciales} />
+            <>
+              <PaquetesEditor paquetesIniciales={paquetesIniciales} />
+              <EquipoPanel equiposIniciales={equiposIniciales} />
+            </>
           )}
           {p.grupos.map((g) => (
             <section key={g.titulo} className={styles.grp}>

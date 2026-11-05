@@ -63,14 +63,17 @@ reservas.
 
 ## 4. Renta de equipo
 
-- El panel tiene una página nueva en **`/admin/equipo`**, visible solo para el
-  `admin_principal`, con el permiso `equipo` de `frontend/src/lib/permisos.ts`.
+- La administración del inventario vive dentro de **Textos y configuración → Renta de
+  Estudio**, junto a los paquetes. No hay una sección separada en el menú.
+- Solo el `admin_principal` puede modificarlo, porque la pantalla y las acciones siguen
+  protegidas por `requireAdminPrincipal()` y RLS.
 - Desde ahí se crean, editan y activan/desactivan equipos de `inventario_equipos`.
 - El sitio público tiene una pestaña **“Renta de equipo”** dentro de `/renta`. Usa el mismo
   formulario y el mismo paquete obligatorio; la diferencia es que prioriza el catálogo de
   equipos y oculta los servicios del salón.
 - Un equipo inactivo no aparece ni se puede reservar, pero se conserva para el historial.
-- Las acciones están en `frontend/src/server/services/equipos/admin.ts`.
+- Las acciones están en `frontend/src/server/services/equipos/admin.ts` y revalidan
+  `/admin/textos` y `/renta`.
 
 ## 5. Contactos fuera del panel
 
@@ -118,8 +121,8 @@ Archivos principales: `frontend/src/lib/auth-cookies.ts`,
    - La pestaña Estudio muestra los paquetes.
    - La pestaña Equipo muestra el inventario activo.
    - Sin paquetes, el botón de reserva queda bloqueado.
-5. Crear un equipo en `/admin/equipo`, desactivarlo y comprobar que desaparece del sitio
-   público.
+5. Crear un equipo en **Textos y configuración → Renta de Estudio**, desactivarlo y
+   comprobar que desaparece del sitio público.
 6. Con una cuenta con 5 reservas completadas, confirmar que el paquete muestra el 25% de
    descuento y que el total del servidor coincide.
 7. Verificar que el menú del panel ya no tiene Contactos y que `/admin/contactos` devuelve

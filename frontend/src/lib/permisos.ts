@@ -29,8 +29,7 @@ export type Permiso =
   | "apoyo-social"
   | "resenas"
   | "reservas"
-  | "perfil"
-  | "equipo";
+  | "perfil";
 
 const PERMISOS_POR_ROL: Record<RolAdministrador, readonly Permiso[]> = {
   admin_principal: [
@@ -42,7 +41,6 @@ const PERMISOS_POR_ROL: Record<RolAdministrador, readonly Permiso[]> = {
     "resenas",
     "reservas",
     "perfil",
-    "equipo",
   ],
   secretaria: ["dashboard", "apoyo-social", "resenas", "reservas", "perfil"],
 };
@@ -62,7 +60,6 @@ export const SECCIONES_PANEL: readonly SeccionPanel[] = [
   { href: "/admin/apoyo-social", texto: "Apoyo social", permiso: "apoyo-social" },
   { href: "/admin/resenas", texto: "Reseñas", permiso: "resenas" },
   { href: "/admin/reservas", texto: "Reservas del estudio", permiso: "reservas" },
-  { href: "/admin/equipo", texto: "Renta de equipo", permiso: "equipo" },
   { href: "/admin/perfil", texto: "Perfil", permiso: "perfil" },
 ];
 

@@ -8,7 +8,7 @@ import {
 } from "@/server/services/equipos/admin";
 import type { EquipoEstudio, EquipoEstudioInput } from "@/types/estudio";
 import shared from "../panel.module.css";
-import styles from "../textos/page.module.css";
+import styles from "./page.module.css";
 
 interface Props {
   equiposIniciales: EquipoEstudio[];
@@ -34,7 +34,13 @@ export function EquipoPanel({ equiposIniciales }: Props) {
   };
 
   return (
-    <div className="space-y-4">
+    <section className={`${styles.grp} space-y-4`}>
+      <h3>Renta de equipo</h3>
+      <p className={styles.help}>
+        Equipos que se pueden sumar a una reserva. Un equipo inactivo no aparece
+        en el sitio público, pero conserva su historial y puede reactivarse.
+      </p>
+
       {error && (
         <p className={styles.error} role="alert">
           {error}
@@ -72,7 +78,7 @@ export function EquipoPanel({ equiposIniciales }: Props) {
           onError={setError}
         />
       </div>
-    </div>
+    </section>
   );
 }
 
