@@ -1,9 +1,9 @@
 # 03 — Migraciones y esquema v2 de la base de datos
 
 Este documento describe la **arquitectura final de la base de datos** y la secuencia completa de
-migraciones, del `000001` al `000035`. Reemplaza al esquema original de la primera etapa: las
+migraciones, del `000001` al `000042`. Reemplaza al esquema original de la primera etapa: las
 tablas `usuarios`, `portafolio` y `resenas_clientes` cambiaron de forma y hoy la base se apoya
-en Supabase Auth y en un modelo de galería por carpetas.
+en Supabase Auth, en un modelo de galería por carpetas y en paquetes de renta.
 
 > Regla que no se rompe: **la base de datos solo cambia con migraciones**. Nada desde el panel de
 > Supabase. Una migración aplicada no se edita; se corrige con otra. Todo lo de este documento
@@ -16,15 +16,17 @@ en Supabase Auth y en un modelo de galería por carpetas.
 - **Backend:** Supabase (Postgres + Auth + Storage). No hay otra base de datos.
 - **Identidad:** los perfiles (`administradores`, `clientes`) tienen como `id` el mismo `id` de
   `auth.users`. `auth.uid()` identifica a quien inició sesión sin tablas puente.
-- **Autorización:** RLS activo en **las 19 tablas** de `public`. Las claves se protegen además
+- **Autorización:** RLS activo en **las 20 tablas** de `public`. Las claves se protegen además
   con `grant`/`revoke` a nivel de columna o tabla donde interesa.
 - **Zona horaria del negocio:** `America/Guatemala` (UTC-6, sin horario de verano). Las marcas
   de tiempo se guardan en `timestamptz` y se interpretan en esa zona en las funciones.
-- **Precios:** se **congelan** al reservar (`precio_congelado`, `tarifa_hora_aplicada`).
+- **Precios:** se **congelan** al reservar. Desde `000042` la reserva guarda el paquete
+  (`paquete_nombre`, `paquete_horas`, `paquete_precio`) y el descuento de lealtad; los
+  servicios y equipos conservan su `precio_congelado` por hora.
 
 ---
 
-## 2. Secuencia de migraciones (000001 → 000035)
+## 2. Secuencia de migraciones (000001 → 000042)
 
 | # | Archivo | Qué agrega o cambia |
 | --- | --- | --- |
@@ -63,13 +65,20 @@ en Supabase Auth y en un modelo de galería por carpetas.
 | 033 | `000033_galeria_inicio_portada_destacados.sql` | Módulo `inicio`, portadas de carpeta/empresa, reordenamiento diferible de destacados y vistas |
 | 034 | `000034_formularios_publicos_y_configuracion.sql` | `enviar_contacto()` y `enviar_solicitud_apoyo()` para el servidor (solo `service_role`) y claves iniciales de contacto, redes y ubicación |
 | 035 | `000035_resenas_empresa_y_vista_publica.sql` | `resenas_clientes.empresa_id`, política de inserción reforzada y vista pública `resenas_publicas` con `security_invoker` |
+| 036 | `000036_dashboard_resumen_y_actividad.sql` | RPC de resumen y actividad del dashboard administrativo |
+| 037 | `000037_galeria_backend.sql` | RPC de carpetas, archivos, portadas y destacados de la galería |
+| 038 | `000038_roles_y_permisos_administrativos.sql` | Roles `admin_principal` y `secretaria`, RLS por rol, triggers de contenido y RPC de gestión de cuentas |
+| 039 | `000039_configuracion_textos_sitio.sql` | Grupos `general` y `sobre`, textos editables del sitio y defaults de contacto, redes y ubicación |
+| 040 | `000040_estudio_tarifa_y_clientes_reserva.sql` | Tarifa del salón en `configuracion_sitio` y respaldo del perfil de cliente al reservar |
+| 041 | `000041_estudio_tarifa_estricta.sql` | Rechaza la reserva si la tarifa por hora está vacía, en cero o es negativa |
+| 042 | `000042_paquetes_y_descuento_lealtad.sql` | Tabla `paquetes_estudio`, paquete congelado y descuento de lealtad en `reservas`, y nueva firma de `solicitar_reserva()` con `p_paquete_id` |
 
 Las migraciones **028, 029 y 031 son correcciones "sobre" migraciones anteriores**: no se editó
 ningún archivo ya creado; se agregó una migración que ajusta lo que estaba mal o faltaba.
 
 ---
 
-## 3. Modelo de datos (19 tablas en `public`)
+## 3. Modelo de datos (20 tablas en `public`)
 
 ### Identidad y equipo
 - **`administradores`** — equipo interno con acceso al panel. `id` = `auth.users.id`. Guarda
@@ -80,17 +89,23 @@ ningún archivo ya creado; se agregó una migración que ajusta lo que estaba ma
   corregir cualquier campo, incluido el correo.
 
 ### Catálogos del estudio
+- **`paquetes_estudio`** — paquetes cerrados de renta con `nombre`, `horas`, `precio`, `activo`
+  y `orden`. Sustituyen la tarifa por hora: sin un paquete activo no se puede reservar.
 - **`servicios_estudio`** — servicios extra con `precio_por_hora` y `activo`.
 - **`inventario_equipos`** — equipos rentables con `cantidad_total`, `precio_por_hora` y `activo`.
-- **`configuracion_sitio`** — pares `(grupo, clave)` con `valor` de texto. Se usa para la tarifa
-  del salón (`estudio / tarifa_hora`), el límite de pendientes
-  (`estudio / max_pendientes_por_cliente`) y el horario de atención
-  (`estudio / hora_apertura`, `estudio / hora_cierre`). La migración 000034 deja las seis
-  claves iniciales de `contacto`, `redes` y `ubicacion` con `valor` nulo.
+  El panel puede crear, editar y activar/desactivar; el sitio público solo muestra los activos.
+- **`configuracion_sitio`** — pares `(grupo, clave)` con `valor` de texto. Se usa para el
+  límite de pendientes (`estudio / max_pendientes_por_cliente`) y el horario de atención
+  (`estudio / hora_apertura`, `estudio / hora_cierre`). La fila histórica
+  `estudio / tarifa_hora` se conserva por compatibilidad, pero ya no se usa para cobrar. La
+  migración 000034 deja las seis claves iniciales de `contacto`, `redes` y `ubicacion` con
+  `valor` nulo.
 
 ### Reserva del salón
 - **`reservas`** — una reserva del salón (recurso único). Sin datos de usuario heredados: guarda
   `cliente_id`, `creado_por` y los datos del formulario (`nombre`, `correo`, `telefono`) congelados.
+  Desde `000042` guarda el paquete congelado (`paquete_id`, `paquete_nombre`, `paquete_horas`,
+  `paquete_precio`) y el descuento de lealtad (`descuento_lealtad`, `descuento_monto`).
   Estados: `pendiente → confirmada / cancelada / completada`. Pago: `estado_pago` en
   `pendiente / comprobante_subido / pagado / rechazado` y `url_comprobante_pago`.
   **Sin traslape:** restricción de exclusión sobre `tstzrange` que ignora las canceladas, reforzada

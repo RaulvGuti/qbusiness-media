@@ -10,8 +10,8 @@ La columna `administradores.rol` (migración `000038`) acepta dos valores:
 
 | Rol | Para quién | Alcance |
 | --- | --- | --- |
-| `admin_principal` | Dirección / responsable del sitio | Acceso total: operación, galería, textos y configuración, destacados, tarifas, equipo y cuentas. |
-| `secretaria` | Apoyo administrativo | Operación del día a día: contactos, apoyo social, reseñas y reservas. Sin contenido, tarifas, configuración ni cuentas. |
+| `admin_principal` | Dirección / responsable del sitio | Acceso total: operación, galería, textos y configuración, destacados, paquetes, inventario de equipo y cuentas. |
+| `secretaria` | Apoyo administrativo | Operación del día a día: apoyo social, reseñas y reservas. Sin contenido, paquetes, configuración, inventario ni cuentas. |
 
 Reglas de asignación:
 
@@ -32,7 +32,6 @@ Reglas de asignación:
 | Módulo | `admin_principal` | `secretaria` |
 | --- | --- | --- |
 | Dashboard | Sí | Sí |
-| Contactos (leads) | Sí | Sí |
 | Apoyo social | Sí | Sí |
 | Reseñas (moderación) | Sí | Sí |
 | Reservas del estudio y bloqueos | Sí | Sí |
@@ -40,7 +39,8 @@ Reglas de asignación:
 | Galería (empresas, carpetas, archivos) | Sí | No |
 | Destacados del inicio | Sí | No |
 | Textos y configuración del sitio | Sí | No |
-| Tarifas de servicios y equipos | Sí | No |
+| Paquetes de renta y tarifas de servicios | Sí | No |
+| Renta de equipo (inventario) | Sí | No |
 | Gestión de cuentas del equipo | Sí | No |
 | Buckets `galeria` y `logos` (escritura) | Sí | No |
 
@@ -64,8 +64,9 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
    - `portafolio`, `servicios_estudio`, `inventario_equipos`, `configuracion_sitio`,
      `empresas`, `carpetas_galeria`, `archivos_galeria` y `destacados`: escritura solo del
      principal.
-   - Contactos, apoyo social, reseñas, reservas, servicios de una reserva y bloqueos del
-     calendario siguen disponibles para todo el equipo.
+   - Apoyo social, reseñas, reservas, servicios de una reserva y bloqueos del calendario
+     siguen disponibles para todo el equipo. La sección Contactos se retiró del panel; los
+     leads se conservan en la base y sus endpoints internos siguen existiendo.
    - Storage: lectura pública de `galeria` y `logos`; escritura solo del principal.
 4. **Trigger `exigir_admin_principal()`** en las tablas de galería. Las RPC de galería
    (`crear_carpeta_galeria`, `agregar_archivo_galeria`, `reordenar_archivos`,
@@ -118,7 +119,7 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
   rol no alcanza.
 - **`frontend/src/app/admin/(panel)/layout.tsx`**: valida sesión y equipo antes de renderizar
   cualquier pantalla del panel.
-- **Páginas exclusivas** (`galeria`, `textos`, `destacados`): llaman a
+- **Páginas exclusivas** (`galeria`, `textos`, `destacados`, `equipo`): llaman a
   `exigirAdminPrincipalPanel()` antes de consultar datos.
 - **`AdminHeader`**: filtra el menú según el rol, muestra el nombre y la etiqueta del rol, y
   cierra la sesión con un Server Action real.
@@ -138,12 +139,13 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
 ## 6. Qué revisar al probar
 
 1. Con una cuenta `secretaria`:
-   - El menú no muestra Galería, Textos ni Destacados.
-   - Entrar directo a `/admin/galeria`, `/admin/textos` o `/admin/destacados` redirige al
-     dashboard con el aviso de permiso.
+   - El menú no muestra Galería, Textos, Destacados ni Renta de equipo.
+   - Entrar directo a `/admin/galeria`, `/admin/textos`, `/admin/destacados` o
+     `/admin/equipo` redirige al dashboard con el aviso de permiso.
    - `/admin/perfil` muestra “Secretaría” y no muestra la gestión de equipo.
-   - Puede cambiar el estado de un contacto y moderar una reseña.
-   - No puede escribir en la galería ni en `configuracion_sitio` (RLS y trigger lo impiden).
+   - Puede moderar una reseña y gestionar reservas o apoyo social.
+   - No puede escribir en la galería, en `paquetes_estudio`, en `inventario_equipos` ni en
+     `configuracion_sitio` (RLS y trigger lo impiden).
 2. Con una cuenta `admin_principal`:
    - Ve el equipo, crea una cuenta nueva con rol Secretaría y recibe el mensaje de éxito.
    - Puede cambiar el rol de otra cuenta.
