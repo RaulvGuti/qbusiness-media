@@ -18,7 +18,7 @@ export const DESCRIPCION_ROL: Record<RolAdministrador, string> = {
   admin_principal:
     "Acceso total: operación, contenido del sitio, tarifas, configuración y cuentas del equipo.",
   secretaria:
-    "Acceso a la operación: contactos, apoyo social, reseñas y reservas. El contenido, las tarifas y las cuentas quedan en manos del administrador principal.",
+    "Acceso a la operación: apoyo social, reseñas y reservas. El contenido, las tarifas, el inventario y las cuentas quedan en manos del administrador principal.",
 };
 
 export type Permiso =
@@ -26,7 +26,6 @@ export type Permiso =
   | "galeria"
   | "textos"
   | "destacados"
-  | "contactos"
   | "apoyo-social"
   | "resenas"
   | "reservas"
@@ -39,21 +38,13 @@ const PERMISOS_POR_ROL: Record<RolAdministrador, readonly Permiso[]> = {
     "galeria",
     "textos",
     "destacados",
-    "contactos",
     "apoyo-social",
     "resenas",
     "reservas",
     "perfil",
     "equipo",
   ],
-  secretaria: [
-    "dashboard",
-    "contactos",
-    "apoyo-social",
-    "resenas",
-    "reservas",
-    "perfil",
-  ],
+  secretaria: ["dashboard", "apoyo-social", "resenas", "reservas", "perfil"],
 };
 
 export interface SeccionPanel {
@@ -68,10 +59,10 @@ export const SECCIONES_PANEL: readonly SeccionPanel[] = [
   { href: "/admin/galeria", texto: "Galería", permiso: "galeria" },
   { href: "/admin/textos", texto: "Textos y configuración", permiso: "textos" },
   { href: "/admin/destacados", texto: "Destacados", permiso: "destacados" },
-  { href: "/admin/contactos", texto: "Contactos", permiso: "contactos" },
   { href: "/admin/apoyo-social", texto: "Apoyo social", permiso: "apoyo-social" },
   { href: "/admin/resenas", texto: "Reseñas", permiso: "resenas" },
   { href: "/admin/reservas", texto: "Reservas del estudio", permiso: "reservas" },
+  { href: "/admin/equipo", texto: "Renta de equipo", permiso: "equipo" },
   { href: "/admin/perfil", texto: "Perfil", permiso: "perfil" },
 ];
 
