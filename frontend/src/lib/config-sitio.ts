@@ -355,6 +355,13 @@ export const PESTANAS: PestanaConfig[] = [
       },
     ],
   },
+  {
+    id: 'equipo',
+    titulo: 'Renta de Equipo',
+    // El inventario se edita con sus propias acciones y no guarda claves de
+    // `configuracion_sitio`, por eso la pestaña no tiene campos de texto.
+    grupos: [],
+  },
 ];
 
 /** Default por `grupo:clave`. */

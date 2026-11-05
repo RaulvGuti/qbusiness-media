@@ -40,7 +40,7 @@ Reglas de asignación:
 | Destacados del inicio | Sí | No |
 | Textos y configuración del sitio | Sí | No |
 | Paquetes de renta y tarifas de servicios | Sí | No |
-| Renta de equipo (dentro de Textos y configuración) | Sí | No |
+| Renta de equipo (pestaña dentro de Textos y configuración) | Sí | No |
 | Gestión de cuentas del equipo | Sí | No |
 | Buckets `galeria` y `logos` (escritura) | Sí | No |
 
@@ -121,7 +121,7 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
   cualquier pantalla del panel.
 - **Páginas exclusivas** (`galeria`, `textos`, `destacados`): llaman a
   `exigirAdminPrincipalPanel()` antes de consultar datos. El inventario de equipo se
-  administra dentro de `textos`.
+  administra en la pestaña **Renta de Equipo** de `textos`.
 - **`AdminHeader`**: filtra el menú según el rol, muestra el nombre y la etiqueta del rol, y
   cierra la sesión con un Server Action real.
 - **Perfil** (`/admin/perfil`): lee la fila real del usuario conectado. El principal ve además

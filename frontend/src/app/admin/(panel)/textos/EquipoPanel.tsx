@@ -35,7 +35,7 @@ export function EquipoPanel({ equiposIniciales }: Props) {
 
   return (
     <section className={`${styles.grp} space-y-4`}>
-      <h3>Renta de equipo</h3>
+      <h3>Inventario de equipos</h3>
       <p className={styles.help}>
         Equipos que se pueden sumar a una reserva. Un equipo inactivo no aparece
         en el sitio público, pero conserva su historial y puede reactivarse.

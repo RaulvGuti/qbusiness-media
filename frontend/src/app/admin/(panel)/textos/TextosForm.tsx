@@ -99,10 +99,10 @@ export function TextosForm({
       {PESTANAS.map((p) => (
         <div key={p.id} role="tabpanel" hidden={activa !== p.id}>
           {p.id === "estudio" && (
-            <>
-              <PaquetesEditor paquetesIniciales={paquetesIniciales} />
-              <EquipoPanel equiposIniciales={equiposIniciales} />
-            </>
+            <PaquetesEditor paquetesIniciales={paquetesIniciales} />
+          )}
+          {p.id === "equipo" && (
+            <EquipoPanel equiposIniciales={equiposIniciales} />
           )}
           {p.grupos.map((g) => (
             <section key={g.titulo} className={styles.grp}>
@@ -157,31 +157,35 @@ export function TextosForm({
         </div>
       ))}
 
-      {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      )}
+      {activa !== "equipo" && (
+        <>
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
 
-      <div className={styles.bar}>
-        <button
-          type="button"
-          className={shared.btn}
-          onClick={() => {
-            setValores(guardados);
-            setError(null);
-          }}
-        >
-          Descartar cambios
-        </button>
-        <button
-          type="submit"
-          className={`${shared.btn} ${shared.btnPrimary}`}
-          disabled={guardando}
-        >
-          {guardando ? "Guardando…" : "Guardar cambios"}
-        </button>
-      </div>
+          <div className={styles.bar}>
+            <button
+              type="button"
+              className={shared.btn}
+              onClick={() => {
+                setValores(guardados);
+                setError(null);
+              }}
+            >
+              Descartar cambios
+            </button>
+            <button
+              type="submit"
+              className={`${shared.btn} ${shared.btnPrimary}`}
+              disabled={guardando}
+            >
+              {guardando ? "Guardando…" : "Guardar cambios"}
+            </button>
+          </div>
+        </>
+      )}
     </form>
   );
 }

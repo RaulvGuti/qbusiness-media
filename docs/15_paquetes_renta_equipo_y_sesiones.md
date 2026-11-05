@@ -63,11 +63,12 @@ reservas.
 
 ## 4. Renta de equipo
 
-- La administración del inventario vive dentro de **Textos y configuración → Renta de
-  Estudio**, junto a los paquetes. No hay una sección separada en el menú.
+- La administración del inventario tiene su propia pestaña **Renta de Equipo** dentro de
+  **Textos y configuración**, al lado de **Renta de Estudio**. No hay una sección separada
+  en el menú principal.
 - Solo el `admin_principal` puede modificarlo, porque la pantalla y las acciones siguen
   protegidas por `requireAdminPrincipal()` y RLS.
-- Desde ahí se crean, editan y activan/desactivan equipos de `inventario_equipos`.
+- Desde esa pestaña se crean, editan y activan/desactivan equipos de `inventario_equipos`.
 - El sitio público tiene una pestaña **“Renta de equipo”** dentro de `/renta`. Usa el mismo
   formulario y el mismo paquete obligatorio; la diferencia es que prioriza el catálogo de
   equipos y oculta los servicios del salón.
@@ -116,12 +117,12 @@ Archivos principales: `frontend/src/lib/auth-cookies.ts`,
 1. Aprobar el PR a `develop`.
 2. Aplicar `supabase/migrations/000042_paquetes_y_descuento_lealtad.sql` como migración.
 3. Entrar como `admin_principal` a **Textos y configuración → Renta de Estudio** y crear al
-   menos un paquete activo.
+   menos un paquete activo. En la pestaña **Renta de Equipo** se administra el inventario.
 4. Revisar en `/renta`:
    - La pestaña Estudio muestra los paquetes.
    - La pestaña Equipo muestra el inventario activo.
    - Sin paquetes, el botón de reserva queda bloqueado.
-5. Crear un equipo en **Textos y configuración → Renta de Estudio**, desactivarlo y
+5. Crear un equipo en **Textos y configuración → Renta de Equipo**, desactivarlo y
    comprobar que desaparece del sitio público.
 6. Con una cuenta con 5 reservas completadas, confirmar que el paquete muestra el 25% de
    descuento y que el total del servidor coincide.
