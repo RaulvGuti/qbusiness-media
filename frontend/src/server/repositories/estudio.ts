@@ -99,6 +99,29 @@ function verificarYRegistrarIdempotencia(huella: string): () => void {
  * cuando dos clientes reservan en el mismo milisegundo) a mensajes seguros
  * y legibles para el usuario sin exponer detalles internos del esquema.
  */
+/**
+ * `paquetes_estudio` llega con la migración 000042. Si el código se despliega
+ * antes de aplicarla, PostgREST responde con un error de tabla inexistente.
+ * Las lecturas deben degradar a "sin paquetes" en lugar de romper el sitio.
+ */
+function esTablaPaquetesNoAplicada(
+  error: { code?: string; message?: string } | null | undefined,
+): boolean {
+  if (!error) return false;
+
+  const codigo = error.code ?? '';
+  const mensaje = (error.message ?? '').toLowerCase();
+
+  return (
+    codigo === '42P01' ||
+    codigo === 'PGRST205' ||
+    (mensaje.includes('paquetes_estudio') &&
+      (mensaje.includes('schema cache') ||
+        mensaje.includes('does not exist') ||
+        mensaje.includes('no existe')))
+  );
+}
+
 function normalizarErrorReserva(
   error: { code?: string; message?: string } | null | undefined,
   mensajePorDefecto = 'No se pudo procesar la operación de reserva.',
@@ -107,6 +130,12 @@ function normalizarErrorReserva(
 
   const codigo = error.code ?? '';
   const mensaje = (error.message ?? '').trim();
+
+  if (esTablaPaquetesNoAplicada(error)) {
+    return new Error(
+      'La migración 000042 (paquetes de renta) todavía no está aplicada en la base de datos. Un administrador debe aplicarla antes de configurar paquetes.',
+    );
+  }
 
   if (
     codigo === '23P01' ||
@@ -536,6 +565,9 @@ export async function listarPaquetesActivos(): Promise<PaqueteEstudio[]> {
     .order('nombre', { ascending: true });
 
   if (error) {
+    // Mientras la migración 000042 no esté aplicada, el sitio público debe
+    // mostrar "sin paquetes" en lugar de una pantalla de error.
+    if (esTablaPaquetesNoAplicada(error)) return [];
     throw normalizarErrorReserva(error, 'No se pudieron cargar los paquetes de renta.');
   }
 
@@ -558,6 +590,8 @@ export async function listarPaquetesAdmin(): Promise<PaqueteEstudio[]> {
     .order('nombre', { ascending: true });
 
   if (error) {
+    // El panel también debe cargar para mostrar el aviso de migración pendiente.
+    if (esTablaPaquetesNoAplicada(error)) return [];
     throw normalizarErrorReserva(error, 'No se pudieron cargar los paquetes de renta.');
   }
 
