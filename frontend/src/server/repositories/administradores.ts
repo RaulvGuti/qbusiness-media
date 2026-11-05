@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/server/supabase/server";
+import { createSupabaseStaffClient } from "@/server/supabase/server";
 import type {
   MiembroEquipo,
   PerfilAdministrador,
@@ -45,7 +45,7 @@ export function mapearPerfilAdministrador(
 
 /** Equipo con acceso al panel. Solo devuelve filas si quien consulta es principal. */
 export async function listarEquipo(): Promise<MiembroEquipo[]> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const { data, error } = await supabase
     .from("administradores")

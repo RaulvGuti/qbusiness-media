@@ -287,6 +287,9 @@ Migraciones existentes (`supabase/migrations/`):
 | `000037_galeria_backend.sql` | RPC de carpetas, archivos, portadas y destacados de la galería |
 | `000038_roles_y_permisos_administrativos.sql` | Roles `admin_principal` y `secretaria`, RLS por rol, triggers de contenido y RPC de gestión de cuentas |
 | `000039_configuracion_textos_sitio.sql` | Grupos `general` y `sobre`, textos editables del hero, modal, header y footer, y defaults de contacto/redes/ubicación |
+| `000040_estudio_tarifa_y_clientes_reserva.sql` | Tarifa del salón en `configuracion_sitio` y respaldo del perfil de cliente al reservar |
+| `000041_estudio_tarifa_estricta.sql` | Rechaza la reserva si la tarifa por hora está vacía, en cero o es negativa |
+| `000042_paquetes_y_descuento_lealtad.sql` | Paquetes de renta, paquete congelado y descuento de lealtad en `reservas`, y nueva firma de `solicitar_reserva()` |
 
 Decisiones ya tomadas que hay que respetar:
 
@@ -305,7 +308,7 @@ Decisiones ya tomadas que hay que respetar:
 
 Estado actual:
 
-- **RLS activo en las 19 tablas** de `public` (migración 000020 y siguientes).
+- **RLS activo en las 20 tablas** de `public` (migración 000020 y siguientes).
 - **Roles del panel** desde 000038: el layout y cada página sensible validan sesión y rol con
   `frontend/src/server/auth/`; el proxy solo adelanta la redirección sin sesión.
 - **Buckets de Storage** `galeria` y `logos` públicos (000027) y `comprobantes` privado (000031).

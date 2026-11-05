@@ -15,6 +15,7 @@ import type {
   FechaBloqueada,
   ReservaEstudio,
 } from "@/types/estudio";
+import styles from "./reservas.module.css";
 
 interface Props {
   reservasIniciales: ReservaEstudio[];
@@ -34,6 +35,23 @@ const ESTADOS_PAGO: { clave: EstadoPagoReserva; texto: string }[] = [
   { clave: "pagado", texto: "Pagado" },
   { clave: "rechazado", texto: "Comprobante rechazado" },
 ];
+
+const CLASE_ESTADO: Record<EstadoReserva, string> = {
+  pendiente: styles.estadoPendiente,
+  confirmada: styles.estadoConfirmada,
+  completada: styles.estadoCompletada,
+  cancelada: styles.estadoCancelada,
+};
+
+const CLASE_PAGO: Record<EstadoPagoReserva, string> = {
+  pendiente: styles.estadoPendiente,
+  comprobante_subido: styles.pagoComprobante,
+  pagado: styles.estadoCompletada,
+  rechazado: styles.estadoCancelada,
+};
+
+const textoEstado = (estado: EstadoReserva) =>
+  ESTADOS.find((e) => e.clave === estado)?.texto ?? estado;
 
 const fmtFechaHora = (iso: string) =>
   new Date(iso).toLocaleString("es-GT", {
@@ -140,43 +158,40 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
           {reservas.length === 0 && (
             <p className={shared.empty}>Aún no hay reservas.</p>
           )}
-          <ul style={{ display: "grid", gap: 12, listStyle: "none", padding: 0, margin: 0 }}>
+          <ul className={styles.list}>
             {reservas.map((r) => (
-              <li
-                key={r.id}
-                style={{
-                  border: "1px solid rgba(0,0,0,.08)",
-                  borderRadius: 14,
-                  padding: 16,
-                  display: "grid",
-                  gap: 10,
-                }}
-              >
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
+              <li key={r.id} className={styles.item}>
+                <div className={styles.itemHead}>
+                  <div className={styles.itemTitle}>
                     <b>{r.nombre}</b>{" "}
-                    <span style={{ fontSize: 12, opacity: 0.6 }}>
+                    <span className={styles.fecha}>
                       {fmtFechaHora(r.fechaHoraInicio)} → {fmtFechaHora(r.fechaHoraFin)}
                     </span>
                   </div>
-                  <b>
-                    {r.totalCalculado !== null ? `Q${r.totalCalculado.toFixed(2)}` : "—"}
-                  </b>
+                  <div className={styles.itemMeta}>
+                    <span className={`${styles.badge} ${CLASE_ESTADO[r.estado]}`}>
+                      {textoEstado(r.estado)}
+                    </span>
+                    <b className={styles.total}>
+                      {r.totalCalculado !== null ? `Q${r.totalCalculado.toFixed(2)}` : "—"}
+                    </b>
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, opacity: 0.8 }}>
+                <div className={styles.contacto}>
                   {r.correo}
                   {r.telefono ? ` · ${r.telefono}` : ""}
                 </div>
                 {r.notasCliente && (
-                  <p style={{ fontSize: 13, margin: 0, opacity: 0.85 }}>{r.notasCliente}</p>
+                  <p className={styles.notas}>{r.notasCliente}</p>
                 )}
-                <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-                  <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                    <span style={{ fontWeight: 700, textTransform: "uppercase", opacity: 0.6 }}>Estado</span>
+                <div className={styles.grid}>
+                  <label className={styles.field}>
+                    <span className={styles.label}>Estado</span>
                     <select
                       value={r.estado}
+                      aria-label={`Estado de la reserva de ${r.nombre}`}
                       onChange={(e) => cambiarEstado(r.id, e.target.value as EstadoReserva)}
-                      style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(0,0,0,.12)" }}
+                      className={`${styles.select} ${CLASE_ESTADO[r.estado]}`}
                     >
                       {ESTADOS.map((e) => (
                         <option key={e.clave} value={e.clave}>
@@ -185,12 +200,13 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                       ))}
                     </select>
                   </label>
-                  <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                    <span style={{ fontWeight: 700, textTransform: "uppercase", opacity: 0.6 }}>Estado de pago</span>
+                  <label className={styles.field}>
+                    <span className={styles.label}>Estado de pago</span>
                     <select
                       value={r.estadoPago}
+                      aria-label={`Estado de pago de la reserva de ${r.nombre}`}
                       onChange={(e) => cambiarPago(r.id, e.target.value as EstadoPagoReserva)}
-                      style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(0,0,0,.12)" }}
+                      className={`${styles.select} ${CLASE_PAGO[r.estadoPago]}`}
                     >
                       {ESTADOS_PAGO.map((e) => (
                         <option key={e.clave} value={e.clave}>
@@ -210,55 +226,55 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
         <>
           <section className={shared.card}>
             <h2 className={shared.cardTitle}>Bloquear fechas del calendario</h2>
-            <form onSubmit={crearBloqueo} style={{ display: "grid", gap: 12 }}>
-              <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
-                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                  <span style={{ fontWeight: 700, textTransform: "uppercase", opacity: 0.6 }}>Desde *</span>
+            <form onSubmit={crearBloqueo} className={styles.form}>
+              <div className={styles.formGrid}>
+                <label className={styles.field}>
+                  <span className={styles.label}>Desde *</span>
                   <input
                     type="date"
                     required
+                    className={styles.input}
                     value={form.desde}
                     onChange={(e) => setForm((f) => ({ ...f, desde: e.target.value }))}
-                    style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(0,0,0,.12)" }}
                   />
                 </label>
-                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                  <span style={{ fontWeight: 700, textTransform: "uppercase", opacity: 0.6 }}>Hasta *</span>
+                <label className={styles.field}>
+                  <span className={styles.label}>Hasta *</span>
                   <input
                     type="date"
                     required
+                    className={styles.input}
                     value={form.hasta}
                     onChange={(e) => setForm((f) => ({ ...f, hasta: e.target.value }))}
-                    style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(0,0,0,.12)" }}
                   />
                 </label>
-                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                  <span style={{ fontWeight: 700, textTransform: "uppercase", opacity: 0.6 }}>Hora desde (opcional)</span>
+                <label className={styles.field}>
+                  <span className={styles.label}>Hora desde (opcional)</span>
                   <input
                     type="time"
+                    className={styles.input}
                     value={form.horaDesde}
                     onChange={(e) => setForm((f) => ({ ...f, horaDesde: e.target.value }))}
-                    style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(0,0,0,.12)" }}
                   />
                 </label>
-                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                  <span style={{ fontWeight: 700, textTransform: "uppercase", opacity: 0.6 }}>Hora hasta (opcional)</span>
+                <label className={styles.field}>
+                  <span className={styles.label}>Hora hasta (opcional)</span>
                   <input
                     type="time"
+                    className={styles.input}
                     value={form.horaHasta}
                     onChange={(e) => setForm((f) => ({ ...f, horaHasta: e.target.value }))}
-                    style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(0,0,0,.12)" }}
                   />
                 </label>
               </div>
-              <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                <span style={{ fontWeight: 700, textTransform: "uppercase", opacity: 0.6 }}>Motivo</span>
+              <label className={styles.field}>
+                <span className={styles.label}>Motivo</span>
                 <input
                   type="text"
+                  className={styles.input}
                   placeholder="Ej. Mantenimiento, evento privado…"
                   value={form.motivo}
                   onChange={(e) => setForm((f) => ({ ...f, motivo: e.target.value }))}
-                  style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(0,0,0,.12)" }}
                 />
               </label>
               <div>
@@ -274,32 +290,22 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
             {fechas.length === 0 && (
               <p className={shared.empty}>No hay fechas bloqueadas.</p>
             )}
-            <ul style={{ display: "grid", gap: 10, listStyle: "none", padding: 0, margin: 0 }}>
+            <ul className={styles.list}>
               {fechas.map((f) => (
-                <li
-                  key={f.id}
-                  style={{
-                    border: "1px solid rgba(0,0,0,.08)",
-                    borderRadius: 12,
-                    padding: 12,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 10,
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div style={{ fontSize: 13 }}>
+                <li key={f.id} className={styles.bloqueoItem}>
+                  <div className={styles.bloqueoInfo}>
                     <b>
                       {fmtFecha(f.desde)} → {fmtFecha(f.hasta)}
                     </b>
                     {f.horaDesde && f.horaHasta && (
-                      <span style={{ opacity: 0.7 }}>
+                      <span className={styles.bloqueoMeta}>
                         {" "}
                         · {f.horaDesde}–{f.horaHasta}
                       </span>
                     )}
-                    {f.motivo && <div style={{ opacity: 0.7 }}>{f.motivo}</div>}
+                    {f.motivo && (
+                      <div className={styles.bloqueoMeta}>{f.motivo}</div>
+                    )}
                   </div>
                   <button
                     type="button"

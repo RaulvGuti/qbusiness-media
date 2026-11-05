@@ -30,6 +30,7 @@ el cliente necesita saber para usar el sitio.
 | 12 | [`12_recuperacion_contrasena.md`](./12_recuperacion_contrasena.md) | Cómo funciona la recuperación de contraseña de clientes y administradores, la ruta `/auth/confirm`, la pantalla compartida y la configuración de Supabase Auth. |
 | 13 | [`13_dashboard_datos_reales.md`](./13_dashboard_datos_reales.md) | De dónde salen los contadores, la actividad reciente y la gráfica semanal del dashboard, y cómo se respetan los permisos del panel. |
 | 14 | [`14_correcciones_flujo_portillo.md`](./14_correcciones_flujo_portillo.md) | Correcciones de Apoyo Social, reseñas, destacados del inicio, contactos del panel y el enlace de WhatsApp. |
+| 15 | [`15_paquetes_renta_equipo_y_sesiones.md`](./15_paquetes_renta_equipo_y_sesiones.md) | Paquetes de renta (000042), descuento por lealtad, administración y pestaña pública de equipo, salida de Contactos y sesiones separadas de administrador y cliente. |
 
 ## Trabajo interno en curso
 

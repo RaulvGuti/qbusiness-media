@@ -1,220 +1,278 @@
 'use client';
 
-import { useState } from 'react';
-import type { EquipoEstudio, ServicioEstudio } from '@/types/estudio';
+import { useEffect, useMemo, useState } from 'react';
+import { descuentoLealtad, etiquetaHoras } from '@/lib/estudio-paquetes';
+import type {
+  EquipoEstudio,
+  PaqueteEstudio,
+  ServicioEstudio,
+} from '@/types/estudio';
+
+export type ResumenRenta = {
+  paqueteId: string | null;
+  paqueteNombre: string | null;
+  horas: number;
+  paquetePrecioBase: number;
+  descuento: number;
+  paquetePrecioFinal: number;
+  subtotalServicios: number;
+  subtotalEquipos: number;
+  total: number;
+  serviciosIds: string[];
+  equipos: { equipoId: string; cantidad: number }[];
+};
 
 interface RentalCalculatorProps {
+  paquetes: PaqueteEstudio[];
   servicios: ServicioEstudio[];
   equipos: EquipoEstudio[];
-  tarifaHoraBase: number;
-  onResumenChange?: (resumen: {
-    horas: number;
-    tarifaBase: number;
-    subtotalServicios: number;
-    subtotalEquipos: number;
-    total: number;
-    serviciosIds: string[];
-    equipos: { equipoId: string; cantidad: number }[];
-  }) => void;
+  /** Reservas completadas del cliente: desde 5 se aplica 25% al paquete. */
+  reservasCompletadas: number;
+  /** "estudio" muestra servicios y equipo; "equipo" prioriza el inventario. */
+  modo?: 'estudio' | 'equipo';
+  onResumenChange?: (resumen: ResumenRenta) => void;
 }
 
+/**
+ * Calculadora pública de renta.
+ *
+ * El paquete es obligatorio y fija las horas de la reserva. Servicios y
+ * equipos se cobran por hora encima del paquete. El total definitivo lo vuelve
+ * a calcular la RPC `solicitar_reserva` (000042); esto es solo el estimado.
+ */
 export default function RentalCalculator({
+  paquetes,
   servicios,
   equipos,
-  tarifaHoraBase,
+  reservasCompletadas,
+  modo = 'estudio',
   onResumenChange,
 }: RentalCalculatorProps) {
-  const [horas, setHoras] = useState<number>(2);
-  const [serviciosSeleccionados, setServiciosSeleccionados] = useState<Record<string, number>>({});
-  const [equiposSeleccionados, setEquiposSeleccionados] = useState<Record<string, number>>({});
+  const [paqueteId, setPaqueteId] = useState<string>(paquetes[0]?.id ?? '');
+  const [serviciosSeleccionados, setServiciosSeleccionados] = useState<
+    Record<string, boolean>
+  >({});
+  const [equiposSeleccionados, setEquiposSeleccionados] = useState<
+    Record<string, number>
+  >({});
+
+  const paquete =
+    paquetes.find((p) => p.id === paqueteId) ?? paquetes[0] ?? null;
+  const horas = paquete?.horas ?? 0;
+  const descuento = descuentoLealtad(paquete?.precio ?? 0, reservasCompletadas);
 
   const subtotalServicios = servicios.reduce((acc, s) => {
-    const h = serviciosSeleccionados[s.id] || 0;
-    return acc + s.precioPorHora * h;
+    return serviciosSeleccionados[s.id] ? acc + s.precioPorHora * horas : acc;
   }, 0);
 
   const subtotalEquipos = equipos.reduce((acc, e) => {
-    const c = equiposSeleccionados[e.id] || 0;
-    return acc + e.precioPorHora * c * horas;
+    const cantidad = equiposSeleccionados[e.id] || 0;
+    return acc + e.precioPorHora * cantidad * horas;
   }, 0);
 
-  const total = Math.round((tarifaHoraBase * horas + subtotalServicios + subtotalEquipos) * 100) / 100;
+  const total = useMemo(
+    () =>
+      Math.round(
+        (descuento.precioFinal + subtotalServicios + subtotalEquipos) * 100,
+      ) / 100,
+    [descuento.precioFinal, subtotalServicios, subtotalEquipos],
+  );
 
-  const notify = (
-    h: number,
-    tb: number,
-    ss: number,
-    se: number,
-    t: number,
-    serviciosIds: string[],
-    eqs: { equipoId: string; cantidad: number }[],
-  ) => {
+  useEffect(() => {
     onResumenChange?.({
-      horas: h,
-      tarifaBase: tb,
-      subtotalServicios: ss,
-      subtotalEquipos: se,
-      total: t,
-      serviciosIds,
-      equipos: eqs,
-    });
-  };
-
-  const snapshot = (h: number, ss: number, se: number, sSel: Record<string, number>, eSel: Record<string, number>) => {
-    notify(
-      h,
-      tarifaHoraBase * h,
-      ss,
-      se,
-      Math.round((tarifaHoraBase * h + ss + se) * 100) / 100,
-      Object.keys(sSel),
-      Object.entries(eSel)
-        .filter(([, c]) => c > 0)
+      paqueteId: paquete?.id ?? null,
+      paqueteNombre: paquete?.nombre ?? null,
+      horas,
+      paquetePrecioBase: paquete?.precio ?? 0,
+      descuento: descuento.monto,
+      paquetePrecioFinal: descuento.precioFinal,
+      subtotalServicios,
+      subtotalEquipos,
+      total,
+      serviciosIds: Object.entries(serviciosSeleccionados)
+        .filter(([, activo]) => activo)
+        .map(([id]) => id),
+      equipos: Object.entries(equiposSeleccionados)
+        .filter(([, cantidad]) => cantidad > 0)
         .map(([equipoId, cantidad]) => ({ equipoId, cantidad })),
-    );
-  };
-
-  const setHorasAndNotify = (h: number) => {
-    setHoras(h);
-    snapshot(h, subtotalServicios, subtotalEquipos, serviciosSeleccionados, equiposSeleccionados);
-  };
+    });
+  }, [
+    descuento.monto,
+    descuento.precioFinal,
+    equiposSeleccionados,
+    horas,
+    onResumenChange,
+    paquete?.id,
+    paquete?.nombre,
+    paquete?.precio,
+    serviciosSeleccionados,
+    subtotalEquipos,
+    subtotalServicios,
+    total,
+  ]);
 
   const toggleServicio = (id: string) => {
-    setServiciosSeleccionados((prev) => {
-      const next = { ...prev };
-      if (next[id] && next[id] > 0) {
-        delete next[id];
-      } else {
-        next[id] = horas > 0 ? horas : 1;
-      }
-      snapshot(horas, subtotalServicios, subtotalEquipos, next, equiposSeleccionados);
-      return next;
-    });
+    setServiciosSeleccionados((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const updateServicioHoras = (id: string, h: number) => {
-    setServiciosSeleccionados((prev) => {
-      const next = { ...prev, [id]: Math.max(0, h) };
-      const ss = servicios.reduce((acc, s) => acc + s.precioPorHora * (next[s.id] || 0), 0);
-      snapshot(horas, ss, subtotalEquipos, next, equiposSeleccionados);
-      return next;
-    });
+  const actualizarEquipo = (id: string, cantidad: number, stock: number) => {
+    setEquiposSeleccionados((prev) => ({
+      ...prev,
+      [id]: Math.max(0, Math.min(stock, Number.isFinite(cantidad) ? cantidad : 0)),
+    }));
   };
 
-  const updateEquipoCantidad = (id: string, c: number) => {
-    setEquiposSeleccionados((prev) => {
-      const next = { ...prev, [id]: Math.max(0, c) };
-      const se = equipos.reduce((acc, e) => acc + e.precioPorHora * (next[e.id] || 0) * horas, 0);
-      snapshot(horas, subtotalServicios, se, serviciosSeleccionados, next);
-      return next;
-    });
-  };
+  if (paquetes.length === 0) {
+    return (
+      <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
+        <p className="font-bold">Renta temporalmente no disponible</p>
+        <p className="mt-1">
+          Todavía no hay paquetes de renta configurados. El administrador debe
+          crear al menos un paquete activo antes de recibir reservas.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-qbChalk border border-qbBorder rounded-3xl p-6 space-y-8 shadow-sm">
+    <div className="space-y-8 rounded-3xl border border-qbBorder bg-qbChalk p-6 shadow-sm">
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-qbInk">Calculadora de renta</h3>
-        <div className="flex flex-wrap items-end gap-4">
-          <div className="space-y-2">
-            <label htmlFor="horas" className="text-sm font-semibold text-qbInk">
-              Horas de renta
-            </label>
-            <input
-              id="horas"
-              type="number"
-              min={1}
-              step={0.5}
-              value={horas}
-              onChange={(e) => setHorasAndNotify(Math.max(0.5, parseFloat(e.target.value) || 0))}
-              className="w-32"
-            />
-          </div>
+        <div>
+          <h3 className="text-lg font-bold text-qbInk">
+            {modo === 'equipo' ? 'Reserva tu equipo' : 'Calculadora de renta'}
+          </h3>
           <p className="text-sm text-qbMuted">
-            El tiempo aplica a la tarifa base del salón, servicios y equipo.
+            Elige un paquete. Sus horas fijan el inicio y el fin de la reserva.
           </p>
         </div>
-        <div className="border border-qbBorder rounded-2xl p-4 flex justify-between items-center text-sm">
-          <span className="text-qbMuted">Tarifa base del salón</span>
-          <span className="font-bold text-qbInk">Q{tarifaHoraBase.toFixed(2)} / h</span>
-        </div>
-      </div>
 
-      {/* Servicios */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-bold text-qbInk uppercase tracking-wider">Servicios extra</h4>
-        <div className="space-y-3">
-          {servicios.map((s) => {
-            const seleccionado = (serviciosSeleccionados[s.id] || 0) > 0;
-            const hSel = serviciosSeleccionados[s.id] || horas;
+        <div className="grid gap-3 sm:grid-cols-2">
+          {paquetes.map((p) => {
+            const activo = p.id === paquete?.id;
+            const d = descuentoLealtad(p.precio, reservasCompletadas);
             return (
-              <div
-                key={s.id}
-                className={`border rounded-2xl p-4 transition ${
-                  seleccionado ? 'border-qbTerracotta/40' : 'border-qbBorder'
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPaqueteId(p.id)}
+                className={`rounded-2xl border p-4 text-left transition ${
+                  activo
+                    ? 'border-qbTerracotta ring-1 ring-qbTerracotta/40 bg-white'
+                    : 'border-qbBorder hover:border-qbInk/40'
                 }`}
               >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <label className="flex items-center gap-2 cursor-pointer">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-sm font-bold text-qbInk">{p.nombre}</span>
+                  <span className="text-xs font-semibold text-qbMuted">
+                    {etiquetaHoras(p.horas)}
+                  </span>
+                </div>
+                <div className="mt-2 text-lg font-extrabold text-qbInk">
+                  Q{d.precioFinal.toFixed(2)}
+                  {d.aplica && (
+                    <span className="ml-2 text-xs font-semibold text-qbSage line-through decoration-1">
+                      Q{p.precio.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+                {d.aplica && (
+                  <p className="text-[11px] font-semibold text-qbSage">
+                    Incluye 25% de descuento por lealtad
+                  </p>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {descuento.aplica && (
+          <p className="rounded-xl border border-qbSage/40 bg-qbSage/10 px-3 py-2 text-xs font-semibold text-qbInk">
+            Llevas {reservasCompletadas} reservas completadas: el 25% de
+            descuento ya está aplicado al paquete.
+          </p>
+        )}
+      </div>
+
+      {modo === 'estudio' && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-bold uppercase tracking-wider text-qbInk">
+            Servicios extra
+          </h4>
+          <div className="space-y-3">
+            {servicios.length === 0 && (
+              <p className="text-sm text-qbMuted">No hay servicios extra disponibles.</p>
+            )}
+            {servicios.map((s) => {
+              const seleccionado = Boolean(serviciosSeleccionados[s.id]);
+              return (
+                <div
+                  key={s.id}
+                  className={`rounded-2xl border p-4 transition ${
+                    seleccionado ? 'border-qbTerracotta/40' : 'border-qbBorder'
+                  }`}
+                >
+                  <label className="flex cursor-pointer flex-wrap items-start justify-between gap-3">
+                    <span className="flex items-start gap-2">
                       <input
                         type="checkbox"
                         checked={seleccionado}
                         onChange={() => toggleServicio(s.id)}
+                        className="mt-1"
                       />
-                      <span className="text-sm font-bold text-qbInk">{s.nombre}</span>
-                      <span className="text-xs font-semibold text-qbMuted">
-                        Q{Number(s.precioPorHora).toFixed(2)}/h
+                      <span className="space-y-1">
+                        <span className="block text-sm font-bold text-qbInk">
+                          {s.nombre}
+                        </span>
+                        <span className="block text-xs font-semibold text-qbMuted">
+                          Q{Number(s.precioPorHora).toFixed(2)}/h
+                        </span>
+                        {s.descripcion && (
+                          <span className="block text-xs text-qbMuted">
+                            {s.descripcion}
+                          </span>
+                        )}
                       </span>
-                    </label>
-                    {s.descripcion && (
-                      <p className="text-xs text-qbMuted pl-6">{s.descripcion}</p>
-                    )}
-                  </div>
-
-                  {seleccionado && (
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs font-medium text-qbMuted">Horas</label>
-                      <input
-                        type="number"
-                        min={0.5}
-                        step={0.5}
-                        value={hSel}
-                        onChange={(e) => updateServicioHoras(s.id, parseFloat(e.target.value) || 0)}
-                        className="w-20 text-sm"
-                      />
-                      <span className="text-sm font-semibold text-qbInk">
-                        Q{(s.precioPorHora * hSel).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
+                    </span>
+                    <span className="text-sm font-semibold text-qbInk">
+                      Q{(s.precioPorHora * (seleccionado ? horas : 0)).toFixed(2)}
+                    </span>
+                  </label>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Equipos */}
       <div className="space-y-4">
-        <h4 className="text-sm font-bold text-qbInk uppercase tracking-wider">Equipo rentable</h4>
+        <h4 className="text-sm font-bold uppercase tracking-wider text-qbInk">
+          Equipo rentable
+        </h4>
         <div className="space-y-3">
+          {equipos.length === 0 && (
+            <p className="text-sm text-qbMuted">
+              No hay equipos disponibles para agregar.
+            </p>
+          )}
           {equipos.map((e) => {
-            const cSel = equiposSeleccionados[e.id] || 0;
+            const cantidad = equiposSeleccionados[e.id] || 0;
             return (
               <div
                 key={e.id}
-                className={`border rounded-2xl p-4 transition ${
-                  cSel > 0 ? 'border-qbSage/40' : 'border-qbBorder'
+                className={`rounded-2xl border p-4 transition ${
+                  cantidad > 0 ? 'border-qbSage/40' : 'border-qbBorder'
                 }`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <div className="flex items-center flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-bold text-qbInk">{e.nombre}</span>
                       <span className="text-xs font-semibold text-qbMuted">
                         Q{Number(e.precioPorHora).toFixed(2)}/h
                       </span>
-                      <span className="text-[11px] text-qbMuted">Disp.: {e.cantidadTotal}</span>
+                      <span className="text-[11px] text-qbMuted">
+                        Disponibles: {e.cantidadTotal}
+                      </span>
                     </div>
                     {e.descripcion && (
                       <p className="text-xs text-qbMuted">{e.descripcion}</p>
@@ -222,18 +280,26 @@ export default function RentalCalculator({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-qbMuted">Cantidad</label>
+                    <label className="text-xs font-medium text-qbMuted">
+                      Cantidad
+                    </label>
                     <input
                       type="number"
                       min={0}
                       max={e.cantidadTotal}
                       step={1}
-                      value={cSel}
-                      onChange={(ev) => updateEquipoCantidad(e.id, parseInt(ev.target.value) || 0)}
+                      value={cantidad}
+                      onChange={(ev) =>
+                        actualizarEquipo(
+                          e.id,
+                          parseInt(ev.target.value, 10) || 0,
+                          e.cantidadTotal,
+                        )
+                      }
                       className="w-20 text-sm"
                     />
-                    <span className="text-sm font-semibold text-qbInk min-w-[70px] text-right">
-                      Q{(e.precioPorHora * cSel * horas).toFixed(2)}
+                    <span className="min-w-[70px] text-right text-sm font-semibold text-qbInk">
+                      Q{(e.precioPorHora * cantidad * horas).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -243,29 +309,47 @@ export default function RentalCalculator({
         </div>
       </div>
 
-      {/* Resumen */}
-      <div className="border-t border-qbBorder pt-6 space-y-3">
-        <h4 className="text-sm font-bold text-qbInk uppercase tracking-wider">Desglose de costos</h4>
+      <div className="space-y-3 border-t border-qbBorder pt-6">
+        <h4 className="text-sm font-bold uppercase tracking-wider text-qbInk">
+          Desglose de costos
+        </h4>
         <dl className="space-y-2 text-sm">
           <div className="flex items-center justify-between">
-            <dt className="text-qbMuted">Tarifa base ({horas}h)</dt>
-            <dd className="font-semibold text-qbInk">Q{(tarifaHoraBase * horas).toFixed(2)}</dd>
+            <dt className="text-qbMuted">
+              {paquete?.nombre ?? 'Paquete'} ({etiquetaHoras(horas)})
+            </dt>
+            <dd className="font-semibold text-qbInk">
+              Q{descuento.precioFinal.toFixed(2)}
+            </dd>
           </div>
+          {descuento.aplica && (
+            <div className="flex items-center justify-between text-qbSage">
+              <dt>Descuento de lealtad (25%)</dt>
+              <dd className="font-semibold">-Q{descuento.monto.toFixed(2)}</dd>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <dt className="text-qbMuted">Servicios extra</dt>
-            <dd className="font-semibold text-qbInk">Q{subtotalServicios.toFixed(2)}</dd>
+            <dd className="font-semibold text-qbInk">
+              Q{subtotalServicios.toFixed(2)}
+            </dd>
           </div>
           <div className="flex items-center justify-between">
             <dt className="text-qbMuted">Equipo rentable</dt>
-            <dd className="font-semibold text-qbInk">Q{subtotalEquipos.toFixed(2)}</dd>
+            <dd className="font-semibold text-qbInk">
+              Q{subtotalEquipos.toFixed(2)}
+            </dd>
           </div>
           <div className="flex items-center justify-between border-t border-qbBorder pt-2">
             <dt className="text-base font-bold text-qbInk">Total estimado</dt>
-            <dd className="text-lg font-extrabold text-qbInk">Q{total.toFixed(2)}</dd>
+            <dd className="text-lg font-extrabold text-qbInk">
+              Q{total.toFixed(2)}
+            </dd>
           </div>
         </dl>
         <p className="text-[11px] text-qbMuted">
-          * Estimado. El precio final lo calcula el servidor al confirmar la reserva.
+          * Estimado. El precio final lo calcula el servidor al confirmar la
+          reserva.
         </p>
       </div>
     </div>

@@ -1,0 +1,170 @@
+/* Lista de reservas y bloqueos. El panel es oscuro: todos los campos y
+   estados llevan fondo y texto explícitos para que se lean bien. */
+.list {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #262626;
+  border-radius: 14px;
+  background: #111;
+}
+
+.itemHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.itemTitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.fecha {
+  font-size: 12px;
+  color: #bdbdbd;
+}
+
+.itemMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.total {
+  font-size: 15px;
+  color: #fff;
+}
+
+.contacto {
+  font-size: 13px;
+  color: #cfcfcf;
+}
+
+.notas {
+  margin: 0;
+  font-size: 13px;
+  color: #d6d6d6;
+}
+
+.grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.label {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+}
+
+.select,
+.input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  background: #171717;
+  color: #f2f2f2;
+  font-size: 13px;
+}
+
+.select:focus,
+.input:focus {
+  border-color: #fff;
+  outline: 0;
+}
+
+.select option {
+  background: #171717;
+  color: #f2f2f2;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.estadoPendiente {
+  border-color: #6b5320;
+  background: #2a2110;
+  color: #f5c86b;
+}
+
+.estadoConfirmada,
+.pagoComprobante {
+  border-color: #1f4d7a;
+  background: #102136;
+  color: #8ec5ff;
+}
+
+.estadoCompletada {
+  border-color: #1f5c3a;
+  background: #0f2a1c;
+  color: #8ee0b0;
+}
+
+.estadoCancelada {
+  border-color: #5c1f1f;
+  background: #2a1111;
+  color: #ff9b9b;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.formGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.bloqueoItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #262626;
+  border-radius: 12px;
+  background: #111;
+}
+
+.bloqueoInfo {
+  font-size: 13px;
+}
+
+.bloqueoMeta {
+  color: #bdbdbd;
+}

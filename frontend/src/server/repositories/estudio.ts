@@ -1,14 +1,21 @@
 'use server';
 
-import { createSupabaseServerClient } from '@/server/supabase/server';
+import {
+  createSupabaseServerClient,
+  createSupabaseStaffClient,
+} from '@/server/supabase/server';
+import { descuentoLealtad } from '@/lib/estudio-paquetes';
 import type { PerfilUsuario } from '@/types/config';
 import type {
   ConfiguracionEstudio,
   EquipoEstudio,
+  EquipoEstudioInput,
   EstadoPagoReserva,
   EstadoReserva,
   FechaBloqueada,
   HorarioOcupado,
+  PaqueteEstudio,
+  PaqueteEstudioInput,
   ReservaEquipo,
   ReservaEstudio,
   ReservaServicio,
@@ -19,6 +26,7 @@ import {
   equiposMock,
   fechasBloqueadasMock,
   horariosOcupadosMock,
+  paquetesMock,
   reservasMock,
   reservaEquiposMock,
   reservaServiciosMock,
@@ -91,6 +99,29 @@ function verificarYRegistrarIdempotencia(huella: string): () => void {
  * cuando dos clientes reservan en el mismo milisegundo) a mensajes seguros
  * y legibles para el usuario sin exponer detalles internos del esquema.
  */
+/**
+ * `paquetes_estudio` llega con la migración 000042. Si el código se despliega
+ * antes de aplicarla, PostgREST responde con un error de tabla inexistente.
+ * Las lecturas deben degradar a "sin paquetes" en lugar de romper el sitio.
+ */
+function esTablaPaquetesNoAplicada(
+  error: { code?: string; message?: string } | null | undefined,
+): boolean {
+  if (!error) return false;
+
+  const codigo = error.code ?? '';
+  const mensaje = (error.message ?? '').toLowerCase();
+
+  return (
+    codigo === '42P01' ||
+    codigo === 'PGRST205' ||
+    (mensaje.includes('paquetes_estudio') &&
+      (mensaje.includes('schema cache') ||
+        mensaje.includes('does not exist') ||
+        mensaje.includes('no existe')))
+  );
+}
+
 function normalizarErrorReserva(
   error: { code?: string; message?: string } | null | undefined,
   mensajePorDefecto = 'No se pudo procesar la operación de reserva.',
@@ -99,6 +130,12 @@ function normalizarErrorReserva(
 
   const codigo = error.code ?? '';
   const mensaje = (error.message ?? '').trim();
+
+  if (esTablaPaquetesNoAplicada(error)) {
+    return new Error(
+      'La migración 000042 (paquetes de renta) todavía no está aplicada en la base de datos. Un administrador debe aplicarla antes de configurar paquetes.',
+    );
+  }
 
   if (
     codigo === '23P01' ||
@@ -194,6 +231,15 @@ interface EquipoRow {
   activo: boolean;
 }
 
+interface PaqueteRow {
+  id: string;
+  nombre: string;
+  horas: number | string;
+  precio: number | string;
+  activo: boolean;
+  orden: number;
+}
+
 interface ReservaRow {
   id: string;
   cliente_id: string | null;
@@ -207,6 +253,12 @@ interface ReservaRow {
   estado_pago: EstadoPagoReserva;
   total_calculado: number | string | null;
   tarifa_hora_aplicada: number | string | null;
+  paquete_id: string | null;
+  paquete_nombre: string | null;
+  paquete_horas: number | string | null;
+  paquete_precio: number | string | null;
+  descuento_lealtad: boolean;
+  descuento_monto: number | string;
   url_comprobante_pago: string | null;
   notas_cliente: string | null;
   creado_en: string;
@@ -278,6 +330,17 @@ function mapearEquipo(row: EquipoRow): EquipoEstudio {
   };
 }
 
+function mapearPaquete(row: PaqueteRow): PaqueteEstudio {
+  return {
+    id: row.id,
+    nombre: row.nombre,
+    horas: Number(row.horas),
+    precio: Number(row.precio),
+    activo: Boolean(row.activo),
+    orden: Number(row.orden),
+  };
+}
+
 function mapearReserva(row: ReservaRow): ReservaEstudio {
   return {
     id: row.id,
@@ -298,6 +361,21 @@ function mapearReserva(row: ReservaRow): ReservaEstudio {
       row.tarifa_hora_aplicada !== null && row.tarifa_hora_aplicada !== undefined
         ? Number(row.tarifa_hora_aplicada)
         : null,
+    paqueteId: row.paquete_id ?? null,
+    paqueteNombre: row.paquete_nombre ?? null,
+    paqueteHoras:
+      row.paquete_horas !== null && row.paquete_horas !== undefined
+        ? Number(row.paquete_horas)
+        : null,
+    paquetePrecio:
+      row.paquete_precio !== null && row.paquete_precio !== undefined
+        ? Number(row.paquete_precio)
+        : null,
+    descuentoLealtad: Boolean(row.descuento_lealtad),
+    descuentoMonto:
+      row.descuento_monto !== null && row.descuento_monto !== undefined
+        ? Number(row.descuento_monto)
+        : 0,
     urlComprobantePago: row.url_comprobante_pago ?? null,
     notasCliente: row.notas_cliente ?? null,
     creadoEn: row.creado_en,
@@ -468,12 +546,270 @@ export async function listarEquiposActivos(): Promise<EquipoEstudio[]> {
   return ((data ?? []) as EquipoRow[]).map(mapearEquipo);
 }
 
+/* ---------------------- paquetes_estudio (000042) ---------------------- */
+
+/** Paquetes activos para el sitio público. Sin paquetes no se puede reservar. */
+export async function listarPaquetesActivos(): Promise<PaqueteEstudio[]> {
+  if (!tieneConexionSupabase()) {
+    return paquetesMock
+      .filter((p) => p.activo)
+      .sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from('paquetes_estudio')
+    .select('id, nombre, horas, precio, activo, orden')
+    .eq('activo', true)
+    .order('orden', { ascending: true })
+    .order('nombre', { ascending: true });
+
+  if (error) {
+    // Mientras la migración 000042 no esté aplicada, el sitio público debe
+    // mostrar "sin paquetes" en lugar de una pantalla de error.
+    if (esTablaPaquetesNoAplicada(error)) return [];
+    throw normalizarErrorReserva(error, 'No se pudieron cargar los paquetes de renta.');
+  }
+
+  return ((data ?? []) as PaqueteRow[]).map(mapearPaquete);
+}
+
+/** Todos los paquetes, incluidos los inactivos, para el editor del panel. */
+export async function listarPaquetesAdmin(): Promise<PaqueteEstudio[]> {
+  if (!tieneConexionSupabase()) {
+    return [...paquetesMock].sort(
+      (a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre),
+    );
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { data, error } = await supabase
+    .from('paquetes_estudio')
+    .select('id, nombre, horas, precio, activo, orden')
+    .order('orden', { ascending: true })
+    .order('nombre', { ascending: true });
+
+  if (error) {
+    // El panel también debe cargar para mostrar el aviso de migración pendiente.
+    if (esTablaPaquetesNoAplicada(error)) return [];
+    throw normalizarErrorReserva(error, 'No se pudieron cargar los paquetes de renta.');
+  }
+
+  return ((data ?? []) as PaqueteRow[]).map(mapearPaquete);
+}
+
+function normalizarPaquete(input: PaqueteEstudioInput) {
+  return {
+    nombre: input.nombre.trim(),
+    horas: Number(input.horas),
+    precio: Number(input.precio),
+    activo: input.activo ?? true,
+    orden: Number.isFinite(input.orden) ? Number(input.orden) : 0,
+  };
+}
+
+export async function crearPaqueteEstudio(
+  input: PaqueteEstudioInput,
+): Promise<PaqueteEstudio> {
+  const datos = normalizarPaquete(input);
+
+  if (!tieneConexionSupabase()) {
+    const nuevo: PaqueteEstudio = {
+      id: `paquete-${Date.now()}`,
+      ...datos,
+    };
+    paquetesMock.push(nuevo);
+    return nuevo;
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { data, error } = await supabase
+    .from('paquetes_estudio')
+    .insert(datos)
+    .select('id, nombre, horas, precio, activo, orden')
+    .single();
+
+  if (error) {
+    throw normalizarErrorReserva(error, 'No se pudo crear el paquete.');
+  }
+
+  return mapearPaquete(data as PaqueteRow);
+}
+
+export async function actualizarPaqueteEstudio(
+  id: string,
+  input: PaqueteEstudioInput,
+): Promise<PaqueteEstudio> {
+  const datos = normalizarPaquete(input);
+
+  if (!tieneConexionSupabase()) {
+    const paquete = paquetesMock.find((p) => p.id === id);
+    if (!paquete) throw new Error('No se encontró el paquete solicitado.');
+    Object.assign(paquete, datos);
+    return paquete;
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { data, error } = await supabase
+    .from('paquetes_estudio')
+    .update(datos)
+    .eq('id', id)
+    .select('id, nombre, horas, precio, activo, orden')
+    .single();
+
+  if (error) {
+    throw normalizarErrorReserva(error, 'No se pudo actualizar el paquete.');
+  }
+
+  return mapearPaquete(data as PaqueteRow);
+}
+
+export async function cambiarActivoPaqueteEstudio(
+  id: string,
+  activo: boolean,
+): Promise<void> {
+  if (!tieneConexionSupabase()) {
+    const paquete = paquetesMock.find((p) => p.id === id);
+    if (!paquete) throw new Error('No se encontró el paquete solicitado.');
+    paquete.activo = activo;
+    return;
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { error } = await supabase
+    .from('paquetes_estudio')
+    .update({ activo })
+    .eq('id', id);
+
+  if (error) {
+    throw normalizarErrorReserva(error, 'No se pudo cambiar el estado del paquete.');
+  }
+}
+
+/* ---------------------- inventario_equipos (admin) ---------------------- */
+
+/** Todos los equipos, incluidos los inactivos, para el panel. */
+export async function listarEquiposAdmin(): Promise<EquipoEstudio[]> {
+  if (!tieneConexionSupabase()) {
+    return [...equiposMock].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { data, error } = await supabase
+    .from('inventario_equipos')
+    .select('id, nombre, descripcion, cantidad_total, precio_por_hora, activo')
+    .order('nombre', { ascending: true });
+
+  if (error) {
+    throw normalizarErrorReserva(error, 'No se pudieron cargar los equipos.');
+  }
+
+  return ((data ?? []) as EquipoRow[]).map(mapearEquipo);
+}
+
+function normalizarEquipo(input: EquipoEstudioInput) {
+  return {
+    nombre: input.nombre.trim(),
+    descripcion: input.descripcion?.trim() || null,
+    cantidad_total: Number(input.cantidadTotal),
+    precio_por_hora: Number(input.precioPorHora),
+    activo: input.activo ?? true,
+  };
+}
+
+export async function crearEquipoEstudio(
+  input: EquipoEstudioInput,
+): Promise<EquipoEstudio> {
+  const datos = normalizarEquipo(input);
+
+  if (!tieneConexionSupabase()) {
+    const nuevo: EquipoEstudio = {
+      id: `equipo-${Date.now()}`,
+      nombre: datos.nombre,
+      descripcion: datos.descripcion,
+      cantidadTotal: datos.cantidad_total,
+      precioPorHora: datos.precio_por_hora,
+      activo: datos.activo,
+    };
+    equiposMock.push(nuevo);
+    return nuevo;
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { data, error } = await supabase
+    .from('inventario_equipos')
+    .insert(datos)
+    .select('id, nombre, descripcion, cantidad_total, precio_por_hora, activo')
+    .single();
+
+  if (error) {
+    throw normalizarErrorReserva(error, 'No se pudo crear el equipo.');
+  }
+
+  return mapearEquipo(data as EquipoRow);
+}
+
+export async function actualizarEquipoEstudio(
+  id: string,
+  input: EquipoEstudioInput,
+): Promise<EquipoEstudio> {
+  const datos = normalizarEquipo(input);
+
+  if (!tieneConexionSupabase()) {
+    const equipo = equiposMock.find((e) => e.id === id);
+    if (!equipo) throw new Error('No se encontró el equipo solicitado.');
+    equipo.nombre = datos.nombre;
+    equipo.descripcion = datos.descripcion;
+    equipo.cantidadTotal = datos.cantidad_total;
+    equipo.precioPorHora = datos.precio_por_hora;
+    equipo.activo = datos.activo;
+    return equipo;
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { data, error } = await supabase
+    .from('inventario_equipos')
+    .update(datos)
+    .eq('id', id)
+    .select('id, nombre, descripcion, cantidad_total, precio_por_hora, activo')
+    .single();
+
+  if (error) {
+    throw normalizarErrorReserva(error, 'No se pudo actualizar el equipo.');
+  }
+
+  return mapearEquipo(data as EquipoRow);
+}
+
+export async function cambiarActivoEquipoEstudio(
+  id: string,
+  activo: boolean,
+): Promise<void> {
+  if (!tieneConexionSupabase()) {
+    const equipo = equiposMock.find((e) => e.id === id);
+    if (!equipo) throw new Error('No se encontró el equipo solicitado.');
+    equipo.activo = activo;
+    return;
+  }
+
+  const supabase = await createSupabaseStaffClient();
+  const { error } = await supabase
+    .from('inventario_equipos')
+    .update({ activo })
+    .eq('id', id);
+
+  if (error) {
+    throw normalizarErrorReserva(error, 'No se pudo cambiar el estado del equipo.');
+  }
+}
+
 export async function listarReservas(): Promise<ReservaEstudio[]> {
   if (!tieneConexionSupabase()) {
     return [...reservasMock];
   }
 
-  const supabase = await createSupabaseServerClient();
+  // Solo la usa el panel: debe leer con la sesión del equipo.
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('reservas')
     .select('*')
@@ -510,7 +846,7 @@ export async function listarServiciosDeReserva(reservaId: string): Promise<Reser
     return reservaServiciosMock.filter((rs) => rs.reservaId === reservaId);
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('reserva_servicios')
     .select('reserva_id, servicio_id, precio_congelado, servicios_estudio(nombre)')
@@ -528,7 +864,7 @@ export async function listarEquiposDeReserva(reservaId: string): Promise<Reserva
     return reservaEquiposMock.filter((re) => re.reservaId === reservaId);
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('reserva_equipos')
     .select('reserva_id, equipo_id, cantidad_rentada, precio_congelado, inventario_equipos(nombre)')
@@ -615,19 +951,29 @@ export async function obtenerHorariosOcupados(
 
 /**
  * RPC solicitar_reserva(p_nombre, p_correo, p_telefono, p_fecha, p_hora_inicio,
- *   p_hora_fin, p_notas, p_servicios uuid[], p_equipos jsonb) → uuid.
+ *   p_paquete_id, p_notas, p_servicios uuid[], p_equipos jsonb) → uuid.
  * Serializa peticiones concurrentes mediante `ejecutarEnSeccionCriticaCalendario`,
  * aplica control de idempotencia y traduce conflictos GiST `23P01`.
+ *
+ * El paquete es obligatorio (000042). La hora de fin y el total los deriva el
+ * servidor a partir de las horas del paquete; `input.horaFin` solo se usa en el
+ * respaldo mock para validar el intervalo.
  */
 export async function solicitarReserva(input: SolicitarReservaInput): Promise<string> {
-  const huella = `${input.correo.trim().toLowerCase()}|${input.fecha}|${input.horaInicio.slice(0, 5)}|${input.horaFin.slice(0, 5)}`;
+  const huella = `${input.correo.trim().toLowerCase()}|${input.fecha}|${input.horaInicio.slice(0, 5)}|${input.paqueteId}`;
   const liberarIdempotencia = verificarYRegistrarIdempotencia(huella);
 
   try {
     return await ejecutarEnSeccionCriticaCalendario(async () => {
       if (!tieneConexionSupabase()) {
+        const paquete = paquetesMock.find((p) => p.id === input.paqueteId && p.activo);
+        if (!paquete) {
+          throw new Error('Selecciona un paquete de renta activo.');
+        }
+
         const inicioIso = construirIsoGuatemala(input.fecha, input.horaInicio);
         const finIso = construirIsoGuatemala(input.fecha, input.horaFin);
+        const horas = paquete.horas;
 
         const ocupados = await obtenerHorariosOcupados(input.fecha, input.fecha);
         const hayChoque = ocupados.some((o) =>
@@ -635,12 +981,6 @@ export async function solicitarReserva(input: SolicitarReservaInput): Promise<st
         );
         if (hayChoque) {
           throw new Error('Ese horario ya está reservado o bloqueado.');
-        }
-
-        const config = await obtenerConfiguracionEstudio();
-        const tarifaHora = config.tarifaHora ?? 0;
-        if (tarifaHora <= 0) {
-          throw new Error('La tarifa por hora aún no está configurada.');
         }
 
         // Validar servicios activos
@@ -677,15 +1017,20 @@ export async function solicitarReserva(input: SolicitarReservaInput): Promise<st
           },
         );
 
-        const horas =
-          (new Date(finIso).getTime() - new Date(inicioIso).getTime()) / 3_600_000;
+        const completadas = reservasMock.filter(
+          (r) => r.clienteId === 'cli-mock' && r.estado === 'completada',
+        ).length;
+        const descuento = descuentoLealtad(paquete.precio, completadas);
+
         const sumaServicios = serviciosValidos.reduce((acc, s) => acc + s.precioPorHora, 0);
         const sumaEquipos = equiposValidos.reduce(
           (acc, e) => acc + e.equipo.precioPorHora * e.cantidad,
           0,
         );
         const totalCalculado =
-          Math.round((tarifaHora + sumaServicios + sumaEquipos) * horas * 100) / 100;
+          Math.round(
+            (descuento.precioFinal + (sumaServicios + sumaEquipos) * horas) * 100,
+          ) / 100;
 
         const id = `reserva-${Date.now()}`;
         reservasMock.unshift({
@@ -700,7 +1045,13 @@ export async function solicitarReserva(input: SolicitarReservaInput): Promise<st
           estado: 'pendiente',
           estadoPago: 'pendiente',
           totalCalculado,
-          tarifaHoraAplicada: tarifaHora,
+          tarifaHoraAplicada: null,
+          paqueteId: paquete.id,
+          paqueteNombre: paquete.nombre,
+          paqueteHoras: paquete.horas,
+          paquetePrecio: descuento.precioFinal,
+          descuentoLealtad: descuento.aplica,
+          descuentoMonto: descuento.monto,
           urlComprobantePago: null,
           notasCliente: input.notas?.trim() || null,
           creadoEn: new Date().toISOString(),
@@ -741,7 +1092,7 @@ export async function solicitarReserva(input: SolicitarReservaInput): Promise<st
         p_telefono: input.telefono,
         p_fecha: input.fecha,
         p_hora_inicio: input.horaInicio,
-        p_hora_fin: input.horaFin,
+        p_paquete_id: input.paqueteId,
         p_notas: input.notas ?? null,
         p_servicios: input.servicios,
         p_equipos: equiposJsonb,
@@ -811,7 +1162,7 @@ export async function actualizarEstadoReserva(
       return;
     }
 
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createSupabaseStaffClient();
     const { error } = await supabase
       .from('reservas')
       .update({ estado })
@@ -836,7 +1187,7 @@ export async function actualizarEstadoPagoReserva(
     return;
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
   const { error } = await supabase
     .from('reservas')
     .update({ estado_pago: estadoPago })
@@ -934,7 +1285,7 @@ export async function listarFechasBloqueadas(): Promise<FechaBloqueada[]> {
     return [...fechasBloqueadasMock];
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('fechas_bloqueadas')
     .select('*')
@@ -1000,7 +1351,7 @@ export async function crearFechaBloqueada(
       return nueva;
     }
 
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createSupabaseStaffClient();
     let creadoPor = datos.creadoPor;
 
     if (!creadoPor) {
@@ -1073,7 +1424,7 @@ export async function eliminarFechaBloqueada(id: string): Promise<void> {
     return;
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
   const { error } = await supabase
     .from('fechas_bloqueadas')
     .delete()

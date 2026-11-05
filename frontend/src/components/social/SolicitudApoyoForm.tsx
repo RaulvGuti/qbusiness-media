@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
 
 /*
@@ -56,7 +57,12 @@ function Seccion({ n, titulo }: { n: string; titulo: string }) {
   );
 }
 
-export default function SolicitudApoyoForm() {
+interface Props {
+  /** El formulario solo se habilita con sesión; el contenido de la página es público. */
+  tieneSesion: boolean;
+}
+
+export default function SolicitudApoyoForm({ tieneSesion }: Props) {
   const [form, setForm] = useState(initialForm);
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
@@ -169,8 +175,10 @@ export default function SolicitudApoyoForm() {
         </div>
       </aside>
 
-      {/* Formulario */}
-      <form onSubmit={handleSubmit} className="lg:col-span-3 p-6 sm:p-8 space-y-8">
+      {/* Formulario: el contenido de la página es público, pero la solicitud
+          solo se puede llenar con una sesión iniciada. */}
+      {tieneSesion ? (
+        <form onSubmit={handleSubmit} className="lg:col-span-3 p-6 sm:p-8 space-y-8">
         {/* 1 · Organización y contacto */}
         <div className="space-y-4">
           <Seccion n="1" titulo="Organización y contacto" />
@@ -312,7 +320,30 @@ export default function SolicitudApoyoForm() {
             )}
           </button>
         </div>
-      </form>
+        </form>
+      ) : (
+        <div className="lg:col-span-3 p-6 sm:p-8 flex items-center">
+          <div className="w-full rounded-2xl border border-qbBorder bg-black/20 p-6 sm:p-8 text-center space-y-4">
+            <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-qbTerracotta/10">
+              <Icon name="lock" className="text-qbTerracotta text-2xl" />
+            </div>
+            <h4 className="text-lg font-bold text-qbInk">
+              Inicia sesión para llenar la solicitud
+            </h4>
+            <p className="text-sm text-qbMuted max-w-md mx-auto">
+              Puedes ver los eventos y la información de apoyo social sin
+              cuenta. Para enviar una solicitud, inicia sesión o crea una
+              cuenta y vuelve a esta página.
+            </p>
+            <Link
+              href="/login?next=/apoyo"
+              className="inline-flex items-center justify-center px-6 py-3 bg-qbInk text-qbChalk hover:opacity-90 rounded-xl text-xs font-bold uppercase tracking-wide transition"
+            >
+              Iniciar sesión
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

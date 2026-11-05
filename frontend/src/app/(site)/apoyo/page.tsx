@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import EventosRealizados from './EventosRealizados';
 import SolicitudApoyoForm from '@/components/social/SolicitudApoyoForm';
 import { listarCarpetasPublicadasConPortada } from '@/server/repositories/galeria';
@@ -7,27 +6,9 @@ import { createSupabaseServerClient } from '@/server/supabase/server';
 export const dynamic = 'force-dynamic';
 
 export default async function ApoyoPage() {
-  // Verify user session; only logged‑in users can view the support form
+  // El contenido es público; la sesión solo decide si se puede llenar el formulario.
   const supabase = await createSupabaseServerClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return (
-      <section className="page-stack">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <p className="text-sm text-qbMuted">
-            Inicia sesión para acceder al formulario de apoyo social.
-          </p>
-          <Link
-            href="/login?next=/apoyo"
-            className="text-qbTerracotta underline"
-          >
-            Ir al login
-          </Link>
-        </div>
-      </section>
-    );
-  }
+  const { data: { user } } = await supabase.auth.getUser();
 
   // carpetas_galeria estado='publicado' modulo='apoyo_social' + su portada
   const carpetas = await listarCarpetasPublicadasConPortada('apoyo_social');
@@ -50,7 +31,7 @@ export default async function ApoyoPage() {
       {/* Mismo ancho para las tarjetas de eventos y el formulario */}
       <div className="w-full max-w-5xl mx-auto space-y-12">
         <EventosRealizados carpetas={carpetas} />
-        <SolicitudApoyoForm />
+        <SolicitudApoyoForm tieneSesion={Boolean(user)} />
       </div>
     </section>
   );

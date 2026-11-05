@@ -1,7 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
-import { createSupabaseServerClient } from "@/server/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseStaffClient,
+} from "@/server/supabase/server";
 import { FormularioRestablecer } from "./FormularioRestablecer";
 
 export const metadata = {
@@ -48,10 +51,12 @@ function Aviso({
   titulo,
   descripcion,
   mensaje,
+  esAdmin = false,
 }: {
   titulo: string;
   descripcion: string;
   mensaje: string;
+  esAdmin?: boolean;
 }) {
   return (
     <Pantalla titulo={titulo} descripcion={descripcion}>
@@ -59,10 +64,10 @@ function Aviso({
         <Icon name="lock" className="text-3xl text-[#8a8a8a]" />
         <p className="text-sm text-[#8a8a8a]">{mensaje}</p>
         <Link
-          href="/login"
+          href={esAdmin ? "/admin" : "/login"}
           className="inline-flex w-full items-center justify-center rounded-xl bg-white px-6 py-3 text-xs font-semibold text-black transition hover:bg-slate-200"
         >
-          Volver al inicio de sesión
+          {esAdmin ? "Volver al acceso administrativo" : "Volver al inicio de sesión"}
         </Link>
         <Link
           href="/"
@@ -83,10 +88,12 @@ export default async function RestablecerPasswordPage({
   const params = await searchParams;
   const error = typeof params.error === "string" ? params.error : null;
   const recuperacion = params.recuperacion === "1";
+  const ambitoAdmin = params.ambito === "admin";
 
   if (error) {
     return (
       <Aviso
+        esAdmin={ambitoAdmin}
         titulo="Enlace no válido"
         descripcion="No pudimos confirmar tu enlace de recuperación."
         mensaje="El enlace ya expiró o dejó de ser válido. Solicita uno nuevo desde la pantalla de acceso donde lo pediste."
@@ -97,6 +104,7 @@ export default async function RestablecerPasswordPage({
   if (!recuperacion) {
     return (
       <Aviso
+        esAdmin={ambitoAdmin}
         titulo="Abre el enlace de tu correo"
         descripcion="Esta pantalla solo funciona con un enlace de recuperación válido."
         mensaje="Revisa tu correo electrónico y abre el enlace que enviamos para definir una contraseña nueva."
@@ -104,7 +112,9 @@ export default async function RestablecerPasswordPage({
     );
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = ambitoAdmin
+    ? await createSupabaseStaffClient()
+    : await createSupabaseServerClient();
   const {
     data: { user },
     error: authError,
@@ -113,18 +123,13 @@ export default async function RestablecerPasswordPage({
   if (authError || !user) {
     return (
       <Aviso
+        esAdmin={ambitoAdmin}
         titulo="Tu enlace expiró"
         descripcion="La sesión de recuperación ya no está disponible."
         mensaje="Solicita un enlace nuevo desde la pantalla de acceso donde lo pediste para continuar."
       />
     );
   }
-
-  const { data: administrador } = await supabase
-    .from("administradores")
-    .select("id")
-    .eq("id", user.id)
-    .maybeSingle();
 
   return (
     <Pantalla
@@ -138,7 +143,7 @@ export default async function RestablecerPasswordPage({
     >
       <FormularioRestablecer
         correo={user.email || "tu cuenta"}
-        esAdmin={Boolean(administrador)}
+        esAdmin={ambitoAdmin}
       />
     </Pantalla>
   );

@@ -28,6 +28,35 @@ export interface EquipoEstudio {
   activo: boolean;
 }
 
+/**
+ * paquetes_estudio (000042): la renta se vende en paquetes cerrados de horas
+ * y precio. Solo un paquete activo permite reservar.
+ */
+export interface PaqueteEstudio {
+  id: string;
+  nombre: string;
+  horas: number;
+  precio: number;
+  activo: boolean;
+  orden: number;
+}
+
+export interface PaqueteEstudioInput {
+  nombre: string;
+  horas: number;
+  precio: number;
+  activo?: boolean;
+  orden?: number;
+}
+
+export interface EquipoEstudioInput {
+  nombre: string;
+  descripcion?: string | null;
+  cantidadTotal: number;
+  precioPorHora: number;
+  activo?: boolean;
+}
+
 /** reservas: sin traslape (excluye canceladas); total lo calcula el servidor. */
 export interface ReservaEstudio {
   id: string;
@@ -41,7 +70,15 @@ export interface ReservaEstudio {
   estado: EstadoReserva;
   estadoPago: EstadoPagoReserva;
   totalCalculado: number | null;
+  /** Legado de la tarifa por hora (000015); las reservas nuevas lo dejan null. */
   tarifaHoraAplicada: number | null;
+  /** Paquete congelado al solicitar (000042). */
+  paqueteId: string | null;
+  paqueteNombre: string | null;
+  paqueteHoras: number | null;
+  paquetePrecio: number | null;
+  descuentoLealtad: boolean;
+  descuentoMonto: number;
   urlComprobantePago: string | null;
   notasCliente: string | null;
   creadoEn: string;
@@ -65,9 +102,9 @@ export interface ReservaEquipo {
 }
 
 /**
- * Parámetros de la RPC solicitar_reserva (000019).
- * Requiere sesión autenticada como cliente; el precio lo calcula el servidor
- * a partir de configuracion_sitio (estudio/tarifa_hora).
+ * Parámetros de la RPC solicitar_reserva (000042).
+ * Requiere sesión autenticada como cliente; el paquete es obligatorio y el
+ * servidor calcula la hora de fin, el total y el descuento de lealtad.
  */
 export interface SolicitarReservaInput {
   nombre: string;
@@ -75,7 +112,9 @@ export interface SolicitarReservaInput {
   telefono: string;
   fecha: string;
   horaInicio: string;
+  /** Solo se usa para validar disponibilidad en el servidor; la RPC lo deriva. */
   horaFin: string;
+  paqueteId: string;
   notas?: string;
   servicios: string[];
   equipos: { equipoId: string; cantidad: number }[];
@@ -88,8 +127,9 @@ export interface HorarioOcupado {
   tipo: 'RESERVA' | 'BLOQUEO';
 }
 
-/** configuracion_sitio grupo='estudio': tarifa_hora, max_pendientes, horarios. */
+/** configuracion_sitio grupo='estudio': max_pendientes y horarios. */
 export interface ConfiguracionEstudio {
+  /** Legado: se conserva para compatibilidad, pero ya no se usa para cobrar. */
   tarifaHora: number | null;
   maxPendientesPorCliente: number;
   horaApertura: string;

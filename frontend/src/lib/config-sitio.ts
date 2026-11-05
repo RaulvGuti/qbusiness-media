@@ -328,15 +328,8 @@ export const PESTANAS: PestanaConfig[] = [
     titulo: 'Renta de Estudio',
     grupos: [
       {
-        titulo: 'Tarifas y horario',
+        titulo: 'Paquetes y horario',
         campos: [
-          {
-            grupo: 'estudio',
-            clave: 'tarifa_hora',
-            etiqueta: 'Tarifa por hora (Q)',
-            tipo: 'numero',
-            defecto: '500',
-          },
           {
             grupo: 'estudio',
             clave: 'hora_apertura',
@@ -361,6 +354,13 @@ export const PESTANAS: PestanaConfig[] = [
         ],
       },
     ],
+  },
+  {
+    id: 'equipo',
+    titulo: 'Renta de Equipo',
+    // El inventario se edita con sus propias acciones y no guarda claves de
+    // `configuracion_sitio`, por eso la pestaña no tiene campos de texto.
+    grupos: [],
   },
 ];
 

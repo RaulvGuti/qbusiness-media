@@ -39,7 +39,7 @@ Action no registra la reserva sin sesión.
   (ver `docs/07_roles_y_permisos.md`).
 - `/admin` es el único punto de entrada del equipo interno.
 - El parámetro `next` de `/login` solo acepta destinos de la lista blanca
-  (`/renta`, `/resenas`, `/`); cualquier otro valor cae en `/resenas`.
+  (`/renta`, `/resenas`, `/apoyo`, `/`); cualquier otro valor cae en `/resenas`.
 
 ## 4. Cómo probarlo
 

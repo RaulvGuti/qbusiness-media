@@ -15,6 +15,7 @@ import {
 import type { PerfilUsuario } from '@/types/config';
 import type {
   EquipoEstudio,
+  PaqueteEstudio,
   ReservaEstudio,
   ServicioEstudio,
 } from '@/types/estudio';
@@ -31,7 +32,9 @@ export interface MedioEstudio {
 interface VistaProps {
   servicios: ServicioEstudio[];
   equipos: EquipoEstudio[];
-  tarifaHora: number | null;
+  paquetes: PaqueteEstudio[];
+  /** Reservas completadas del cliente: desde 5 se aplica el descuento de lealtad. */
+  reservasCompletadas: number;
   /** Opcional: si no se pasa, solo se muestran los espacios vacíos. */
   medios?: MedioEstudio[];
   /** Perfil del cliente autenticado; `null` si no ha iniciado sesión o no está registrado. */
@@ -43,8 +46,12 @@ interface VistaProps {
 }
 
 const defaultResumen: ReservaModalData = {
-  horas: 2,
-  tarifaBase: 0,
+  paqueteId: null,
+  paqueteNombre: null,
+  horas: 0,
+  paquetePrecioBase: 0,
+  descuento: 0,
+  paquetePrecioFinal: 0,
   subtotalServicios: 0,
   subtotalEquipos: 0,
   total: 0,
@@ -280,22 +287,19 @@ function perfilDesdeSesionUsuario(user: {
 export function Vista({
   servicios,
   equipos,
-  tarifaHora,
+  paquetes,
+  reservasCompletadas,
   medios = [],
   cliente = null,
   reservas = [],
   resenasPropias = [],
 }: VistaProps) {
   const router = useRouter();
-  const tarifa = tarifaHora ?? 0;
-  const sinTarifa = tarifaHora === null || tarifaHora <= 0;
+  const sinPaquetes = paquetes.length === 0;
 
+  const [pestana, setPestana] = useState<'estudio' | 'equipo'>('estudio');
   const [modalOpen, setModalOpen] = useState(false);
-  const [resumen, setResumen] = useState<ReservaModalData>(() => ({
-    ...defaultResumen,
-    tarifaBase: tarifa * 2,
-    total: tarifa * 2,
-  }));
+  const [resumen, setResumen] = useState<ReservaModalData>(defaultResumen);
   const [exito, setExito] = useState(false);
   const [clienteSesion, setClienteSesion] = useState<PerfilUsuario | null>(cliente);
 
@@ -366,6 +370,9 @@ export function Vista({
       router.push('/login?registro=1&next=/renta');
       return;
     }
+    if (sinPaquetes || !resumen.paqueteId) {
+      return;
+    }
     setModalOpen(true);
   };
 
@@ -374,6 +381,9 @@ export function Vista({
       router.push('/login?registro=1&next=/renta');
       return;
     }
+    if (!resumen.paqueteId) {
+      throw new Error('Selecciona un paquete de renta antes de enviar la solicitud.');
+    }
     await enviarSolicitudReservaCliente({
       nombre: form.nombre,
       correo: form.correo,
@@ -381,6 +391,7 @@ export function Vista({
       fecha: form.fecha,
       horaInicio: form.horaInicio,
       horaFin: form.horaFin,
+      paqueteId: resumen.paqueteId,
       notas: form.notas || undefined,
       servicios: resumen.serviciosIds,
       equipos: resumen.equipos,
@@ -395,9 +406,38 @@ export function Vista({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-qbBorder pb-6">
         <div>
           <span className="text-xs font-bold text-qbTerracotta uppercase tracking-widest">Espacio Profesional</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">Renta de Estudio</h2>
-          <p className="text-sm text-qbMuted">Espacio equipado, flexible por horas. Calcula tu renta y solicita reserva.</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-qbInk mt-1">Renta de Estudio y Equipo</h2>
+          <p className="text-sm text-qbMuted">Elige un paquete, suma servicios o equipo y solicita tu reserva.</p>
         </div>
+      </div>
+
+      <div role="tablist" aria-label="Tipo de renta" className="flex gap-2 border-b border-qbBorder">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={pestana === 'estudio'}
+          onClick={() => setPestana('estudio')}
+          className={`-mb-px border-b-2 px-4 py-3 text-sm font-bold transition ${
+            pestana === 'estudio'
+              ? 'border-qbTerracotta text-qbInk'
+              : 'border-transparent text-qbMuted hover:text-qbInk'
+          }`}
+        >
+          Renta de estudio
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={pestana === 'equipo'}
+          onClick={() => setPestana('equipo')}
+          className={`-mb-px border-b-2 px-4 py-3 text-sm font-bold transition ${
+            pestana === 'equipo'
+              ? 'border-qbTerracotta text-qbInk'
+              : 'border-transparent text-qbMuted hover:text-qbInk'
+          }`}
+        >
+          Renta de equipo
+        </button>
       </div>
 
       {exito && (
@@ -425,38 +465,56 @@ export function Vista({
         </div>
       )}
 
-      {sinTarifa && (
+      {sinPaquetes && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">
-          La tarifa base del salón aún no está configurada
-          (configuracion_sitio · estudio · tarifa_hora). Las reservas no podrán
-          completarse hasta que se defina.
+          La renta aún no tiene paquetes activos. El administrador debe crear al
+          menos uno en Textos y configuración → Renta de Estudio. Mientras tanto
+          no se pueden recibir reservas.
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 space-y-6">
-          {/* Galería (izquierda) + descripción (derecha) */}
-          <div className="bg-qbChalk border border-qbBorder rounded-3xl p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
-            <GaleriaEstudio medios={medios} />
+          {pestana === 'estudio' ? (
+            <div className="bg-qbChalk border border-qbBorder rounded-3xl p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
+              <GaleriaEstudio medios={medios} />
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-qbInk">Descripción del estudio</h3>
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-qbInk">Descripción del estudio</h3>
+                <p className="text-sm text-qbMuted leading-relaxed">
+                  Estudio profesional en Quetzaltenango ideal para grabación de video, podcast, fotografía comercial y contenido para redes. Ambiente controlado con iluminación, acústica y equipamiento disponible bajo demanda.
+                </p>
+                <ul className="grid grid-cols-1 gap-2 text-sm text-qbMuted">
+                  <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Iluminación profesional</span></li>
+                  <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Acústica tratada</span></li>
+                  <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Ciclorama / Fondos</span></li>
+                  <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Paquetes con horas fijas</span></li>
+                </ul>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-qbChalk border border-qbBorder rounded-3xl p-6 shadow-sm space-y-3">
+              <h3 className="text-lg font-bold text-qbInk">Equipo para tu producción</h3>
               <p className="text-sm text-qbMuted leading-relaxed">
-                Estudio profesional en Quetzaltenango ideal para grabación de video, podcast, fotografía comercial y contenido para redes. Ambiente controlado con iluminación, acústica y equipamiento disponible bajo demanda.
+                Suma cámaras, luces, audio y accesorios a tu paquete de renta. El
+                precio de cada equipo se cobra por hora, durante las horas del
+                paquete que elijas.
               </p>
               <ul className="grid grid-cols-1 gap-2 text-sm text-qbMuted">
-                <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Iluminación profesional</span></li>
-                <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Acústica tratada</span></li>
-                <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Ciclorama / Fondos</span></li>
-                <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Acceso flexible por horas</span></li>
+                <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Solo se muestran equipos activos y disponibles</span></li>
+                <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Cantidad limitada por el stock real</span></li>
+                <li className="flex items-center gap-2"><Icon name="check" className="text-qbSage" /><span>Se confirma junto con la reserva del salón</span></li>
               </ul>
             </div>
-          </div>
+          )}
 
           <RentalCalculator
+            key={pestana}
+            paquetes={paquetes}
             servicios={servicios}
             equipos={equipos}
-            tarifaHoraBase={tarifa}
+            reservasCompletadas={reservasCompletadas}
+            modo={pestana}
             onResumenChange={setResumen}
           />
         </div>
@@ -465,8 +523,12 @@ export function Vista({
           <div className="bg-qbChalk border border-qbBorder rounded-3xl p-6 space-y-4 shadow-sm lg:sticky lg:top-6">
             <h3 className="text-lg font-bold text-qbInk">Resumen</h3>
             <dl className="space-y-2 text-sm">
+              <div className="flex justify-between"><dt className="text-qbMuted">Paquete</dt><dd className="font-medium text-qbInk">{resumen.paqueteNombre ?? 'Selecciona uno'}</dd></div>
               <div className="flex justify-between"><dt className="text-qbMuted">Horas</dt><dd className="font-medium text-qbInk">{resumen.horas}h</dd></div>
-              <div className="flex justify-between"><dt className="text-qbMuted">Tarifa base</dt><dd className="font-medium text-qbInk">Q{resumen.tarifaBase.toFixed(2)}</dd></div>
+              <div className="flex justify-between"><dt className="text-qbMuted">Precio del paquete</dt><dd className="font-medium text-qbInk">Q{resumen.paquetePrecioFinal.toFixed(2)}</dd></div>
+              {resumen.descuento > 0 && (
+                <div className="flex justify-between text-qbSage"><dt>Descuento de lealtad (25%)</dt><dd className="font-semibold">-Q{resumen.descuento.toFixed(2)}</dd></div>
+              )}
               <div className="flex justify-between"><dt className="text-qbMuted">Servicios extra</dt><dd className="font-medium text-qbInk">Q{resumen.subtotalServicios.toFixed(2)}</dd></div>
               <div className="flex justify-between"><dt className="text-qbMuted">Equipo rentable</dt><dd className="font-medium text-qbInk">Q{resumen.subtotalEquipos.toFixed(2)}</dd></div>
               <div className="flex justify-between border-t border-qbBorder pt-2 mt-1"><dt className="font-bold text-qbInk">Total estimado</dt><dd className="text-lg font-extrabold text-qbInk">Q{resumen.total.toFixed(2)}</dd></div>
@@ -474,7 +536,7 @@ export function Vista({
             <button
               type="button"
               onClick={handleClickReservar}
-              disabled={sinTarifa}
+              disabled={sinPaquetes || !resumen.paqueteId}
               className="w-full mt-2 px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <Icon name={usuarioRegistrado ? "calendar" : "lock"} className="mr-2" />

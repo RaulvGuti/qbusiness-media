@@ -3,11 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
+import { calcularHoraFin } from '@/lib/estudio-paquetes';
 import type { PerfilUsuario } from '@/types/config';
 
 export interface ReservaModalData {
+  paqueteId: string | null;
+  paqueteNombre: string | null;
   horas: number;
-  tarifaBase: number;
+  paquetePrecioBase: number;
+  descuento: number;
+  paquetePrecioFinal: number;
   subtotalServicios: number;
   subtotalEquipos: number;
   total: number;
@@ -15,7 +20,7 @@ export interface ReservaModalData {
   equipos: { equipoId: string; cantidad: number }[];
 }
 
-/** Forma exacta de la RPC solicitar_reserva (000019). */
+/** Forma que consume `enviarSolicitudReservaCliente` (000042). */
 export interface ReservaModalForm {
   nombre: string;
   correo: string;
@@ -65,11 +70,16 @@ export default function ReservaModal({
 
   const usuarioRegistrado = Boolean(cliente?.id);
 
+  const horaFinCalculada = form.horaInicio
+    ? calcularHoraFin(form.horaInicio, resumen.horas)
+    : null;
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,16 +88,26 @@ export default function ReservaModal({
       setError('Debes registrarte e iniciar sesión para poder solicitar una reserva.');
       return;
     }
+    if (!resumen.paqueteId) {
+      setError('Selecciona un paquete de renta antes de enviar la solicitud.');
+      return;
+    }
+    if (!horaFinCalculada) {
+      setError(
+        'El paquete termina después de la medianoche. Elige una hora de inicio más temprana.',
+      );
+      return;
+    }
     setEnviando(true);
     setError(null);
     try {
       // Validación local alineada al trigger validar_horario_atencion (000029):
       // la reserva debe empezar y terminar el mismo día.
-      if (form.horaFin <= form.horaInicio) {
+      if (horaFinCalculada <= form.horaInicio) {
         setError('La hora de fin debe ser posterior a la hora de inicio.');
         return;
       }
-      await onSubmit?.(form);
+      await onSubmit?.({ ...form, horaFin: horaFinCalculada });
     } catch (err) {
       setError(
         err instanceof Error
@@ -240,17 +260,15 @@ export default function ReservaModal({
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="reserva-fin" className="text-sm font-semibold text-qbInk">
-                  Hora fin *
-                </label>
-                <input
-                  id="reserva-fin"
-                  name="horaFin"
-                  type="time"
-                  required
-                  value={form.horaFin}
-                  onChange={handleChange}
-                />
+                <span className="text-sm font-semibold text-qbInk">
+                  Hora fin (según paquete)
+                </span>
+                <div className="flex min-h-11 items-center rounded-xl border border-qbBorder bg-qbLinen px-3 text-sm font-semibold text-qbInk">
+                  {horaFinCalculada ?? '—'}
+                </div>
+                <p className="text-[11px] text-qbMuted">
+                  La calcula el paquete de {resumen.horas} h.
+                </p>
               </div>
             </div>
             <div className="space-y-2">
@@ -278,13 +296,19 @@ export default function ReservaModal({
             <h3 className="text-sm font-bold text-qbInk">Resumen de la reserva</h3>
             <dl className="text-sm space-y-1">
               <div className="flex justify-between">
-                <dt className="text-qbMuted">Horas estimadas</dt>
-                <dd className="font-medium text-qbInk">{resumen.horas}h</dd>
+                <dt className="text-qbMuted">
+                  {resumen.paqueteNombre ?? 'Paquete'} ({resumen.horas} h)
+                </dt>
+                <dd className="font-medium text-qbInk">
+                  Q{resumen.paquetePrecioFinal.toFixed(2)}
+                </dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-qbMuted">Tarifa base del salón</dt>
-                <dd className="font-medium text-qbInk">Q{resumen.tarifaBase.toFixed(2)}</dd>
-              </div>
+              {resumen.descuento > 0 && (
+                <div className="flex justify-between text-qbSage">
+                  <dt>Descuento de lealtad (25%)</dt>
+                  <dd className="font-semibold">-Q{resumen.descuento.toFixed(2)}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-qbMuted">Servicios extra</dt>
                 <dd className="font-medium text-qbInk">Q{resumen.subtotalServicios.toFixed(2)}</dd>

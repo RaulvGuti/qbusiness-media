@@ -39,12 +39,6 @@ const ATAJOS: {
     permiso: "destacados",
   },
   {
-    titulo: "Contactos",
-    detalle: "Mensajes y apoyo social",
-    href: "/admin/contactos",
-    permiso: "contactos",
-  },
-  {
     titulo: "Reseñas",
     detalle: "Aprobar o rechazar",
     href: "/admin/resenas",
@@ -93,11 +87,15 @@ export default async function DashboardPage({
   const { permiso } = await searchParams;
   const atajos = ATAJOS.filter((atajo) => puede(perfil.rol, atajo.permiso));
 
-  const [resumen, actividad, semana] = await Promise.all([
+  const [resumen, actividadReciente, semana] = await Promise.all([
     obtenerResumenDashboard(supabase),
-    obtenerActividadReciente(supabase, 6),
+    obtenerActividadReciente(supabase, 8),
     obtenerActividadSemanal(supabase),
   ]);
+
+  // La sección Contactos ya no existe en el panel: su actividad tampoco se
+  // muestra en el dashboard, aunque los leads se conservan en la base.
+  const actividad = actividadReciente.filter((item) => item.tipo !== "contacto");
 
   const stats = [
     {
@@ -105,11 +103,6 @@ export default async function DashboardPage({
       valor: resumen.resenasPendientes,
       detalle: "Por moderar",
       destacada: true,
-    },
-    {
-      etiqueta: "Mensajes nuevos",
-      valor: resumen.mensajesNuevos,
-      detalle: "Sin gestionar",
     },
     {
       etiqueta: "Reservas pendientes",

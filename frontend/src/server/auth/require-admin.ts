@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createSupabaseServerClient } from "@/server/supabase/server";
+import { createSupabaseStaffClient } from "@/server/supabase/server";
 import {
   CAMPOS_ADMINISTRADOR,
   mapearPerfilAdministrador,
@@ -22,18 +22,18 @@ import type { PerfilAdministrador } from "@/types/admin";
 export type AccesoStaff =
   | {
       authorized: true;
-      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+      supabase: Awaited<ReturnType<typeof createSupabaseStaffClient>>;
       user: { id: string; email: string };
       perfil: PerfilAdministrador;
     }
   | {
       authorized: false;
       status: 401 | 403;
-      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+      supabase: Awaited<ReturnType<typeof createSupabaseStaffClient>>;
     };
 
 export const requireAdmin = cache(async (): Promise<AccesoStaff> => {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const {
     data: { user },

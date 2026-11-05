@@ -1,4 +1,7 @@
-import { createSupabaseServerClient } from '@/server/supabase/server';
+import {
+  createSupabaseServerClient,
+  createSupabaseStaffClient,
+} from '@/server/supabase/server';
 import type {
   EstadoResena,
   ResenaCliente,
@@ -193,7 +196,8 @@ export async function listarTodasLasResenas(): Promise<ResenaCliente[]> {
     return [...resenasMock];
   }
 
-  const supabase = await createSupabaseServerClient();
+  // Solo la usa el panel: debe leer con la sesión del equipo.
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('resenas_clientes')
     .select('*')
