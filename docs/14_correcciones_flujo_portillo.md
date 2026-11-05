@@ -5,13 +5,16 @@ Este documento resume las correcciones aplicadas en la rama
 
 ## 1. Enlace de Apoyo Social
 
-- `/login` ahora acepta `/apoyo` como destino posterior al inicio de sesión.
-- La tarjeta de sesión de `/apoyo` envía a `/login?next=/apoyo`.
+- El listado de eventos y la información de `/apoyo` son públicos: se pueden ver sin
+  iniciar sesión.
+- El formulario de solicitud muestra un aviso con enlace a `/login?next=/apoyo` cuando no
+  hay sesión; solo se habilita después de entrar o crear una cuenta.
+- `/login` acepta `/apoyo` como destino posterior al inicio de sesión.
 - El botón “Entrar” del header conserva el destino cuando la ruta actual es
   `/apoyo`, igual que ya hacía con `/renta` y `/resenas`.
 
-Resultado: una persona que llega a Apoyo Social sin sesión inicia sesión y vuelve
-al formulario, no a la página por defecto de reseñas.
+Resultado: una persona puede consultar Apoyo Social sin cuenta; el login solo se pide para
+llenar y enviar la solicitud, y al volver se conserva el destino.
 
 ## 2. Reseñas y reservas
 
