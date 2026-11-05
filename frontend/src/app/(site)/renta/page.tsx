@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [{ servicios, equipos, configuracion, cliente }, medios] =
+  const [{ servicios, equipos, paquetes, cliente }, medios] =
     await Promise.all([
       obtenerCatalogoEstudioCliente(),
       // archivos de las carpetas publicadas del módulo "estudio"
@@ -26,6 +26,11 @@ export default async function Page() {
       ])
     : [[], []];
 
+  // El descuento de lealtad se aplica desde la quinta reserva completada.
+  const reservasCompletadas = reservas.filter(
+    (reserva) => reserva.estado === "completada",
+  ).length;
+
   const mediosEstudio: MedioEstudio[] = medios.map((m) => ({
     id: m.id,
     tipo: m.tipo === "imagen" ? "foto" : m.tipo,
@@ -37,7 +42,8 @@ export default async function Page() {
     <Vista
       servicios={servicios}
       equipos={equipos}
-      tarifaHora={configuracion.tarifaHora}
+      paquetes={paquetes}
+      reservasCompletadas={reservasCompletadas}
       medios={mediosEstudio}
       cliente={cliente}
       reservas={reservas}

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import {
   cancelarReservaDeCliente,
   listarEquiposActivos,
+  listarPaquetesActivos,
   listarReservasDeCliente,
   listarServiciosActivos,
   obtenerConfiguracionEstudio,
@@ -18,11 +19,13 @@ import {
   horarioDisponible,
   servicioDisponible,
 } from '@/server/services/reserva';
+import { calcularHoraFin } from '@/lib/estudio-paquetes';
 import type { PerfilUsuario } from '@/types/config';
 import type {
   ConfiguracionEstudio,
   EquipoEstudio,
   HorarioOcupado,
+  PaqueteEstudio,
   ReservaEstudio,
   ServicioEstudio,
   SolicitarReservaInput,
@@ -41,17 +44,19 @@ const REGEX_HORA = /^\d{2}:\d{2}(:\d{2})?$/;
 export async function obtenerCatalogoEstudioCliente(): Promise<{
   servicios: ServicioEstudio[];
   equipos: EquipoEstudio[];
+  paquetes: PaqueteEstudio[];
   configuracion: ConfiguracionEstudio;
   cliente: PerfilUsuario | null;
 }> {
-  const [servicios, equipos, configuracion, cliente] = await Promise.all([
+  const [servicios, equipos, paquetes, configuracion, cliente] = await Promise.all([
     listarServiciosActivos(),
     listarEquiposActivos(),
+    listarPaquetesActivos(),
     obtenerConfiguracionEstudio(),
     obtenerPerfilClienteActual(),
   ]);
 
-  return { servicios, equipos, configuracion, cliente };
+  return { servicios, equipos, paquetes, configuracion, cliente };
 }
 
 export async function verificarDisponibilidadHorarioCliente(
@@ -139,15 +144,30 @@ export async function enviarSolicitudReservaCliente(
     throw new Error('Indica un teléfono o WhatsApp de contacto.');
   }
 
-  const [disponibilidad, serviciosActivos, equiposActivos] = await Promise.all([
-    verificarDisponibilidadHorarioCliente(
-      input.fecha,
-      input.horaInicio,
-      input.horaFin,
-    ),
+  const [paquetesActivos, serviciosActivos, equiposActivos] = await Promise.all([
+    listarPaquetesActivos(),
     listarServiciosActivos(),
     listarEquiposActivos(),
   ]);
+
+  const paquete = paquetesActivos.find((p) => p.id === input.paqueteId);
+  if (!paquete) {
+    throw new Error('Selecciona un paquete de renta activo.');
+  }
+
+  // La hora de fin la manda el paquete, no el navegador.
+  const horaFin = calcularHoraFin(input.horaInicio, paquete.horas);
+  if (!horaFin) {
+    throw new Error(
+      'El paquete seleccionado termina después de la medianoche. Elige una hora de inicio más temprana.',
+    );
+  }
+
+  const disponibilidad = await verificarDisponibilidadHorarioCliente(
+    input.fecha,
+    input.horaInicio,
+    horaFin,
+  );
 
   if (!disponibilidad.disponible) {
     throw new Error(disponibilidad.motivo ?? 'El horario seleccionado no está disponible.');
@@ -187,7 +207,8 @@ export async function enviarSolicitudReservaCliente(
     telefono,
     fecha: input.fecha,
     horaInicio: input.horaInicio.slice(0, 5),
-    horaFin: input.horaFin.slice(0, 5),
+    horaFin,
+    paqueteId: paquete.id,
     notas: input.notas?.trim() || undefined,
     servicios: serviciosUnicos,
     equipos: equiposAgrupados,

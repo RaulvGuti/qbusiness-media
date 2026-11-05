@@ -1,5 +1,6 @@
 import shared from "../panel.module.css";
-import { listarConfiguracion } from "@/server/repositories/configuracion";
+import { listarConfiguracionAdmin } from "@/server/repositories/configuracion";
+import { listarPaquetesAdmin } from "@/server/repositories/estudio";
 import { valoresInicialesDesdeConfig } from "@/lib/config-sitio";
 import { exigirAdminPrincipalPanel } from "@/server/auth/panel";
 import { TextosForm } from "./TextosForm";
@@ -12,7 +13,10 @@ export default async function TextosPage() {
 
   // Filas reales + defaults del catálogo para que el formulario nunca quede
   // con campos vacíos cuando la migración aún no se aplicó.
-  const configs = await listarConfiguracion();
+  const [configs, paquetes] = await Promise.all([
+    listarConfiguracionAdmin(),
+    listarPaquetesAdmin(),
+  ]);
   const valoresIniciales = valoresInicialesDesdeConfig(configs);
 
   return (
@@ -23,7 +27,10 @@ export default async function TextosPage() {
         Valores de la tabla <code>configuracion_sitio</code> que se muestran en
         el sitio público.
       </p>
-      <TextosForm valoresIniciales={valoresIniciales} />
+      <TextosForm
+        valoresIniciales={valoresIniciales}
+        paquetesIniciales={paquetes}
+      />
     </>
   );
 }

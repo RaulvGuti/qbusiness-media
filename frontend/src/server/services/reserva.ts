@@ -8,10 +8,10 @@ import type {
 /**
  * Reglas de negocio de reserva del estudio.
  * El cálculo definitivo lo hace la RPC solicitar_reserva() en el servidor
- * (000019). Estas funciones permiten al cliente mostrar un estimado
+ * (000042). Estas funciones permiten al cliente mostrar un estimado
  * coherente con esa fórmula:
- *   total = round((tarifa_hora + Σ servicios + Σ equipos*cantidad) * horas, 2)
- * donde tarifa_hora viene de configuracion_sitio (estudio / tarifa_hora).
+ *   total = round(precio_paquete + (Σ servicios + Σ equipos*cantidad) * horas, 2)
+ * donde precio_paquete ya incluye el descuento de lealtad si corresponde.
  */
 
 export function calcularHoras(horaInicio: string, horaFin: string): number {
@@ -22,14 +22,14 @@ export function calcularHoras(horaInicio: string, horaFin: string): number {
 }
 
 export function estimarTotalReserva(
-  tarifaHora: number,
+  precioPaquete: number,
   horas: number,
   servicios: ItemReservaServicio[],
   equipos: ItemReservaEquipo[],
 ): { subtotalServicios: number; subtotalEquipos: number; total: number } {
   const subtotalServicios = servicios.reduce((acc, s) => acc + s.precioPorHora * (s.horas || horas), 0);
   const subtotalEquipos = equipos.reduce((acc, e) => acc + e.precioPorHora * e.cantidad * (e.horas || horas), 0);
-  const total = Math.round((tarifaHora + subtotalServicios + subtotalEquipos) * horas * 100) / 100;
+  const total = Math.round((precioPaquete + subtotalServicios + subtotalEquipos) * 100) / 100;
   return {
     subtotalServicios: Math.round(subtotalServicios * 100) / 100,
     subtotalEquipos: Math.round(subtotalEquipos * 100) / 100,

@@ -4,16 +4,23 @@ import { useId, useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { guardarConfiguracionSitio } from "@/server/actions/configuracion";
 import type { CambioConfigSitio, GrupoConfig } from "@/types/config";
+import type { PaqueteEstudio } from "@/types/estudio";
 import shared from "../panel.module.css";
 import { PESTANAS } from "./datos";
+import { PaquetesEditor } from "./PaquetesEditor";
 import styles from "./page.module.css";
 
 interface TextosFormProps {
   /** Valores iniciales: clave `${grupo}:${clave}` → valor. */
   valoresIniciales: Record<string, string>;
+  /** Catálogo de paquetes de renta que se edita dentro de la pestaña de estudio. */
+  paquetesIniciales: PaqueteEstudio[];
 }
 
-export function TextosForm({ valoresIniciales }: TextosFormProps) {
+export function TextosForm({
+  valoresIniciales,
+  paquetesIniciales,
+}: TextosFormProps) {
   const base = useId();
   const toast = useToast();
   const [activa, setActiva] = useState<string>(PESTANAS[0].id);
@@ -87,6 +94,9 @@ export function TextosForm({ valoresIniciales }: TextosFormProps) {
 
       {PESTANAS.map((p) => (
         <div key={p.id} role="tabpanel" hidden={activa !== p.id}>
+          {p.id === "estudio" && (
+            <PaquetesEditor paquetesIniciales={paquetesIniciales} />
+          )}
           {p.grupos.map((g) => (
             <section key={g.titulo} className={styles.grp}>
               <h3>{g.titulo}</h3>
