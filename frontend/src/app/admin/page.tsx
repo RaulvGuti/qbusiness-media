@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
-import { obtenerSupabase } from '@/lib/supabase/client';
+import { obtenerSupabaseAdmin } from '@/lib/supabase/client';
 
 export default function AdminLoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
-      const supabase = obtenerSupabase();
+      const supabase = obtenerSupabaseAdmin();
 
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: form.email,
@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
         .single();
 
       if (adminError || !adminCheck) {
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: 'local' });
         setError('Acceso restringido solo para personal autorizado.');
         setEnviando(false);
         return;
@@ -62,12 +62,13 @@ export default function AdminLoginPage() {
       return;
     }
 
-    const supabase = obtenerSupabase();
+    const supabase = obtenerSupabaseAdmin();
 
     const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
       // La pantalla de recuperación es compartida y vive fuera de /admin para
-      // que el proxy no borre el enlace antes de crear la sesión.
-      redirectTo: `${window.location.origin}/auth/confirm`,
+      // que el proxy no borre el enlace antes de crear la sesión. `ambito=admin`
+      // hace que /auth/confirm guarde la sesión en la cookie del panel.
+      redirectTo: `${window.location.origin}/auth/confirm?ambito=admin`,
     });
 
     if (error) {

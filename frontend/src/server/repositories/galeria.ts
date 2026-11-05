@@ -1,6 +1,9 @@
 'use server';
 
-import { createSupabaseServerClient } from '@/server/supabase/server';
+import {
+  createSupabaseServerClient,
+  createSupabaseStaffClient,
+} from '@/server/supabase/server';
 import type {
   ArchivoGaleria,
   CarpetaGaleria,
@@ -202,7 +205,8 @@ export async function listarEmpresasActivas(): Promise<Empresa[]> {
 export async function listarTodasLasEmpresas(): Promise<Empresa[]> {
   if (!tieneConexionSupabase()) return [...empresasMock];
 
-  const supabase = await createSupabaseServerClient();
+  // Solo la usa el panel: debe leer con la sesión del equipo.
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('empresas')
     .select('*')
@@ -239,7 +243,8 @@ export async function listarCarpetasPublicadas(modulo?: ModuloCarpeta): Promise<
 export async function listarTodasLasCarpetas(modulo?: ModuloCarpeta): Promise<CarpetaGaleria[]> {
   if (!tieneConexionSupabase()) return carpetasMock.filter((c) => !modulo || c.modulo === modulo);
 
-  const supabase = await createSupabaseServerClient();
+  // Solo la usa el panel: debe leer con la sesión del equipo.
+  const supabase = await createSupabaseStaffClient();
   let consulta = supabase
     .from('carpetas_galeria')
     .select(CARPETA_SELECT)
@@ -280,7 +285,7 @@ export async function actualizarEstadoCarpeta(
   }
 
   // El trigger set_publicada_en fija o limpia publicada_en.
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('carpetas_galeria')
     .update({ estado })
@@ -316,7 +321,8 @@ export async function listarArchivosDeCarpeta(carpetaId: string): Promise<Archiv
 export async function listarTodosLosArchivos(): Promise<ArchivoGaleria[]> {
   if (!tieneConexionSupabase()) return [...archivosMock];
 
-  const supabase = await createSupabaseServerClient();
+  // Solo la usa el panel: debe leer con la sesión del equipo.
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('archivos_galeria')
     .select('*')
@@ -360,6 +366,25 @@ export async function listarDestacados(): Promise<Destacado[]> {
   }
 
   const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from('destacados')
+    .select('id, carpeta_id, empresa_id, posicion, carpetas_galeria(*, empresas(nombre, logo_ruta)), empresas(*)')
+    .order('posicion', { ascending: true });
+
+  if (error) fallar(error, 'No se pudieron cargar los destacados.');
+  return ((data ?? []) as unknown as DestacadoRow[]).map(mapearDestacado);
+}
+
+/**
+ * Destacados para el panel: incluye borradores y empresas inactivas, por eso
+ * consulta con la sesión del equipo. El sitio público usa `listarDestacados()`.
+ */
+export async function listarDestacadosAdmin(): Promise<Destacado[]> {
+  if (!tieneConexionSupabase()) {
+    return listarDestacados();
+  }
+
+  const supabase = await createSupabaseStaffClient();
   const { data, error } = await supabase
     .from('destacados')
     .select('id, carpeta_id, empresa_id, posicion, carpetas_galeria(*, empresas(nombre, logo_ruta)), empresas(*)')
@@ -617,7 +642,7 @@ export async function crearCarpetaGaleria(
   input: CrearCarpetaInput,
 ): Promise<{ carpeta: CarpetaGaleria; empresa: Empresa | null }> {
   exigirConexion();
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const { data, error } = await supabase.rpc('crear_carpeta_galeria', {
     p_modulo: input.modulo,
@@ -672,7 +697,7 @@ interface RegistrarArchivoInput {
  */
 export async function registrarArchivoGaleria(input: RegistrarArchivoInput): Promise<ArchivoGaleria> {
   exigirConexion();
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const { data, error } = await supabase.rpc('agregar_archivo_galeria', {
     p_carpeta_id: input.carpetaId,
@@ -692,7 +717,7 @@ export async function registrarArchivoGaleria(input: RegistrarArchivoInput): Pro
 
 export async function actualizarPieFoto(id: string, pieFoto: string): Promise<void> {
   exigirConexion();
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const { data, error } = await supabase
     .from('archivos_galeria')
@@ -706,7 +731,7 @@ export async function actualizarPieFoto(id: string, pieFoto: string): Promise<vo
 
 export async function definirPortada(carpetaId: string, archivoId: string): Promise<void> {
   exigirConexion();
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   // definir_portada (000033) solo recibe el archivo: deduce la carpeta de él.
   // `carpetaId` se conserva en la firma por compatibilidad con el Gestor.
@@ -717,7 +742,7 @@ export async function definirPortada(carpetaId: string, archivoId: string): Prom
 
 export async function reordenarArchivos(carpetaId: string, ids: string[]): Promise<void> {
   exigirConexion();
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const { error } = await supabase.rpc('reordenar_archivos', {
     p_carpeta_id: carpetaId,
@@ -729,7 +754,7 @@ export async function reordenarArchivos(carpetaId: string, ids: string[]): Promi
 /** Borra el registro (reasignando la portada) y luego los objetos de Storage. */
 export async function eliminarArchivoGaleria(id: string): Promise<void> {
   exigirConexion();
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const { data, error } = await supabase.rpc('eliminar_archivo_galeria', { p_archivo_id: id });
   if (error) fallar(error, 'No se pudo eliminar el archivo.');
@@ -757,7 +782,7 @@ interface DestacadoEntrada {
 /** Reemplaza todos los destacados; la posición es el lugar en la lista. */
 export async function guardarDestacados(items: DestacadoEntrada[]): Promise<void> {
   exigirConexion();
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
 
   const { error } = await supabase.rpc('guardar_destacados', { p_items: items });
   if (error) fallar(error, 'No se pudieron guardar los destacados.');

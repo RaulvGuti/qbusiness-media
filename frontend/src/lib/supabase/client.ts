@@ -1,11 +1,21 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import { COOKIE_SESION_ADMIN } from "@/lib/auth-cookies";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 let cliente: ReturnType<typeof createBrowserClient> | null = null;
+let clienteAdmin: ReturnType<typeof createBrowserClient> | null = null;
+
+function validarEntorno() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en el entorno del navegador.",
+    );
+  }
+}
 
 /**
  * Cliente Supabase para el navegador.
@@ -27,14 +37,28 @@ let cliente: ReturnType<typeof createBrowserClient> | null = null;
  */
 export function obtenerSupabase() {
   if (!cliente) {
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error(
-        "Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en el entorno del navegador.",
-      );
-    }
-
+    validarEntorno();
     cliente = createBrowserClient(supabaseUrl, supabaseAnonKey);
   }
 
   return cliente;
+}
+
+/**
+ * Cliente Supabase del panel administrativo.
+ *
+ * Guarda la sesion en `qb-admin-auth-token`, una cookie distinta de la del
+ * sitio publico. El login, la recuperacion de contrasena y el cierre de sesion
+ * del panel deben usar este cliente para no mezclar ambas sesiones.
+ */
+export function obtenerSupabaseAdmin() {
+  if (!clienteAdmin) {
+    validarEntorno();
+    clienteAdmin = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+      cookieOptions: { name: COOKIE_SESION_ADMIN },
+      isSingleton: true,
+    });
+  }
+
+  return clienteAdmin;
 }

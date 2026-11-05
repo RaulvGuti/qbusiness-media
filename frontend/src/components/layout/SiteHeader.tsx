@@ -67,7 +67,9 @@ export function SiteHeader({ config, sesionActiva = false }: SiteHeaderProps) {
     setCerrandoSesion(true);
     try {
       const supabase = obtenerSupabase();
-      await supabase.auth.signOut();
+      // Solo cierra la sesión pública: si la misma persona tiene abierto el
+      // panel, su cookie de administrador se conserva.
+      await supabase.auth.signOut({ scope: 'local' });
       setAutenticado(false);
       router.refresh();
     } catch {

@@ -1,14 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { COOKIE_SESION_ADMIN } from "@/lib/auth-cookies";
 
 export const dynamic = "force-dynamic";
 
 const DESTINO_RECUPERACION = "/restablecer-contrasena";
 
-function respuestaDeError(request: NextRequest) {
-  const respuesta = NextResponse.redirect(
-    new URL(`${DESTINO_RECUPERACION}?error=enlace`, request.nextUrl.origin),
-  );
+function esAmbitoAdmin(params: URLSearchParams) {
+  return params.get("ambito") === "admin";
+}
+
+function respuestaDeError(request: NextRequest, ambitoAdmin: boolean) {
+  const url = new URL(`${DESTINO_RECUPERACION}?error=enlace`, request.nextUrl.origin);
+  if (ambitoAdmin) url.searchParams.set("ambito", "admin");
+
+  const respuesta = NextResponse.redirect(url);
   respuesta.headers.set("Cache-Control", "no-store");
   return respuesta;
 }
@@ -23,6 +29,10 @@ function respuestaDeError(request: NextRequest) {
  * - `code`: el flujo PKCE por defecto. Funciona si el enlace se abre en el
  *   mismo navegador donde se solicitó la recuperación.
  *
+ * `ambito=admin` indica que la recuperación se pidió desde el panel. En ese
+ * caso la sesión temporal se guarda en `qb-admin-auth-token` y no en la cookie
+ * pública, para no mezclar ambas sesiones.
+ *
  * Después de validar, redirige a la pantalla compartida de clientes y
  * administradores. No se permite ningún otro destino para evitar redirecciones
  * abiertas desde este endpoint.
@@ -34,24 +44,30 @@ export async function GET(request: NextRequest) {
   const tipo = params.get("type");
   const flujoPkce = params.get("sb_flow_id");
   const errorSupabase = params.get("error") || params.get("error_code");
+  const ambitoAdmin = esAmbitoAdmin(params);
 
   if (errorSupabase || (!tokenHash && !code)) {
-    return respuestaDeError(request);
+    return respuestaDeError(request, ambitoAdmin);
   }
 
   if (tipo && tipo !== "recovery") {
-    return respuestaDeError(request);
+    return respuestaDeError(request, ambitoAdmin);
   }
 
-  const respuesta = NextResponse.redirect(
-    new URL(`${DESTINO_RECUPERACION}?recuperacion=1`, request.nextUrl.origin),
+  const urlDestino = new URL(
+    `${DESTINO_RECUPERACION}?recuperacion=1`,
+    request.nextUrl.origin,
   );
+  if (ambitoAdmin) urlDestino.searchParams.set("ambito", "admin");
+
+  const respuesta = NextResponse.redirect(urlDestino);
   respuesta.headers.set("Cache-Control", "no-store");
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
     {
+      ...(ambitoAdmin ? { cookieOptions: { name: COOKIE_SESION_ADMIN } } : {}),
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -73,14 +89,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (error) {
-      return respuestaDeError(request);
+      return respuestaDeError(request, ambitoAdmin);
     }
 
     return respuesta;
   }
 
   if (!code) {
-    return respuestaDeError(request);
+    return respuestaDeError(request, ambitoAdmin);
   }
 
   const { error } = await supabase.auth.exchangeCodeForSession(
@@ -89,7 +105,7 @@ export async function GET(request: NextRequest) {
   );
 
   if (error) {
-    return respuestaDeError(request);
+    return respuestaDeError(request, ambitoAdmin);
   }
 
   return respuesta;

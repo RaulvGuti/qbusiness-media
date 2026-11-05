@@ -1,6 +1,6 @@
 import shared from "../panel.module.css";
 import {
-  listarDestacados,
+  listarDestacadosAdmin,
   listarTodasLasCarpetas,
   listarTodasLasEmpresas,
 } from "@/server/repositories/galeria";
@@ -16,7 +16,7 @@ export default async function DestacadosPage() {
 
   // SUPABASE (admin): destacados (con joins), carpetas_galeria y empresas.
   const [destacados, carpetas, empresas] = await Promise.all([
-    listarDestacados(),
+    listarDestacadosAdmin(),
     listarTodasLasCarpetas(),
     listarTodasLasEmpresas(),
   ]);

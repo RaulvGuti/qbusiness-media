@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
-import { obtenerSupabase } from "@/lib/supabase/client";
+import { obtenerSupabase, obtenerSupabaseAdmin } from "@/lib/supabase/client";
 
 const MINIMO_CARACTERES = 8;
 
@@ -65,7 +65,7 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
     setEnviando(true);
 
     try {
-      const supabase = obtenerSupabase();
+      const supabase = esAdmin ? obtenerSupabaseAdmin() : obtenerSupabase();
       const { error: updateError } = await supabase.auth.updateUser({
         password: form.password,
       });
@@ -75,16 +75,10 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
         return;
       }
 
-      // La contraseña ya cambió. Si el cierre global falla por red, no se
-      // bloquea el éxito: la nueva contraseña ya quedó guardada.
+      // La contraseña ya cambió. Cierra solo la sesión de este ámbito para no
+      // tumbar la sesión pública si se trata de una cuenta de administrador.
       try {
-        const { error: signOutError } = await supabase.auth.signOut({
-          scope: "global",
-        });
-
-        if (signOutError) {
-          await supabase.auth.signOut({ scope: "local" });
-        }
+        await supabase.auth.signOut({ scope: "local" });
       } catch {
         // Ignorar: el siguiente inicio de sesión validará la contraseña nueva.
       }

@@ -1,5 +1,8 @@
 import { cache } from 'react';
-import { createSupabaseServerClient } from '@/server/supabase/server';
+import {
+  createSupabaseServerClient,
+  createSupabaseStaffClient,
+} from '@/server/supabase/server';
 import { construirConfiguracionSitio } from '@/lib/config-sitio';
 import type {
   ConfigSitio,
@@ -58,6 +61,37 @@ export async function listarConfiguracion(
   }
 
   const supabase = await createSupabaseServerClient();
+  let query = supabase
+    .from('configuracion_sitio')
+    .select('id, grupo, clave, valor, actualizado_en')
+    .order('grupo', { ascending: true })
+    .order('clave', { ascending: true });
+
+  if (grupo) {
+    query = query.eq('grupo', grupo);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error('No se pudo cargar la configuración del sitio.');
+  }
+
+  return ((data ?? []) as ConfigSitioRow[]).map(mapearConfigSitio);
+}
+
+/**
+ * Igual que `listarConfiguracion`, pero con la sesión del equipo. El panel la
+ * usa para ver también las claves que el público no necesita leer.
+ */
+export async function listarConfiguracionAdmin(
+  grupo?: GrupoConfig,
+): Promise<ConfigSitio[]> {
+  if (!tieneConexionSupabase()) {
+    return configuracionMock.filter((c) => !grupo || c.grupo === grupo);
+  }
+
+  const supabase = await createSupabaseStaffClient();
   let query = supabase
     .from('configuracion_sitio')
     .select('id, grupo, clave, valor, actualizado_en')
@@ -146,7 +180,7 @@ export async function guardarConfiguraciones(
     return;
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseStaffClient();
   const { error } = await supabase.from('configuracion_sitio').upsert(
     cambios.map((cambio) => ({
       grupo: cambio.grupo,
