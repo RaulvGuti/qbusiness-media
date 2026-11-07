@@ -24,12 +24,24 @@ function cdnR2(): string {
 
 let cliente: S3Client | null = null;
 
-/** true cuando se usan credenciales de ejemplo o R2_MOCK=true. */
-export function r2EstaEnMock(): boolean {
-  if (process.env.R2_MOCK === 'true') return true;
+function enProduccion(): boolean {
+  return process.env.NODE_ENV === 'production';
+}
 
-  const cuenta = process.env.CLOUDFLARE_ACCOUNT_ID?.trim() ?? '';
-  return !cuenta || cuenta.startsWith('mock');
+/**
+ * true solo cuando R2_MOCK === 'true'.
+ * En producción el mock está prohibido: si se activa, es un error explícito.
+ * Sin R2_MOCK el código siempre habla con R2 real, aunque falten credenciales
+ * (la falta de configuración se reporta con un error, nunca con datos mock).
+ */
+export function r2EstaEnMock(): boolean {
+  if (process.env.R2_MOCK !== 'true') return false;
+
+  if (enProduccion()) {
+    throw new Error('R2_MOCK no puede estar activo en producción.');
+  }
+
+  return true;
 }
 
 function obtenerClienteR2(): S3Client {
@@ -65,7 +77,7 @@ export function construirUrlPublicaR2(key: string): string {
   const base = cdnR2();
   if (!base) {
     // En modo mock no hace falta configurar Cloudflare: sirve para probar el flujo.
-    if (r2EstaEnMock()) return `https://cdn.ejemplo.com/${ruta}`;
+    if (r2EstaEnMock()) return `https://r2-mock.invalid/${ruta}`;
 
     throw new Error(
       'Falta NEXT_PUBLIC_CDN_URL para construir la URL pública de R2.',
