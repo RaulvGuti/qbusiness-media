@@ -65,18 +65,24 @@ archivos, (3) usuarios. Y cada paso es un PR propio, con su documento en `docs/`
 
 ## 2. Archivos de fotos y videos
 
-**Decisión: Supabase Storage, y el repositorio solo guarda el enlace.**
+**Decisión: Cloudflare R2 para la galería, y el repositorio solo guarda la URL.**
 
 Reglas:
 
-- Las imágenes y los videos **no se suben a Git** ni a la carpeta `public/`. Se suben a
-  Storage y la base de datos guarda la dirección (`url_archivo`, `url_miniatura` en la tabla
-  `portafolio`).
-- Las políticas de permisos de los buckets se crean **por migración**, igual que el resto.
-- El sitio público solo muestra material publicado; lo que está en preparación se marca con
-  `es_backstage = true` y no aparece en la galería.
-- Para no llenar la cuota de almacenamiento: miniaturas ligeras, un tamaño máximo por
-  archivo y videos completos solo cuando el trabajo lo amerita.
+- Las imágenes y los videos **no se suben a Git** ni a la carpeta `public/`. El navegador
+  los sube directo a R2 con una URL firmada y `archivos_galeria.ruta_storage` guarda la
+  URL pública final.
+- Las credenciales de R2 son privadas y viven solo en el servidor. El navegador recibe una
+  URL de subida temporal, nunca las llaves.
+- Las filas antiguas de Supabase Storage se siguen resolviendo para no romper el material
+  ya publicado. Los buckets legacy y el bucket privado `comprobantes` se conservan.
+- El sitio público solo muestra material publicado; los borradores no aparecen en la
+  galería.
+- Para no llenar el almacenamiento: miniaturas ligeras, un tamaño máximo por archivo y
+  videos completos solo cuando el trabajo lo amerita.
+
+El detalle operativo está en
+[`16_almacenamiento_cloudflare_r2.md`](./16_almacenamiento_cloudflare_r2.md).
 
 ---
 

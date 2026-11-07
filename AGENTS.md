@@ -44,8 +44,9 @@ difusión y ausencia de un canal para apoyo social.
 ## 2. Contexto técnico
 
 - **Next.js 16** con App Router, **React 19**, **TypeScript** en modo estricto, **Tailwind 4**.
-- **Supabase** como backend: Postgres, Auth, Storage y automatizaciones. No hay otra base de
-  datos ni otro servicio de archivos.
+- **Supabase** como backend: Postgres, Auth y automatizaciones. La galería usa
+  **Cloudflare R2** por la API S3; Supabase Storage se conserva para archivos legacy y
+  comprobantes privados. No hay otra base de datos.
 - **Resend** para correos y enlaces `wa.me` para WhatsApp (aún sin activar).
 - **Docker** (`Dockerfile` + `compose.yml`) como forma alternativa de levantar y entregar.
 - **La aplicación Next.js vive en `frontend/`**: ahí están `package.json`, `next.config.ts`,
@@ -166,8 +167,9 @@ Reglas de ubicación:
   Next.js, leer la guía correspondiente en `frontend/node_modules/next/dist/docs/`.
 - La renovación de sesión vive en `frontend/src/proxy.ts`. No reimplementarla en otro lado ni
   borrar ese archivo.
-- Imágenes y videos del portafolio van por el servicio de archivos de Supabase; no se
-  versionan en `frontend/public/` ni se suben al repositorio.
+- Imágenes y videos del portafolio van a Cloudflare R2; no se versionan en
+  `frontend/public/` ni se suben al repositorio. Las credenciales de R2 son solo del
+  servidor y el navegador sube con una URL firmada.
 
 ---
 
@@ -311,7 +313,9 @@ Estado actual:
 - **RLS activo en las 20 tablas** de `public` (migración 000020 y siguientes).
 - **Roles del panel** desde 000038: el layout y cada página sensible validan sesión y rol con
   `frontend/src/server/auth/`; el proxy solo adelanta la redirección sin sesión.
-- **Buckets de Storage** `galeria` y `logos` públicos (000027) y `comprobantes` privado (000031).
+- **Cloudflare R2** es el almacén nuevo de la galería (`archivos_galeria.ruta_storage`
+  guarda la URL pública final). Los buckets de Supabase `galeria` y `logos` (000027) se
+  conservan para archivos legacy; `comprobantes` (000031) sigue privado para pagos.
 - El **horario de atención** se configura en `configuracion_sitio` (`estudio / hora_apertura`
   y `estudio / hora_cierre`) y lo aplica el trigger `validar_horario_atencion` (000029); no
   existe una tabla `horarios_disponibles`.
@@ -330,7 +334,7 @@ frontend lea de `carpetas_galeria`.
 - Subir `.env`, `.env.local`, llaves, certificados o respaldos de base de datos. La
   automatización del PR lo bloquea, pero también lo hace el hook local.
 - Exponer la `service_role` o una contraseña de base de datos en el navegador.
-- Meter fotos o videos de trabajo en el repositorio: van a Supabase Storage.
+- Meter fotos o videos de trabajo en el repositorio: van a Cloudflare R2.
 - Poner datos de clientes en la consola del navegador o en los logs.
 - Cambiar el stack (base de datos, framework, autenticación) sin una decisión escrita en
   `docs/`.

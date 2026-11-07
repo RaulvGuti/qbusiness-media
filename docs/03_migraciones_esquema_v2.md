@@ -13,7 +13,8 @@ en Supabase Auth, en un modelo de galería por carpetas y en paquetes de renta.
 
 ## 1. Panorama
 
-- **Backend:** Supabase (Postgres + Auth + Storage). No hay otra base de datos.
+- **Backend:** Supabase (Postgres + Auth) y Cloudflare R2 para la galería. No hay otra
+  base de datos. Supabase Storage se conserva para archivos legacy y comprobantes.
 - **Identidad:** los perfiles (`administradores`, `clientes`) tienen como `id` el mismo `id` de
   `auth.users`. `auth.uid()` identifica a quien inició sesión sin tablas puente.
 - **Autorización:** RLS activo en **las 20 tablas** de `public`. Las claves se protegen además
@@ -225,16 +226,25 @@ Notas:
 
 ## 7. Storage
 
-Dos buckets **públicos de lectura**, escritura solo de administradores:
+La galería nueva vive en **Cloudflare R2** (S3 API). El navegador sube con una URL
+firmada y `archivos_galeria.ruta_storage` guarda la **URL pública final**, por ejemplo
+`https://cdn.tu-dominio.com/galeria/<carpeta-id>/<uuid>.jpg`. No hay columnas nuevas:
+`ruta_storage` sigue siendo `varchar`.
 
-- **`galeria`** — las rutas se guardan en `archivos_galeria.ruta_storage` y
-  `empresas.portada_ruta`.
-- **`logos`** — la ruta se guarda en `empresas.logo_ruta`.
+Las filas antiguas que guardan rutas de Supabase Storage se siguen resolviendo:
 
-El bucket **`comprobantes`** (000031) es privado: cada cliente accede solo a su carpeta
+- **`galeria`** — archivos legacy en `archivos_galeria.ruta_storage`.
+- **`logos`** — logos legacy en `empresas.logo_ruta`.
+
+Los buckets `galeria`, `logos` y `comprobantes` de Supabase no se eliminan. El bucket
+**`comprobantes`** (000031) sigue siendo privado: cada cliente accede solo a su carpeta
 `<uid>/...` y el administrador a todo. La ruta se guarda en `reservas.url_comprobante_pago`.
 
-Las políticas de `storage.objects` replican `es_admin()` para insert/update/delete.
+Las políticas de `storage.objects` replican `es_admin()` para insert/update/delete y
+solo aplican a los archivos que todavía usan Supabase Storage.
+
+El flujo de R2, las variables y el CORS están en
+[`16_almacenamiento_cloudflare_r2.md`](./16_almacenamiento_cloudflare_r2.md).
 
 ---
 

@@ -26,6 +26,7 @@ ENV NODE_ENV=production
 # no funcionara contra Supabase.
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_CDN_URL
 
 # La aplicacion Next.js vive en frontend/
 WORKDIR /app/frontend
@@ -35,6 +36,7 @@ RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then \
     fi; \
     NEXT_PUBLIC_SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-https://dummy.supabase.co}" \
     NEXT_PUBLIC_SUPABASE_ANON_KEY="${NEXT_PUBLIC_SUPABASE_ANON_KEY:-dummy-anon-key}" \
+    NEXT_PUBLIC_CDN_URL="${NEXT_PUBLIC_CDN_URL:-https://cdn.ejemplo.com}" \
     npm run build
 
 # 3. Runner de Producción

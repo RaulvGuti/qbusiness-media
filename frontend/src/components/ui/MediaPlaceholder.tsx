@@ -1,6 +1,6 @@
 type Props = { label: string; className?: string };
 
-/** Marcador de posición para fotos y videos. Los archivos reales se cargarán desde Supabase Storage. */
+/** Marcador de posición para fotos y videos. Los archivos reales se cargan desde Cloudflare R2. */
 export function MediaPlaceholder({ label, className }: Props) {
   return (
     <div
