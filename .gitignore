@@ -23,6 +23,9 @@ out/
 .dev.vars*
 cloudflare-env.d.ts
 
+# Artefactos locales de Wrangler
+*.pid
+
 # production
 build/
 
