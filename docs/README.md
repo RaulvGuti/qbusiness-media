@@ -31,6 +31,7 @@ el cliente necesita saber para usar el sitio.
 | 13 | [`13_dashboard_datos_reales.md`](./13_dashboard_datos_reales.md) | De dónde salen los contadores, la actividad reciente y la gráfica semanal del dashboard, y cómo se respetan los permisos del panel. |
 | 14 | [`14_correcciones_flujo_portillo.md`](./14_correcciones_flujo_portillo.md) | Correcciones de Apoyo Social, reseñas, destacados del inicio, contactos del panel y el enlace de WhatsApp. |
 | 15 | [`15_paquetes_renta_equipo_y_sesiones.md`](./15_paquetes_renta_equipo_y_sesiones.md) | Paquetes de renta (000042), descuento por lealtad, administración y pestaña pública de equipo, salida de Contactos y sesiones separadas de administrador y cliente. |
+| 16 | [`16_almacenamiento_cloudflare_r2.md`](./16_almacenamiento_cloudflare_r2.md) | Cómo funciona la subida de la galería a Cloudflare R2, variables de entorno, CORS y compatibilidad con los archivos legacy de Supabase. |
 
 ## Trabajo interno en curso
 

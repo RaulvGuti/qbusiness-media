@@ -41,7 +41,10 @@ export interface CarpetaGaleria {
   logoEmpresa?: string | null;
 }
 
-/** archivos_galeria: ruta_storage en bucket `galeria` o url_externa (al menos una). */
+/**
+ * archivos_galeria: ruta_storage guarda la URL pública final de R2 (o una ruta
+ * legacy de Supabase Storage) y url_externa para enlaces; al menos una.
+ */
 export interface ArchivoGaleria {
   id: string;
   carpetaId: string;

@@ -25,8 +25,8 @@ export default async function GaleriaPage() {
       <span className={shared.eye}>Contenido</span>
       <h1 className={shared.title}>Galería</h1>
       <p className={shared.sub}>
-        Carpetas de portafolio, backstage y archivos subidos. Almacén en buckets
-        de Supabase Storage (<code>galeria</code> y <code>logos</code>).
+        Carpetas de portafolio, backstage y archivos subidos. Las fotos y videos
+        se guardan en Cloudflare R2 y se sirven desde el CDN configurado.
       </p>
       <GaleriaPanel
         carpetasIniciales={carpetas}

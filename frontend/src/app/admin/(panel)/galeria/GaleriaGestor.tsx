@@ -11,7 +11,7 @@ import {
   type SetStateAction,
 } from "react";
 import { useToast } from "@/components/ui/Toast";
-import { obtenerSupabase } from "@/lib/supabase/client";
+import { resolverUrlArchivo } from "@/lib/utils/galeria-publica";
 import {
   actualizarEstadoCarpeta,
   actualizarPieFoto,
@@ -91,13 +91,57 @@ function detectarMedidas(file: File, url: string): Promise<Medidas> {
   });
 }
 
-/** URL para previsualizar un archivo ya guardado (bucket público `galeria`). */
+/** URL para previsualizar un archivo ya guardado (R2 o Supabase legacy). */
 function urlDe(a: ArchivoGaleria): string | undefined {
   if (a.tipo === "enlace") return a.urlMiniatura ?? undefined;
   if (a.rutaStorage) {
-    return obtenerSupabase().storage.from(BUCKET).getPublicUrl(a.rutaStorage).data.publicUrl;
+    return resolverUrlArchivo(a.rutaStorage, BUCKET) ?? undefined;
   }
   return a.urlExterna ?? undefined;
+}
+
+interface FirmaSubida {
+  key: string;
+  publicUrl: string;
+  uploadUrl: string | null;
+  headers: Record<string, string>;
+  mock: boolean;
+}
+
+async function firmarSubida(datos: {
+  carpetaId: string;
+  tipoMime: string;
+  tamano: number;
+}): Promise<FirmaSubida> {
+  const respuesta = await fetch("/api/api/galeria", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+
+  const cuerpo = (await respuesta.json().catch(() => ({}))) as Partial<FirmaSubida> & {
+    error?: string;
+  };
+
+  if (!respuesta.ok || !cuerpo.key || !cuerpo.publicUrl) {
+    throw new Error(cuerpo.error ?? "No se pudo preparar la subida.");
+  }
+
+  return {
+    key: cuerpo.key,
+    publicUrl: cuerpo.publicUrl,
+    uploadUrl: cuerpo.uploadUrl ?? null,
+    headers: cuerpo.headers ?? {},
+    mock: Boolean(cuerpo.mock),
+  };
+}
+
+async function borrarObjetoSubido(key: string): Promise<void> {
+  await fetch("/api/api/galeria", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key }),
+  });
 }
 function parseEnlace(raw: string): { plataforma: "youtube" | "vimeo"; id: string } | null {
   try {
@@ -189,7 +233,6 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
     }
 
     setSubiendo(true);
-    const supabase = obtenerSupabase();
     const nuevos: ArchivoGaleria[] = [];
     let fallos = 0;
     let ultimoError = "";
@@ -197,35 +240,54 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
     // En serie: así el primero que se registre es el que queda como portada.
     for (const file of validos) {
       const preview = URL.createObjectURL(file);
-      let ruta: string | null = null;
+      let keySubida: string | null = null;
       try {
         const medidas = await detectarMedidas(file, preview);
-        const ext = (file.name.split(".").pop() ?? "").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
-        ruta = `${carpeta.id}/${crypto.randomUUID()}.${ext}`;
 
-        // Subida directa al bucket con la sesión del administrador (política galeria_insert_admin).
-        const { error } = await supabase.storage.from(BUCKET).upload(ruta, file, {
-          contentType: file.type,
-          cacheControl: "31536000",
-          upsert: false,
+        const firma = await firmarSubida({
+          carpetaId: carpeta.id,
+          tipoMime: file.type,
+          tamano: file.size,
         });
-        if (error) throw error;
+        keySubida = firma.key;
+
+        if (!firma.mock) {
+          if (!firma.uploadUrl) {
+            throw new Error("R2 no devolvió una URL de subida.");
+          }
+
+          const respuesta = await fetch(firma.uploadUrl, {
+            method: "PUT",
+            headers: firma.headers,
+            body: file,
+          });
+
+          if (!respuesta.ok) {
+            throw new Error(`R2 rechazó la subida (${respuesta.status}).`);
+          }
+        }
 
         const archivo = await registrarArchivoGaleria({
           carpetaId: carpeta.id,
           tipo: file.type.startsWith("video/") ? "video" : "imagen",
-          rutaStorage: ruta,
+          // La tabla sigue recibiendo una cadena: ahora es la URL final.
+          rutaStorage: firma.publicUrl,
           nombreOriginal: file.name,
           orientacion: medidas.orientacion,
           anchoPx: medidas.ancho || null,
           altoPx: medidas.alto || null,
         });
         nuevos.push(archivo);
+        keySubida = null; // ya quedó registrado: no hay que borrarlo
       } catch (e) {
         fallos++;
         ultimoError = mensajeDe(e, "Error al subir el archivo");
-        // Si el objeto llegó al bucket pero no se pudo registrar, no lo dejes huérfano.
-        if (ruta) await supabase.storage.from(BUCKET).remove([ruta]);
+        // Si el objeto llegó a R2 pero no se pudo registrar, no lo dejes huérfano.
+        if (keySubida) {
+          await borrarObjetoSubido(keySubida).catch(() => {
+            // El registro no existe; si el borrado falla, queda un objeto huérfano.
+          });
+        }
       } finally {
         URL.revokeObjectURL(preview);
       }
@@ -340,7 +402,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
   const eliminar = async (id: string) => {
     const objetivo = items.find((i) => i.id === id);
     try {
-      // Borra el registro, reasigna la portada en la BD y elimina el objeto de Storage.
+      // Borra el registro, reasigna la portada en la BD y elimina el objeto de R2 o Storage.
       await eliminarArchivoGaleria(id);
     } catch (e) {
       toast(mensajeDe(e, "No se pudo eliminar el archivo"));

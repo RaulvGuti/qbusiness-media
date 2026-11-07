@@ -8,14 +8,32 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export const esUuid = (valor: string): boolean => UUID_RE.test(valor);
 
 /**
- * URL pública de un objeto de un bucket público de Supabase Storage.
- * Es la misma que devuelve supabase.storage.from(bucket).getPublicUrl(ruta).
+ * URL pública legacy de un objeto de Supabase Storage.
+ * Las subidas nuevas van a Cloudflare R2 y guardan la URL final en la base.
  */
 export function construirUrlStorage(bucket: string, ruta: string): string | null {
   const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '');
   if (!base || !ruta) return null;
   const rutaCodificada = ruta.split('/').map(encodeURIComponent).join('/');
   return `${base}/storage/v1/object/public/${bucket}/${rutaCodificada}`;
+}
+
+/** true si el valor ya es una URL absoluta. */
+export function esUrlAbsoluta(valor: string): boolean {
+  return /^https?:\/\//i.test(valor);
+}
+
+/**
+ * Resuelve lo guardado en `ruta_storage`:
+ * - URL absoluta de R2/CDN/Supabase: se devuelve tal cual.
+ * - Ruta legacy de Supabase: se convierte a su URL pública.
+ */
+export function resolverUrlArchivo(
+  valor: string | null,
+  bucket: string,
+): string | null {
+  if (!valor) return null;
+  return esUrlAbsoluta(valor) ? valor : construirUrlStorage(bucket, valor);
 }
 
 /** Convierte un enlace de YouTube o Vimeo en su URL de incrustación (iframe). */

@@ -72,8 +72,8 @@ Todo vive en una sola página con pestañas, en este orden:
 
 | Tema | Decisión | Razón |
 | --- | --- | --- |
-| Base de datos | **Supabase** (Postgres en la nube) | Gratis, y en un solo lugar da base de datos, usuarios con sesión, almacenamiento de fotos/videos y automatizaciones. Neon solo da base de datos: tendríamos que pagar o programar lo demás. |
-| Archivos (fotos/videos) | **Supabase Storage** | Entrega las imágenes y videos con enlace directo, sin llenar el repositorio de Git. |
+| Base de datos | **Supabase** (Postgres en la nube) | Gratis, y en un solo lugar da base de datos, usuarios con sesión y automatizaciones. Neon solo da base de datos: tendríamos que pagar o programar lo demás. |
+| Archivos (fotos/videos) | **Cloudflare R2** | Entrega los archivos desde un CDN sin costo de egreso, sin llenar el repositorio de Git y sin hacer pasar los videos por el servidor. |
 | Sesión de los usuarios | **Supabase Auth** con cookies | El equipo entra con correo y clave; el sitio público no necesita registro. |
 | Correos de notificación | **Resend** (gratis hasta 3.000/mes) | Llegada real a correo, con aviso de "se envió". |
 | Aviso por WhatsApp | Enlace `wa.me` | Sin contrato con Twilio: se abre el chat con el número de la empresa. |
@@ -142,6 +142,11 @@ El sitio usa el proyecto de Supabase del equipo. Pide en el grupo de WhatsApp de
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → *service_role* (**privada**) |
 
 > La URL empieza con `https://` y las keys con `eyJ...`. La `service_role` es una contraseña: nunca se sube a Git ni se manda por WhatsApp. Si se filtra, se revoca en Supabase y se genera una nueva.
+
+Para subir fotos y videos, la galería usa Cloudflare R2. Con `R2_MOCK=true` funciona sin
+credenciales reales; cuando estén disponibles, reemplaza las variables de R2 en
+`frontend/.env.local`. El detalle está en
+[`docs/16_almacenamiento_cloudflare_r2.md`](./docs/16_almacenamiento_cloudflare_r2.md).
 
 ### 3.5 Levantar el sitio
 

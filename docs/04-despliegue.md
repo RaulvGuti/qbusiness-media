@@ -36,7 +36,13 @@ Este es el punto que más confunde, y la causa de varios fallos de build.
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | **En el build** | Se incrusta en el bundle del navegador |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **En el build** | Se incrusta en el bundle del navegador |
+| `NEXT_PUBLIC_CDN_URL` | **En el build** | Dominio público de R2; se incrusta en el bundle |
 | `SUPABASE_SERVICE_ROLE_KEY` | En runtime | Solo en el servidor, nunca en el navegador |
+| `CLOUDFLARE_ACCOUNT_ID` | En runtime | Solo en el servidor |
+| `R2_ACCESS_KEY_ID` | En runtime | Solo en el servidor |
+| `R2_SECRET_ACCESS_KEY` | En runtime | Solo en el servidor |
+| `R2_BUCKET_NAME` | En runtime | Solo en el servidor |
+| `R2_MOCK` | En runtime | Solo en el servidor; `true` evita llamar a R2 |
 | `DATABASE_URL` | En runtime | Solo la base de datos local de `compose.yml` |
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | En runtime | Sitio público |
 | `NEXT_PUBLIC_SITE_URL` | En runtime | Solo para enlaces de recuperación de contraseña |
@@ -54,10 +60,11 @@ en tiempo de ejecución. Consecuencia práctica:
 Por eso el `Dockerfile` las recibe como **argumentos de build** (`build.args` en
 `compose.yml`) y no solo como variables de entorno del contenedor.
 
-Las dos variables `NEXT_PUBLIC_*` de Supabase son **públicas**: la URL del proyecto y la
-clave `anon`, que está sujeta a las políticas RLS. Pasarlas como argumento de build no
-expone ningún secreto. La `SUPABASE_SERVICE_ROLE_KEY` sí es privada y **nunca** debe
-entrar en un `ARG` ni en un `ENV` de la etapa de build.
+Las variables `NEXT_PUBLIC_*` son **públicas**: la URL del proyecto, la clave `anon`
+(sujeta a RLS) y el dominio del CDN de R2. Pasarlas como argumento de build no expone
+ningún secreto. Las credenciales de R2 (`CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
+`R2_SECRET_ACCESS_KEY` y `R2_BUCKET_NAME`) y la `SUPABASE_SERVICE_ROLE_KEY` son privadas
+y **nunca** deben entrar en un `ARG` ni en un `ENV` de la etapa de build.
 
 ### Valores por defecto
 
@@ -91,6 +98,9 @@ valores de ejemplo** por los reales de Supabase (Project Settings → API):
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | *anon public* |
 | `SUPABASE_SERVICE_ROLE_KEY` | *service_role* (privada) |
+
+Para la galería hay que configurar además Cloudflare R2 y `NEXT_PUBLIC_CDN_URL`.
+El detalle está en [`16_almacenamiento_cloudflare_r2.md`](./16_almacenamiento_cloudflare_r2.md).
 
 Verificación antes de entregar cualquier trabajo:
 

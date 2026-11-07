@@ -12,7 +12,13 @@ import type {
   ModuloCarpeta,
 } from '@/types/portafolio';
 import { archivosMock, carpetasMock, destacadosMock, empresasMock } from './datos-mock';
-import { construirUrlStorage, esUuid, urlEmbed } from '@/lib/utils/galeria-publica';
+import {
+  construirUrlStorage,
+  esUuid,
+  resolverUrlArchivo,
+  urlEmbed,
+} from '@/lib/utils/galeria-publica';
+import { claveDesdeUrlR2, eliminarObjetoR2 } from '@/server/storage/r2';
 import type {
   CarpetaConMedios,
   CarpetaConPortada,
@@ -24,9 +30,10 @@ import type {
 /**
  * Repositorio del modelo v2 de galería (000023, 000033 y 000037):
  * empresas, carpetas_galeria, archivos_galeria, destacados.
- * Buckets de Storage: `galeria` (archivos) y `logos` (logos de empresas).
- * Las subidas de archivos las hace el navegador directo al bucket (sesión del
- * administrador, políticas de 000027); aquí solo se registran, ordenan y borran.
+ * Las subidas nuevas van directo a Cloudflare R2 con URL firmada y la tabla
+ * guarda la URL pública final en `ruta_storage`. Las rutas legacy de Supabase
+ * Storage (`galeria` y `logos`) se siguen resolviendo para no romper archivos
+ * anteriores; aquí solo se registran, ordenan y borran.
  * Lectura pública: RLS deja ver solo carpetas 'publicado' y empresas activas.
  * Las lecturas caen a datos mock si no hay credenciales reales de Supabase;
  * las escrituras exigen conexión.
@@ -407,11 +414,9 @@ export async function listarDestacadosPublicos(): Promise<Destacado[]> {
 /* Lecturas públicas con portada y medios (sitio público)              */
 /* ------------------------------------------------------------------ */
 
-/** Ruta de Storage o URL absoluta -> URL lista para <img>/<video>. */
+/** URL de R2/CDN o ruta legacy de Storage -> URL lista para <img>/<video>. */
 function resolverArchivo(valor: string | null): string | null {
-  if (!valor) return null;
-  if (/^https?:\/\//i.test(valor)) return valor;
-  return construirUrlStorage(BUCKET, valor);
+  return resolverUrlArchivo(valor, BUCKET);
 }
 
 /**
@@ -467,7 +472,7 @@ function aMedio(a: ArchivoGaleria): MedioPublico | null {
     return embed ? { ...base, tipo, url: embed } : null;
   }
 
-  const url = a.rutaStorage ? construirUrlStorage(BUCKET, a.rutaStorage) : a.urlExterna;
+  const url = resolverUrlArchivo(a.rutaStorage, BUCKET) ?? a.urlExterna;
   return url ? { ...base, tipo, url } : null;
 }
 
@@ -692,8 +697,9 @@ interface RegistrarArchivoInput {
 }
 
 /**
- * Registra un archivo ya subido a Storage (o un enlace externo). El primero que
- * no sea enlace queda como portada si la carpeta aún no tiene una.
+ * Registra un archivo ya subido a R2 (o un enlace externo). `rutaStorage`
+ * recibe la URL pública final o, en filas legacy, la ruta de Supabase Storage.
+ * El primero que no sea enlace queda como portada si la carpeta aún no tiene una.
  */
 export async function registrarArchivoGaleria(input: RegistrarArchivoInput): Promise<ArchivoGaleria> {
   exigirConexion();
@@ -751,7 +757,7 @@ export async function reordenarArchivos(carpetaId: string, ids: string[]): Promi
   if (error) fallar(error, 'No se pudo guardar el nuevo orden.');
 }
 
-/** Borra el registro (reasignando la portada) y luego los objetos de Storage. */
+/** Borra el registro (reasignando la portada) y luego los objetos de R2 o Storage. */
 export async function eliminarArchivoGaleria(id: string): Promise<void> {
   exigirConexion();
   const supabase = await createSupabaseStaffClient();
@@ -763,14 +769,34 @@ export async function eliminarArchivoGaleria(id: string): Promise<void> {
     | { o_ruta_storage: string | null; o_url_miniatura: string | null }
     | undefined;
 
-  // La miniatura puede ser una URL externa (p. ej. YouTube): solo se borran rutas de Storage.
-  const rutas = [fila?.o_ruta_storage, fila?.o_url_miniatura].filter(
-    (r): r is string => Boolean(r) && !/^https?:\/\//i.test(r as string),
+  const valores = [fila?.o_ruta_storage, fila?.o_url_miniatura].filter(
+    (r): r is string => Boolean(r),
   );
-  if (rutas.length > 0) {
-    const { error: errStorage } = await supabase.storage.from(BUCKET).remove(rutas);
-    // El registro ya no existe: un objeto huérfano no debe bloquear al administrador.
-    if (errStorage) console.error('No se pudo borrar el objeto de Storage:', errStorage.message);
+
+  for (const valor of valores) {
+    const keyR2 = claveDesdeUrlR2(valor);
+
+    if (keyR2) {
+      try {
+        await eliminarObjetoR2(keyR2);
+      } catch (e) {
+        // El registro ya no existe: un objeto huérfano no debe bloquear al administrador.
+        console.error(
+          'No se pudo borrar el objeto de R2:',
+          e instanceof Error ? e.message : 'error desconocido',
+        );
+      }
+      continue;
+    }
+
+    // Compatibilidad con filas antiguas: rutas relativas del bucket de Supabase.
+    // Las URLs externas (p. ej. YouTube) no se tocan.
+    if (!/^https?:\/\//i.test(valor)) {
+      const { error: errStorage } = await supabase.storage.from(BUCKET).remove([valor]);
+      if (errStorage) {
+        console.error('No se pudo borrar el objeto de Storage:', errStorage.message);
+      }
+    }
   }
 }
 
