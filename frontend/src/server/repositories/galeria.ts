@@ -35,8 +35,8 @@ import type {
  * Storage (`galeria` y `logos`) se siguen resolviendo para no romper archivos
  * anteriores; aquí solo se registran, ordenan y borran.
  * Lectura pública: RLS deja ver solo carpetas 'publicado' y empresas activas.
- * Las lecturas caen a datos mock si no hay credenciales reales de Supabase;
- * las escrituras exigen conexión.
+ * En desarrollo, las lecturas caen a datos mock si no hay credenciales reales
+ * de Supabase; en producción la falta de configuración es un error explícito.
  */
 
 /* ------------------------------------------------------------------ */
@@ -49,11 +49,18 @@ const BUCKET_LOGOS = 'logos';
 function tieneConexionSupabase(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
-  return (
+  const configurada =
     Boolean(url && anonKey) &&
     !url.includes('tu-proyecto.supabase.co') &&
-    anonKey !== 'tu-anon-key-publica'
-  );
+    anonKey !== 'tu-anon-key-publica';
+
+  if (!configurada && process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'Supabase no está configurado: define NEXT_PUBLIC_SUPABASE_URL y la anon key.',
+    );
+  }
+
+  return configurada;
 }
 
 function exigirConexion(): void {
