@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -44,8 +44,11 @@ jobs:
           # Extensiones y nombres que nunca deben llegar al repositorio remoto
           prohibidos='(^|/)\.env($|\.)|\.(db|sqlite3?|sql|dump|pem|key|p12|pfx|crt|keystore|jks)$|(secret|credential|password|backup)'
 
-          # Excepciones válidas del proyecto
-          excepciones='\.env\.example$|\.env\.template$|\.secrets\.baseline$|gitleaks\.toml$'
+          # Excepciones válidas del proyecto.
+          # `supabase/migrations/*.sql` es la única forma de cambiar la base de
+          # datos (ver AGENTS.md 4.1), asi que esos archivos SI deben versionarse.
+          # Un .sql en cualquier otra ruta sigue bloqueado: eso si es un dump.
+          excepciones='\.env\.example$|\.env\.template$|\.secrets\.baseline$|gitleaks\.toml$|^supabase/migrations/[^/]+\.sql$'
 
           encontrados=""
           while IFS= read -r f; do

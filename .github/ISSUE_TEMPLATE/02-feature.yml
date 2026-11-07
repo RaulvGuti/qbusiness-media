@@ -59,6 +59,6 @@ body:
     id: notas
     attributes:
       label: Notas técnicas
-      description: Modificaciones en schema de Prisma, nuevos componentes o endpoints requeridos.
+      description: Migración nueva en supabase/migrations/, componentes nuevos o endpoints requeridos.
     validations:
       required: false

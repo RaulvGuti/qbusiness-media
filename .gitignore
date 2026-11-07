@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,30 +11,78 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
 
 # next.js
-/.next/
-/out/
+.next/
+out/
+
+# Cloudflare Workers / OpenNext
+.open-next/
+.wrangler/
+.dev.vars*
+cloudflare-env.d.ts
+
+# Artefactos locales de Wrangler
+*.pid
 
 # production
-/build
+build/
 
 # misc
 .DS_Store
+Thumbs.db
+desktop.ini
 *.pem
+
+# IDE / editores: la configuracion compartida del equipo vive en .editorconfig
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Metadata de flujo alternativo de Windows/WSL (nunca debe versionarse)
+*:Zone.Identifier
+*Zone.Identifier*
+
+# Carpeta interna de trabajo de la restructuracion (no se versiona)
+/restructuracion/
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+
+# eslint
+.eslintcache
+
+# Docker: overrides locales de compose (nunca se versionan)
+docker-compose.override.yml
+compose.override.yml
+
+# Python local (solo para instalar pre-commit en un venv)
+.venv/
+venv/
+__pycache__/
 
 # env files (can opt-in for committing if needed)
 .env*
+# La plantilla SI se versiona: sin ella nadie puede arrancar el proyecto,
+# y la CI (workflows/build.yml) la necesita para validar docker compose.
+!.env.example
+!.env.template
 
 # vercel
 .vercel
+
+# Configuracion local de asistentes de IA (solo del proyecto, no del equipo)
+.agents/
+.claude/
+.cursor/
+.devin/
 
 # typescript
 *.tsbuildinfo

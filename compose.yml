@@ -23,6 +23,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # Las variables NEXT_PUBLIC_* se incrustan en el bundle del navegador
+      # durante el build, asi que deben llegar como argumentos de construccion.
+      # Sin ellas la imagen compila, pero el login no conecta con Supabase.
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_CDN_URL: ${NEXT_PUBLIC_CDN_URL}
     container_name: qbusiness-web
     restart: unless-stopped
     ports:
@@ -31,6 +38,13 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_MOCK=${R2_MOCK}
+      - NEXT_PUBLIC_CDN_URL=${NEXT_PUBLIC_CDN_URL}
     depends_on:
       postgres-db:
         condition: service_healthy

@@ -1,28 +1,46 @@
 # 1. Dependencias
-FROM node:20-alpine AS deps
+FROM node:25-alpine AS deps
 RUN apk add --no-cache libc6-compat
-WORKDIR /app
+WORKDIR /app/frontend
 
-COPY package.json package-lock.json* ./
-COPY prisma ./prisma/
+COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
 # 2. Builder
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY . .
-
-# Generar cliente de Prisma
-RUN npx prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-RUN npm run build
+# Las variables NEXT_PUBLIC_* se incrustan en el bundle del navegador durante
+# el build, no se leen en tiempo de ejecucion. Por eso tienen que estar
+# disponibles aqui: definirlas solo en `compose.yml` (runtime) no cambia nada
+# del bundle ya compilado.
+#
+# Son valores PUBLICOS (la URL del proyecto y la clave anon, que esta sujeta a
+# RLS), asi que pasarlas como argumento de build no expone ningun secreto.
+# Si no llegan, se usan valores de ejemplo: la imagen compila, pero el login
+# no funcionara contra Supabase.
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_CDN_URL
+
+# La aplicacion Next.js vive en frontend/
+WORKDIR /app/frontend
+RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then \
+      echo "AVISO: NEXT_PUBLIC_SUPABASE_URL no llego al build." >&2; \
+      echo "       La imagen usara un proyecto de ejemplo y el login no funcionara." >&2; \
+    fi; \
+    NEXT_PUBLIC_SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-https://dummy.supabase.co}" \
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="${NEXT_PUBLIC_SUPABASE_ANON_KEY:-dummy-anon-key}" \
+    NEXT_PUBLIC_CDN_URL="${NEXT_PUBLIC_CDN_URL:-https://cdn.ejemplo.com}" \
+    npm run build
 
 # 3. Runner de Producción
-FROM node:20-alpine AS runner
+FROM node:25-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -31,12 +49,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/frontend/public ./public
 
 # Aprovechar output standalone de Next.js
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static
 
 USER nextjs
 

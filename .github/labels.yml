@@ -42,7 +42,7 @@
   description: "Solicitudes de apoyo para fundaciones y bomberos"
 - name: "module:infra"
   color: "c2e0c6"
-  description: "Docker, Supabase, Prisma, variables de entorno y CI/CD"
+  description: "Docker, Supabase, migraciones, variables de entorno y CI/CD"
 
 # --- Prioridad ---
 - name: "priority:critica"

@@ -7,7 +7,7 @@ on:
       - "compose*.yml"
       - "**/Dockerfile"
       - "docker/**"
-      - "package*.json"
+      - "frontend/package*.json"
       - ".github/workflows/build.yml"
   workflow_dispatch:
 
@@ -24,12 +24,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Preparar archivo de entorno temporal
         run: |
-          if [ -f .env.example ]; then
-            cp .env.example .env
+          if [ -f frontend/.env.example ]; then
+            # docker compose lee las variables de interpolacion desde la raiz
+            cp frontend/.env.example .env
           else
             echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/qbusiness" > .env
           fi
@@ -37,7 +38,7 @@ jobs:
       - name: Validar configuración de docker-compose
         run: docker compose config
 
-      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Construir imágenes del proyecto
         run: docker compose build

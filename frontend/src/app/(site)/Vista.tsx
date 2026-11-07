@@ -1,0 +1,425 @@
+import Image from "next/image";
+import Link from "next/link";
+import { PortadaCarpeta } from "@/components/galeria/PortadaCarpeta";
+import { Icon } from "@/components/ui/Icon";
+import { crearEnlaceWhatsApp, interpolarTexto } from "@/lib/config-sitio";
+import type { ConfiguracionSitio } from "@/types/config";
+import type { DestacadoPublico } from "@/types/galeria-publica";
+import styles from "./page.module.css";
+
+interface VistaProps {
+  config: ConfiguracionSitio;
+  destacados: DestacadoPublico[];
+}
+
+export function Vista({ config, destacados }: VistaProps) {
+  const whatsapp = crearEnlaceWhatsApp(
+    config.contactoWhatsappNumero,
+    config.mensajeWhatsapp,
+  );
+  return (
+    <section className={styles.page}>
+      {/* HERO SECTION */}
+      <div className="max-w-4xl mx-auto text-center space-y-8 pt-6 pb-2">
+        <div className="inline-flex items-center space-x-2 bg-qbTerracotta/10 text-qbTerracotta border border-qbTerracotta/25 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase">
+          <span className="w-2 h-2 rounded-full bg-qbTerracotta"></span>
+          <span>Producción Audiovisual &amp; Renta de Estudio</span>
+        </div>
+
+        <div className="flex justify-center items-center py-4">
+          <Image
+            src="/logo-header.png"
+            alt="QBusiness Media Logo"
+            width={600}
+            height={186}
+            className="h-64 sm:h-80 md:h-96 lg:h-[420px] w-auto object-contain max-w-full drop-shadow-xl"
+          />
+        </div>
+
+        <p className="text-lg sm:text-xl text-qbMuted font-normal leading-relaxed max-w-2xl mx-auto whitespace-pre-line">
+          {interpolarTexto(config.heroSubtitulo, config)}
+        </p>
+
+        {/* BOTONES DE ACCIÓN */}
+        <div className="flex flex-wrap justify-center gap-4 pt-2">
+          <Link
+            className="bg-qbTerracotta hover:bg-qbTerracottaHover text-white font-bold px-8 py-3.5 rounded-xl transition duration-200 flex items-center"
+            href="/portafolio"
+          >
+            <Icon name="play-circle" className="mr-2 text-lg" />
+            Ver Portafolio
+          </Link>
+          <Link
+            className="bg-qbSage hover:bg-qbSageHover text-white font-bold px-8 py-3.5 rounded-xl transition duration-200 flex items-center"
+            href="/renta"
+          >
+            <Icon name="video" className="mr-2 text-lg" />
+            Rentar Estudio
+          </Link>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border border-qbBorder bg-qbChalk text-qbInk hover:text-qbTerracotta font-semibold px-7 py-3.5 rounded-xl transition hover:border-qbTerracotta flex items-center"
+            href={whatsapp}
+          >
+            <Icon name="whatsapp" className="mr-2 text-qbSage" />
+            Cotizar WhatsApp
+          </a>
+        </div>
+
+        {/* ESTADÍSTICAS */}
+        <div className="grid grid-cols-3 gap-6 pt-8 max-w-xl mx-auto border-t border-qbBorder">
+          <div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-qbInk">
+              {config.heroStat1Numero}
+            </div>
+            <div className="text-xs text-qbMuted font-medium">
+              {config.heroStat1Label}
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-qbSage">
+              {config.heroStat2Numero}
+            </div>
+            <div className="text-xs text-qbMuted font-medium">
+              {config.heroStat2Label}
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-qbTerracotta">
+              {config.heroStat3Numero}
+            </div>
+            <div className="text-xs text-qbMuted font-medium">
+              {config.heroStat3Label}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* PORTAFOLIO DESTACADO */}
+      <div className="space-y-6 pt-8 border-t border-qbBorder">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3">
+          <div>
+            <span className="text-xs font-bold text-qbSage uppercase tracking-widest">
+              Portafolio Destacado
+            </span>
+            <h2 className="text-3xl font-extrabold text-qbInk mt-1">
+              Nuestro Trabajo
+            </h2>
+            <p className="text-sm text-qbMuted">
+              Proyectos y marcas líderes con las que hemos colaborado en la
+              región.
+            </p>
+          </div>
+          <Link
+            className="text-qbIndigo hover:text-qbTerracotta text-sm font-bold flex items-center transition"
+            href="/portafolio"
+          >
+            Explorar todo el portafolio{" "}
+            <Icon name="arrow-right" className="ml-2 text-xs" />
+          </Link>
+        </div>
+
+        {destacados.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-qbBorder bg-qbChalk p-8 text-center text-sm text-qbMuted">
+            Estamos preparando los próximos proyectos destacados.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {destacados.map((destacado) => (
+              <Link
+                key={destacado.id}
+                href={destacado.href}
+                className="bg-qbChalk border border-qbBorder rounded-2xl overflow-hidden group hover:border-qbTerracotta transition duration-300 shadow-sm"
+              >
+                <div className="aspect-video relative overflow-hidden bg-black/40">
+                  <PortadaCarpeta
+                    url={destacado.imagenUrl}
+                    tipo={destacado.imagenTipo}
+                    titulo={destacado.titulo}
+                    className="transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-qbIndigo/80 via-transparent to-transparent opacity-80"></div>
+                  <span className="absolute top-3 left-3 bg-qbIndigo text-white text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                    {destacado.etiqueta ?? destacado.titulo}
+                  </span>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="w-12 h-12 rounded-full text-[#ECE7DE]/85 hover:text-white hover:bg-white/10 flex items-center justify-center">
+                      <Icon name="arrow-right" className="text-sm" />
+                    </span>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-qbInk group-hover:text-qbTerracotta transition">
+                    {destacado.titulo}
+                  </h3>
+                  <p className="text-xs text-qbMuted mt-1 line-clamp-3">
+                    {destacado.descripcion ??
+                      "Conoce este proyecto realizado por QBusiness Media."}
+                  </p>
+                  <span className="inline-block mt-3 text-xs font-semibold text-qbSage">
+                    Ver proyecto →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* SECCIÓN DE SERVICIOS */}
+      <div className="space-y-6 pt-8 border-t border-qbBorder">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="text-xs font-bold text-qbTerracotta uppercase tracking-widest">
+            Lo que hacemos
+          </span>
+          <h2 className="text-3xl font-extrabold text-qbInk">
+            Nuestros Servicios
+          </h2>
+          <p className="text-sm text-qbMuted">
+            Soluciones integrales de producción y medios para potenciar tu
+            presencia de marca.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-qbTerracotta/15 text-qbTerracotta flex items-center justify-center text-xl">
+              <Icon name="film" />
+            </div>
+            <h3 className="text-lg font-bold text-qbInk">
+              Producción de Video Comercial
+            </h3>
+            <p className="text-xs sm:text-sm text-qbMuted">
+              Spots televisivos, videos corporativos y comerciales cinematográficos
+              en 4K con óptica de cine profesional.
+            </p>
+          </div>
+
+          <div className="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbSage transition duration-300 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-qbSage/15 text-qbSage flex items-center justify-center text-xl">
+              <Icon name="mobile-screen-button" />
+            </div>
+            <h3 className="text-lg font-bold text-qbInk">
+              Contenido Vertical (9:16)
+            </h3>
+            <p className="text-xs sm:text-sm text-qbMuted">
+              Estrategia y producción de Reels, TikToks y Shorts diseñados para
+              alto impacto y retención de audiencia.
+            </p>
+          </div>
+
+          <div className="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbIndigo transition duration-300 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-qbIndigo/15 text-qbIndigo flex items-center justify-center text-xl">
+              <Icon name="camera-retro" />
+            </div>
+            <h3 className="text-lg font-bold text-qbInk">
+              Fotografía Comercial &amp; Producto
+            </h3>
+            <p className="text-xs sm:text-sm text-qbMuted">
+              Sesiones fotográficas en estudio o locación, catálogos, e-commerce y
+              retoque digital de alta fidelidad.
+            </p>
+          </div>
+
+          <div className="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbSage transition duration-300 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-qbSage/15 text-qbSage flex items-center justify-center text-xl">
+              <Icon name="building-columns" />
+            </div>
+            <h3 className="text-lg font-bold text-qbInk">
+              Renta de Estudio de Grabación
+            </h3>
+            <p className="text-xs sm:text-sm text-qbMuted">
+              Instalaciones con ciclorama, tratamiento acústico, parrilla de
+              luces RGB y equipamiento completo en Quetzaltenango.
+            </p>
+          </div>
+
+          <div className="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbTerracotta transition duration-300 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-qbTerracotta/15 text-qbTerracotta flex items-center justify-center text-xl">
+              <Icon name="podcast" />
+            </div>
+            <h3 className="text-lg font-bold text-qbInk">
+              Podcasts &amp; Streaming Multicámara
+            </h3>
+            <p className="text-xs sm:text-sm text-qbMuted">
+              Set profesional para grabación de podcast en vivo, micrófonos Shure
+              broadcast y transmisión vía fibra simétrica.
+            </p>
+          </div>
+
+          <div className="bg-qbChalk border border-qbBorder p-7 rounded-2xl space-y-4 hover:border-qbIndigo transition duration-300 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-qbIndigo/15 text-qbIndigo flex items-center justify-center text-xl">
+              <Icon name="helicopter" />
+            </div>
+            <h3 className="text-lg font-bold text-qbInk">
+              Drones &amp; Cobertura de Eventos
+            </h3>
+            <p className="text-xs sm:text-sm text-qbMuted">
+              Tomas aéreas 4K certificadas y cobertura integral de conciertos,
+              lanzamientos de marca y festivales.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* MARQUEE / CARRUSEL CONTINUO */}
+      <div className="w-full overflow-hidden bg-black border-y border-white/20 py-4 my-6">
+        <div className={`flex items-center shrink-0 select-none ${styles.marquee}`}>
+          <div className="flex items-center gap-16 sm:gap-24 pr-16 sm:pr-24 shrink-0">
+            {[...Array(8)].map((_, i) => (
+              <Image
+                key={`logo-1-${i}`}
+                src="/logo-header.png"
+                alt="QBusiness Media Logo"
+                width={600}
+                height={186}
+                className="h-12 sm:h-16 w-auto object-contain shrink-0 pointer-events-none"
+              />
+            ))}
+          </div>
+
+          <div
+            className="flex items-center gap-16 sm:gap-24 pr-16 sm:pr-24 shrink-0"
+            aria-hidden="true"
+          >
+            {[...Array(8)].map((_, i) => (
+              <Image
+                key={`logo-2-${i}`}
+                src="/logo-header.png"
+                alt="QBusiness Media Logo"
+                width={600}
+                height={186}
+                className="h-12 sm:h-16 w-auto object-contain shrink-0 pointer-events-none"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* UBICACIÓN Y REDES SOCIALES */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+        {/* Ubicación */}
+        <div className="bg-qbChalk border border-qbBorder p-8 rounded-2xl space-y-4 shadow-sm">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-qbSage/15 text-qbSage flex items-center justify-center text-lg">
+              <Icon name="map-pin" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-qbInk">Ubicación del Estudio</h3>
+              <span className="text-xs text-qbSage font-semibold">
+                {config.ubicacionDireccion}
+              </span>
+            </div>
+          </div>
+          <p className="text-sm text-qbMuted">
+            Nuestras instalaciones cuentan con estacionamiento privado, área de
+            maquillaje y set climatizado para el desarrollo cómodo de tu proyecto.
+          </p>
+          <div className="w-full h-44 bg-qbLinen rounded-xl border border-qbBorder p-4 flex flex-col justify-center items-center text-center space-y-2 relative overflow-hidden group">
+            <div className="text-qbTerracotta text-3xl group-hover:scale-110 transition">
+              <Icon name="map-marked-alt" />
+            </div>
+            <span className="text-sm font-bold text-qbInk">
+              Estudio QBusiness Media
+            </span>
+            <span className="text-xs text-qbMuted">
+              {config.ubicacionDireccion}
+            </span>
+            {config.linkGoogleMaps && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 text-xs bg-qbTerracotta/15 text-qbTerracotta hover:bg-qbTerracotta hover:text-white px-3 py-1 rounded-md transition font-semibold"
+                href={config.linkGoogleMaps}
+              >
+                Abrir en Google Maps
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Redes Sociales */}
+        <div className="bg-qbChalk border border-qbBorder p-8 rounded-2xl space-y-4 shadow-sm">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-qbIndigo/15 text-qbIndigo flex items-center justify-center text-lg">
+              <Icon name="share-nodes" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-qbInk">Redes Sociales Oficiales</h3>
+              <span className="text-xs text-qbIndigo font-semibold">
+                Conéctate con nuestra comunidad
+              </span>
+            </div>
+          </div>
+          <p className="text-sm text-qbMuted">
+            Síguenos para conocer de cerca los estrenos de campaña, coberturas en
+            tiempo real y dinámicas de producción.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            {config.linkInstagram && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group"
+                href={config.linkInstagram}
+              >
+                <Icon
+                  name="instagram"
+                  className="text-xl text-pink-600 group-hover:scale-110 transition"
+                />
+                <span className="text-xs font-semibold text-qbInk">@qbusinessmedia</span>
+              </a>
+            )}
+
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbSage transition group"
+              href={whatsapp}
+            >
+              <Icon
+                name="whatsapp"
+                className="text-xl text-qbSage group-hover:scale-110 transition"
+              />
+              <span className="text-xs font-semibold text-qbInk">
+                {config.contactoWhatsappNumero}
+              </span>
+            </a>
+
+            {config.linkYoutube && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbTerracotta transition group"
+                href={config.linkYoutube}
+              >
+                <Icon
+                  name="youtube"
+                  className="text-xl text-red-600 group-hover:scale-110 transition"
+                />
+                <span className="text-xs font-semibold text-qbInk">YouTube Channel</span>
+              </a>
+            )}
+
+            {config.linkTiktok && (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 p-3 bg-qbLinen border border-qbBorder rounded-xl hover:border-qbIndigo transition group"
+                href={config.linkTiktok}
+              >
+                <Icon
+                  name="tiktok"
+                  className="text-xl text-qbInk group-hover:scale-110 transition"
+                />
+                <span className="text-xs font-semibold text-qbInk">TikTok Shorts</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

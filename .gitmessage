@@ -1,0 +1,37 @@
+# <tipo>(<ambito>): <que cambia, en imperativo y sin punto final>
+#
+# Tipos (alineados con las etiquetas type:* de .github/labels.yml):
+#   feature     -> feat      nueva funcionalidad
+#   bug         -> fix       correccion de error
+#   security    -> security  cierra una vulnerabilidad o exposicion de datos
+#   refactor    -> refactor  reorganiza sin cambiar comportamiento
+#   perf        -> perf      optimizacion
+#   test        -> test      pruebas unitarias o de integracion
+#   docs        -> docs      documentacion
+#   chore       -> chore     dependencias, tooling y configuracion
+#
+# Ambitos (alineados con las etiquetas module:* de .github/labels.yml):
+#   infra       docker, CI/CD, .github, tooling
+#   portafolio  galeria de fotos y videos
+#   estudio     renta del salon, reservas, servicios e inventario
+#   leads       captacion comercial y notificaciones
+#   social      solicitudes de apoyo social
+#   auth        sesion, roles y proxy
+#   db          migraciones y esquema de la base de datos
+#   deps        dependencias del proyecto
+#
+# Ejemplos:
+#   feat(portafolio): agregar filtro por orientacion
+#   fix(estudio): evitar traslape de horarios al confirmar
+#   db: agregar tabla de resenas con una resena por reserva
+#   security: no exponer la service role al bundle del cliente
+#
+# Cuerpo (opcional): explica el POR QUE y las decisiones de diseño.
+# No repitas el titulo ni describas linea por linea el diff.
+#
+# Pie (opcional): "Closes #123" para cerrar el issue, o
+# "BREAKING CHANGE: <que se rompe y como migrar>".
+
+# ---------------------------------------------------------------------------
+# BORRAR todo lo que sigue antes de guardar el mensaje.
+# ---------------------------------------------------------------------------

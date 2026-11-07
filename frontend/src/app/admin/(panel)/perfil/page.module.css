@@ -1,0 +1,188 @@
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.datos {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  font-size: 14px;
+}
+.datos dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+  margin-bottom: 3px;
+}
+.datos dd {
+  margin: 0;
+  color: #f2f2f2;
+  overflow-wrap: anywhere;
+}
+
+.rolBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nota {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #8a8a8a;
+}
+.notaCelda {
+  font-size: 12px;
+  color: #8a8a8a;
+}
+
+.descripcion {
+  font-size: 14px;
+  color: #d6d6d6;
+  margin-bottom: 14px;
+}
+
+.lista {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+.lista li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e8e8e8;
+}
+.lista li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  flex: none;
+}
+
+.aviso {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #3a3a3a;
+  border-radius: 12px;
+  background: #171717;
+  color: #cfcfcf;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.equipo {
+  margin-top: 24px;
+}
+
+.tablaWrap {
+  overflow-x: auto;
+  margin-bottom: 22px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.tabla th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #262626;
+  color: #8a8a8a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tabla td {
+  padding: 12px;
+  border-bottom: 1px solid #1c1c1c;
+  vertical-align: middle;
+}
+.tabla select {
+  padding: 8px 10px;
+  background: #171717;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  color: #f2f2f2;
+  font-size: 13px;
+}
+.tabla select:focus {
+  border-color: #fff;
+  outline: 0;
+}
+
+.yo {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.formEquipo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  border-top: 1px solid #262626;
+  padding-top: 20px;
+}
+.formEquipo .ancho {
+  grid-column: 1 / -1;
+}
+.acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.mensaje,
+.error {
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin: 0;
+}
+.mensaje {
+  border: 1px solid #2c4a2c;
+  background: #12200f;
+  color: #b9e6b0;
+}
+.error {
+  border: 1px solid #5a2a2a;
+  background: #1f0f0f;
+  color: #f0b4b4;
+}
+
+.subtitulo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+  margin: 8px 0 12px;
+}
