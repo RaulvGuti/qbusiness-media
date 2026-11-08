@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
+import {
+  CAMPO,
+  CAMPO_AREA,
+  CAMPO_FECHA,
+  ETIQUETA,
+} from '@/lib/estilos-formulario';
 import { calcularHoraFin } from '@/lib/estudio-paquetes';
 import type { PerfilUsuario } from '@/types/config';
 
@@ -143,14 +149,14 @@ export default function ReservaModal({
             <h2 className="text-lg sm:text-xl font-bold text-qbInk">
               Solicitar reserva de estudio
             </h2>
-            <p className="text-sm text-qbMuted">
+            <p className="text-sm text-zinc-400">
               Completa tus datos para revisar disponibilidad.
             </p>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-lg hover:bg-white/10 text-qbMuted hover:text-qbInk transition"
+            className="p-2 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-qbInk transition"
             aria-label="Cerrar modal"
           >
             <Icon name="xmark" />
@@ -160,13 +166,13 @@ export default function ReservaModal({
         {!usuarioRegistrado ? (
           <div className="p-8 text-center space-y-4">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-qbLinen border border-qbBorder">
-              <Icon name="lock" className="text-qbMuted text-xl" />
+              <Icon name="lock" className="text-zinc-400 text-xl" />
             </div>
             <div className="space-y-1">
               <h3 className="text-base font-bold text-qbInk">
                 Cuenta requerida para reservar
               </h3>
-              <p className="text-sm text-qbMuted max-w-sm mx-auto">
+              <p className="text-sm text-zinc-400 max-w-sm mx-auto">
                 Para solicitar la reserva del estudio debes estar registrado e iniciar sesión con tu cuenta de cliente.
               </p>
             </div>
@@ -191,7 +197,7 @@ export default function ReservaModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="reserva-nombre" className="text-sm font-semibold text-qbInk">
+              <label htmlFor="reserva-nombre" className={ETIQUETA}>
                 Nombre completo *
               </label>
               <input
@@ -201,11 +207,12 @@ export default function ReservaModal({
                 value={form.nombre}
                 onChange={handleChange}
                 placeholder="Tu nombre"
+                className={CAMPO}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label htmlFor="reserva-correo" className="text-sm font-semibold text-qbInk">
+                <label htmlFor="reserva-correo" className={ETIQUETA}>
                   Correo electrónico *
                 </label>
                 <input
@@ -216,10 +223,11 @@ export default function ReservaModal({
                   value={form.correo}
                   onChange={handleChange}
                   placeholder="correo@ejemplo.com"
+                  className={CAMPO}
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="reserva-telefono" className="text-sm font-semibold text-qbInk">
+                <label htmlFor="reserva-telefono" className={ETIQUETA}>
                   Teléfono / WhatsApp *
                 </label>
                 <input
@@ -229,12 +237,13 @@ export default function ReservaModal({
                   value={form.telefono}
                   onChange={handleChange}
                   placeholder="+502 0000 0000"
+                  className={CAMPO}
                 />
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <label htmlFor="reserva-fecha" className="text-sm font-semibold text-qbInk">
+                <label htmlFor="reserva-fecha" className={ETIQUETA}>
                   Fecha *
                 </label>
                 <input
@@ -244,10 +253,11 @@ export default function ReservaModal({
                   required
                   value={form.fecha}
                   onChange={handleChange}
+                  className={CAMPO_FECHA}
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="reserva-inicio" className="text-sm font-semibold text-qbInk">
+                <label htmlFor="reserva-inicio" className={ETIQUETA}>
                   Hora inicio *
                 </label>
                 <input
@@ -257,22 +267,23 @@ export default function ReservaModal({
                   required
                   value={form.horaInicio}
                   onChange={handleChange}
+                  className={CAMPO_FECHA}
                 />
               </div>
               <div className="space-y-2">
-                <span className="text-sm font-semibold text-qbInk">
+                <span className={ETIQUETA}>
                   Hora fin (según paquete)
                 </span>
                 <div className="flex min-h-11 items-center rounded-xl border border-[#52525b] bg-[#0d0d0d] px-3.5 text-sm font-semibold text-qbInk">
                   {horaFinCalculada ?? '—'}
                 </div>
-                <p className="text-[11px] text-qbMuted">
+                <p className="text-[11px] text-zinc-400">
                   La calcula el paquete de {resumen.horas} h.
                 </p>
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="reserva-notas" className="text-sm font-semibold text-qbInk">
+              <label htmlFor="reserva-notas" className={ETIQUETA}>
                 Notas / detalles
               </label>
               <textarea
@@ -282,6 +293,7 @@ export default function ReservaModal({
                 value={form.notas}
                 onChange={handleChange}
                 placeholder="Proyecto, necesidades específicas, etc."
+                className={CAMPO_AREA}
               />
             </div>
           </div>
@@ -296,7 +308,7 @@ export default function ReservaModal({
             <h3 className="text-sm font-bold text-qbInk">Resumen de la reserva</h3>
             <dl className="text-sm space-y-1">
               <div className="flex justify-between">
-                <dt className="text-qbMuted">
+                <dt className="text-zinc-400">
                   {resumen.paqueteNombre ?? 'Paquete'} ({resumen.horas} h)
                 </dt>
                 <dd className="font-medium text-qbInk">
@@ -310,11 +322,11 @@ export default function ReservaModal({
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-qbMuted">Servicios extra</dt>
+                <dt className="text-zinc-400">Servicios extra</dt>
                 <dd className="font-medium text-qbInk">Q{resumen.subtotalServicios.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-qbMuted">Equipo rentable</dt>
+                <dt className="text-zinc-400">Equipo rentable</dt>
                 <dd className="font-medium text-qbInk">Q{resumen.subtotalEquipos.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between border-t border-qbBorder pt-1 mt-1">
@@ -322,7 +334,7 @@ export default function ReservaModal({
                 <dd className="font-extrabold text-qbInk">Q{resumen.total.toFixed(2)}</dd>
               </div>
             </dl>
-            <p className="text-[11px] text-qbMuted">
+            <p className="text-[11px] text-zinc-400">
               El precio final lo calcula el servidor. La reserva queda en estado
               pendiente hasta que el equipo la confirme.
             </p>

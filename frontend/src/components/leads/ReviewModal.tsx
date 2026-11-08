@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
+import {
+  CAMPO,
+  CAMPO_AREA,
+  CAMPO_SELECT,
+  ETIQUETA,
+} from '@/lib/estilos-formulario';
 import type { ProporcionVideo, ResenaClienteInput } from '@/types/resenas';
 
 interface ReviewModalProps {
@@ -163,7 +169,7 @@ export default function ReviewModal({
         ) : (
           <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6">
             <div className="bg-qbLinen/50 border border-qbBorder p-4 rounded-2xl flex flex-col items-center justify-center space-y-3 text-center">
-              <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
+              <label className={ETIQUETA}>
                 Calificación general *
               </label>
               <div className="flex flex-wrap justify-center gap-2">
@@ -190,7 +196,7 @@ export default function ReviewModal({
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-qbInk uppercase tracking-wider flex items-center gap-1">
+                <label className={`${ETIQUETA} flex items-center gap-1`}>
                   Tu Nombre / Representante <span className="text-qbTerracotta">*</span>
                 </label>
                 <input
@@ -200,13 +206,13 @@ export default function ReviewModal({
                   placeholder="Ej. Carlos Mendoza"
                   value={form.autor}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50"
+                  className={CAMPO}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
-                  Empresa u Organización <span className="text-qbMuted font-normal">(Opcional)</span>
+                <label className={ETIQUETA}>
+                  Empresa u Organización <span className="text-zinc-400 font-normal">(Opcional)</span>
                 </label>
                 <input
                   type="text"
@@ -214,12 +220,12 @@ export default function ReviewModal({
                   placeholder="Ej. Corporación Xela"
                   value={form.empresaAutor}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50"
+                  className={CAMPO}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-qbInk uppercase tracking-wider flex items-center gap-1">
+                <label className={`${ETIQUETA} flex items-center gap-1`}>
                   Tu Reseña / Comentario <span className="text-qbTerracotta">*</span>
                 </label>
                 <textarea
@@ -229,14 +235,14 @@ export default function ReviewModal({
                   placeholder="Escribe aquí los detalles de tu experiencia..."
                   value={form.comentario}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50 resize-none"
+                  className={CAMPO_AREA}
                 />
               </div>
 
               <div className="pt-2 border-t border-qbBorder/60 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
-                    Enlace de Video Reseña <span className="text-qbMuted font-normal">(Opcional)</span>
+                  <label className={ETIQUETA}>
+                    Enlace de Video Reseña <span className="text-zinc-400 font-normal">(Opcional)</span>
                   </label>
                   <input
                     type="url"
@@ -244,20 +250,20 @@ export default function ReviewModal({
                     placeholder="Ej. https://youtube.com/watch?v=... o Vimeo"
                     value={form.videoUrl}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition placeholder:text-qbMuted/50"
+                    className={CAMPO}
                   />
                 </div>
 
                 {form.videoUrl && (
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-qbInk uppercase tracking-wider">
+                    <label className={ETIQUETA}>
                       Formato de Video
                     </label>
                     <select
                       name="videoProporcion"
                       value={form.videoProporcion}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-qbChalk border border-qbBorder focus:border-qbTerracotta rounded-xl text-sm text-qbInk outline-none transition"
+                      className={CAMPO_SELECT}
                     >
                       <option value="16/9">Horizontal (16:9 - YouTube/Vimeo)</option>
                       <option value="9/16">Vertical (9:16 - Reels/TikTok/Shorts)</option>

@@ -2,6 +2,10 @@
 
 import { useState, useTransition } from "react";
 import {
+  CAMPO_AREA,
+  CAMPO_SELECT,
+} from "@/lib/estilos-formulario";
+import {
   cambiarEstado,
   cambiarEstadoResena,
   guardarNota,
@@ -106,14 +110,14 @@ export default function SeguimientoAdminTable({
       {mensaje && (
         <p
           role="status"
-          className="rounded-xl border border-[#3a3a3a] bg-[#161616] p-3 text-sm text-[#e8e8e8]"
+          className="rounded-xl border border-[#3a3a3a] bg-[#161616] p-3 text-sm text-zinc-400"
         >
           {mensaje}
         </p>
       )}
 
       {registros.length === 0 && (
-        <p className="rounded-xl border border-[#262626] bg-[#0d0d0d] p-6 text-[#8a8a8a]">
+        <p className="rounded-xl border border-[#262626] bg-[#0d0d0d] p-6 text-zinc-400">
           No hay registros disponibles.
         </p>
       )}
@@ -197,7 +201,7 @@ export default function SeguimientoAdminTable({
             </div>
 
             {seccion === "contacto" && (
-              <div className="space-y-2 text-sm text-[#e8e8e8]">
+              <div className="space-y-2 text-sm text-zinc-400">
                 {registro.empresa && (
                   <p>
                     <span className="font-semibold text-white">Empresa:</span>{" "}
@@ -226,7 +230,7 @@ export default function SeguimientoAdminTable({
             )}
 
             {seccion === "apoyo_social" && (
-              <div className="space-y-2 text-sm text-[#e8e8e8]">
+              <div className="space-y-2 text-sm text-zinc-400">
                 {registro.nombre_entidad && (
                   <p>
                     <span className="font-semibold text-white">Entidad:</span>{" "}
@@ -298,10 +302,10 @@ export default function SeguimientoAdminTable({
             )}
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="space-y-2 text-sm font-semibold text-[#e8e8e8]">
+              <label className="space-y-2 text-sm font-semibold text-zinc-400">
                 Estado
                 <select
-                  className="w-full rounded-xl border border-[#262626] bg-[#171717] p-3 text-[#f2f2f2]"
+                  className={CAMPO_SELECT}
                   value={estadoActual}
                   disabled={pendiente}
                   onChange={(e) => {
@@ -356,10 +360,10 @@ function NotaAdmin({
   const [nota, setNota] = useState(notaInicial);
 
   return (
-    <div className="space-y-2 text-sm font-semibold text-[#e8e8e8]">
+    <div className="space-y-2 text-sm font-semibold text-zinc-400">
       <label>Nota privada del administrador</label>
       <textarea
-        className="min-h-24 w-full rounded-xl border border-[#262626] bg-[#171717] p-3 font-normal text-[#f2f2f2] placeholder:text-[#8a8a8a]"
+        className={CAMPO_AREA}
         value={nota}
         onChange={(e) => setNota(e.target.value)}
         placeholder="Escribe observaciones internas..."

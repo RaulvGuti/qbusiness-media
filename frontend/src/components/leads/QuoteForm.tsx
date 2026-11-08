@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
+import { CAMPO, CAMPO_AREA } from '@/lib/estilos-formulario';
 
 const initialForm = {
   nombre: '',
@@ -92,6 +93,7 @@ export default function QuoteForm() {
           placeholder="Nombre completo *"
           value={form.nombre}
           onChange={handleChange}
+          className={CAMPO}
         />
         <div className="grid gap-3 sm:grid-cols-2">
           <input
@@ -101,12 +103,14 @@ export default function QuoteForm() {
             placeholder="Correo *"
             value={form.correo}
             onChange={handleChange}
+            className={CAMPO}
           />
           <input
             name="telefono"
             placeholder="Teléfono"
             value={form.telefono ?? ''}
             onChange={handleChange}
+            className={CAMPO}
           />
         </div>
         <textarea
@@ -116,6 +120,7 @@ export default function QuoteForm() {
           placeholder="Detalles del proyecto *"
           value={form.mensaje ?? ''}
           onChange={handleChange}
+          className={CAMPO_AREA}
         />
       </div>
       <button

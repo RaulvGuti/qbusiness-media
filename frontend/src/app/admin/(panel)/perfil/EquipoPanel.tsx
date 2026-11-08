@@ -9,6 +9,10 @@ import {
   crearCuentaPersonal,
   quitarAccesoPersonal,
 } from "@/server/services/personal";
+import {
+  CAMPO,
+  CAMPO_SELECT,
+} from "@/lib/estilos-formulario";
 import { ETIQUETAS_ROL } from "@/lib/permisos";
 import type {
   MiembroEquipo,
@@ -156,6 +160,7 @@ export function EquipoPanel({ equipoInicial, usuarioId }: Props) {
                             )
                           }
                           aria-label={`Rol de ${miembro.nombreCompleto}`}
+                          className={CAMPO_SELECT}
                         >
                           <option value="secretaria">Secretaría</option>
                           <option value="admin_principal">
@@ -203,6 +208,7 @@ export function EquipoPanel({ equipoInicial, usuarioId }: Props) {
             required
             value={form.nombreCompleto}
             onChange={(e) => cambiarCampo("nombreCompleto", e.target.value)}
+            className={CAMPO}
           />
         </div>
 
@@ -214,6 +220,7 @@ export function EquipoPanel({ equipoInicial, usuarioId }: Props) {
             required
             value={form.correo}
             onChange={(e) => cambiarCampo("correo", e.target.value)}
+            className={CAMPO}
           />
         </div>
 
@@ -223,6 +230,7 @@ export function EquipoPanel({ equipoInicial, usuarioId }: Props) {
             id="equipo-telefono"
             value={form.telefono ?? ""}
             onChange={(e) => cambiarCampo("telefono", e.target.value)}
+            className={CAMPO}
           />
         </div>
 
@@ -236,6 +244,7 @@ export function EquipoPanel({ equipoInicial, usuarioId }: Props) {
             autoComplete="new-password"
             value={form.password}
             onChange={(e) => cambiarCampo("password", e.target.value)}
+            className={CAMPO}
           />
         </div>
 
@@ -250,6 +259,7 @@ export function EquipoPanel({ equipoInicial, usuarioId }: Props) {
                 rol: e.target.value as RolAdministrador,
               }))
             }
+            className={CAMPO_SELECT}
           >
             <option value="secretaria">Secretaría (operación)</option>
             <option value="admin_principal">

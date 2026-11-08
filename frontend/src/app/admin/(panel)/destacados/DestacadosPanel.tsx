@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { guardarDestacados } from "@/server/repositories/galeria";
+import { CAMPO } from "@/lib/estilos-formulario";
 import shared from "../panel.module.css";
 import { MODULOS, MODULO_EMPRESAS, iniciales, type ElementoCatalogo } from "./datos";
 import styles from "./page.module.css";
@@ -72,7 +73,7 @@ export function DestacadosPanel({ catalogo, destacadosIniciales }: DestacadosPan
           </div>
           <input
             type="search"
-            className={shared.search}
+            className={`${shared.search} ${CAMPO}`}
             placeholder="Buscar carpeta o empresa…"
             aria-label="Buscar"
             value={busqueda}

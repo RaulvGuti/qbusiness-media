@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
+import { CAMPO, ETIQUETA } from '@/lib/estilos-formulario';
 import { obtenerSupabase } from '@/lib/supabase/client';
 
 const RUTAS_DESTINO_PERMITIDAS = new Set(['/renta', '/resenas', '/apoyo', '/']);
@@ -177,13 +178,13 @@ function LoginContenido() {
 
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-qbBorder"></div>
-            <span className="flex-shrink mx-3 text-[10px] text-qbMuted uppercase font-semibold">o correo electrónico</span>
+            <span className="flex-shrink mx-3 text-[10px] text-zinc-400 uppercase font-semibold">o correo electrónico</span>
             <div className="flex-grow border-t border-qbBorder"></div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="login-email" className="text-sm font-semibold text-qbInk">
+              <label htmlFor="login-email" className={ETIQUETA}>
                 Correo electrónico
               </label>
               <input
@@ -194,13 +195,13 @@ function LoginContenido() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="correo@ejemplo.com"
-                className="w-full bg-white border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbInk transition shadow-sm"
+                className={CAMPO}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label htmlFor="login-password" className="text-sm font-semibold text-qbInk">
+                <label htmlFor="login-password" className={ETIQUETA}>
                   Contraseña
                 </label>
                 {!isRegistering && (
@@ -221,7 +222,7 @@ function LoginContenido() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full bg-white border border-qbBorder rounded-xl px-4 py-3 text-sm text-qbInk focus:outline-none focus:border-qbInk transition shadow-sm"
+                className={CAMPO}
               />
             </div>
 

@@ -41,7 +41,7 @@
 }
 .field label {
   font-size: 13px;
-  color: #8a8a8a;
+  color: #a1a1aa;
 }
 .full {
   grid-column: 1 / -1;
@@ -49,7 +49,7 @@
 .input {
   width: 100%;
   padding: 0.625rem 0.875rem;
-  background: #0d0d0d;
+  background-color: #0d0d0d;
   border: 1px solid #52525b;
   border-radius: 0.75rem;
   color: #fff;
@@ -61,7 +61,7 @@
 .help {
   font-size: 12px;
   line-height: 1.45;
-  color: #6f6f6f;
+  color: #a1a1aa;
 }
 .error {
   margin-top: 12px;

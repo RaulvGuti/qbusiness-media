@@ -1,6 +1,7 @@
 'use client';
 
 import { Icon } from '@/components/ui/Icon';
+import { CAMPO, CAMPO_AREA, ETIQUETA } from '@/lib/estilos-formulario';
 import { useState } from 'react';
 import type { LeadContactoInput } from '@/types/leads';
 
@@ -88,36 +89,39 @@ const handleSubmit = async (e: React.FormEvent) => {
       <h3 className="text-sm font-bold text-qbInk uppercase tracking-wider">Formulario de contacto</h3>
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-qbInk">Nombre completo *</label>
+          <label className={ETIQUETA}>Nombre completo *</label>
           <input
             name="nombre"
             required
             value={form.nombre}
             onChange={handleChange}
+            className={CAMPO}
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Correo *</label>
+            <label className={ETIQUETA}>Correo *</label>
             <input
               name="correo"
               type="email"
               required
               value={form.correo}
               onChange={handleChange}
+              className={CAMPO}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-qbInk">Teléfono</label>
+            <label className={ETIQUETA}>Teléfono</label>
             <input
               name="telefono"
               value={form.telefono ?? ''}
               onChange={handleChange}
+              className={CAMPO}
             />
           </div>
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-qbInk">Mensaje *</label>
+          <label className={ETIQUETA}>Mensaje *</label>
           <textarea
             name="mensaje"
             required
@@ -125,6 +129,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             value={form.mensaje ?? ''}
             onChange={handleChange}
             placeholder="Cuéntanos sobre tu proyecto..."
+            className={CAMPO_AREA}
           />
         </div>
       </div>

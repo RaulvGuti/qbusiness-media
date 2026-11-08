@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
+import {
+  CAMPO,
+  CAMPO_FECHA,
+  CAMPO_SELECT,
+} from "@/lib/estilos-formulario";
 import shared from "../panel.module.css";
 import {
   cambiarEstadoPagoReservaAdminAction,
@@ -184,7 +189,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                       value={r.estado}
                       aria-label={`Estado de la reserva de ${r.nombre}`}
                       onChange={(e) => cambiarEstado(r.id, e.target.value as EstadoReserva)}
-                      className={styles.select}
+                      className={CAMPO_SELECT}
                     >
                       {ESTADOS.map((e) => (
                         <option key={e.clave} value={e.clave}>
@@ -199,7 +204,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                       value={r.estadoPago}
                       aria-label={`Estado de pago de la reserva de ${r.nombre}`}
                       onChange={(e) => cambiarPago(r.id, e.target.value as EstadoPagoReserva)}
-                      className={styles.select}
+                      className={CAMPO_SELECT}
                     >
                       {ESTADOS_PAGO.map((e) => (
                         <option key={e.clave} value={e.clave}>
@@ -226,7 +231,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                   <input
                     type="date"
                     required
-                    className={styles.input}
+                    className={CAMPO_FECHA}
                     value={form.desde}
                     onChange={(e) => setForm((f) => ({ ...f, desde: e.target.value }))}
                   />
@@ -236,7 +241,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                   <input
                     type="date"
                     required
-                    className={styles.input}
+                    className={CAMPO_FECHA}
                     value={form.hasta}
                     onChange={(e) => setForm((f) => ({ ...f, hasta: e.target.value }))}
                   />
@@ -245,7 +250,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                   <span className={styles.label}>Hora desde (opcional)</span>
                   <input
                     type="time"
-                    className={styles.input}
+                    className={CAMPO_FECHA}
                     value={form.horaDesde}
                     onChange={(e) => setForm((f) => ({ ...f, horaDesde: e.target.value }))}
                   />
@@ -254,7 +259,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                   <span className={styles.label}>Hora hasta (opcional)</span>
                   <input
                     type="time"
-                    className={styles.input}
+                    className={CAMPO_FECHA}
                     value={form.horaHasta}
                     onChange={(e) => setForm((f) => ({ ...f, horaHasta: e.target.value }))}
                   />
@@ -264,7 +269,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                 <span className={styles.label}>Motivo</span>
                 <input
                   type="text"
-                  className={styles.input}
+                  className={CAMPO}
                   placeholder="Ej. Mantenimiento, evento privado…"
                   value={form.motivo}
                   onChange={(e) => setForm((f) => ({ ...f, motivo: e.target.value }))}
