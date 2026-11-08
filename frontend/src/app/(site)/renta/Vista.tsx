@@ -466,7 +466,7 @@ export function Vista({
       )}
 
       {sinPaquetes && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">
+        <div className="bg-amber-950/40 border border-amber-800/50 rounded-2xl p-4 text-xs text-amber-300">
           La renta aún no tiene paquetes activos. El administrador debe crear al
           menos uno en Textos y configuración → Renta de Estudio. Mientras tanto
           no se pueden recibir reservas.
@@ -543,7 +543,7 @@ export function Vista({
               {usuarioRegistrado ? "Solicitar reserva" : "Regístrate para reservar"}
             </button>
             {!usuarioRegistrado && (
-              <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center">
+              <p className="text-[11px] text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-xl px-3 py-2 text-center">
                 Debes tener una cuenta registrada e iniciar sesión para solicitar una reserva del estudio.
               </p>
             )}

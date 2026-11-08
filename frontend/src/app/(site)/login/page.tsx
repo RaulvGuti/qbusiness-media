@@ -153,7 +153,7 @@ function LoginContenido() {
               : 'Acceso para clientes de QBusiness Media.'}
           </p>
           {destinoPosterior === '/renta' && (
-            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
+            <p className="text-xs text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-xl px-4 py-2.5">
               Para reservar el estudio debes registrarte o iniciar sesión con tu cuenta.
             </p>
           )}
@@ -226,19 +226,19 @@ function LoginContenido() {
             </div>
 
             {errorOauth && !error && (
-              <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+              <p className="text-xs text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-xl p-3">
                 No se pudo completar el inicio de sesión con Google. Intenta de nuevo.
               </p>
             )}
 
             {error && (
-              <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+              <p className="text-xs text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-xl p-3">
                 {error}
               </p>
             )}
 
             {successMessage && (
-              <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <p className="text-xs text-emerald-300 bg-emerald-950/40 border border-emerald-800/50 rounded-xl p-3">
                 {successMessage}
               </p>
             )}

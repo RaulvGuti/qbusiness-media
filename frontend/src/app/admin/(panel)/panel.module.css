@@ -111,11 +111,14 @@
 .f select,
 .f textarea {
   width: 100%;
-  padding: 10px 12px;
-  background: #171717;
-  border: 1px solid #262626;
-  border-radius: 12px;
-  color: #f2f2f2;
+  padding: 0.625rem 0.875rem;
+  background: #0d0d0d;
+  border: 1px solid #52525b;
+  border-radius: 0.75rem;
+  color: #fff;
+}
+.f select {
+  padding-right: 2.25rem;
 }
 .f input:focus,
 .f select:focus,
@@ -130,11 +133,11 @@
 
 .toolbar .search {
   min-width: 240px;
-  padding: 10px 12px;
-  background: #171717;
-  border: 1px solid #262626;
-  border-radius: 12px;
-  color: #f2f2f2;
+  padding: 0.625rem 0.875rem;
+  background: #0d0d0d;
+  border: 1px solid #52525b;
+  border-radius: 0.75rem;
+  color: #fff;
 }
 .toolbar .search:focus {
   border-color: #fff;
