@@ -17,6 +17,12 @@ formulario aceptaba datos sueltos de cualquier visitante.
 - La tarifa del salón se toma de `configuracion_sitio` (`estudio / tarifa_hora`). Si está
   vacía, nula o en cero, la reserva se bloquea tanto en la vista como en la RPC; no hay un
   precio de respaldo escondido en el código.
+- Cada cliente puede tener **una sola solicitud pendiente futura** a la vez. El límite se
+  configura con `estudio / max_pendientes_por_cliente` y su valor inicial es `1` desde
+  `000043`. Una reserva `confirmada`, `cancelada` o `completada` no bloquea una nueva.
+- Si el paquete elegido se desactiva o se elimina mientras el cliente tiene el formulario
+  abierto, el servidor responde con un mensaje específico y el catálogo se refresca para que
+  elija otro paquete.
 
 ## 2. Dónde se aplica
 
@@ -25,7 +31,7 @@ formulario aceptaba datos sueltos de cualquier visitante.
 | Página | `src/app/(site)/renta/page.tsx` | Pide el catálogo y el perfil con `obtenerCatalogoEstudioCliente()` y pasa `cliente` a la vista. |
 | Vista | `src/app/(site)/renta/Vista.tsx` | Si no hay `cliente.id`, el botón lleva al registro en vez de abrir el modal. |
 | Modal | `src/components/estudio/ReservaModal.tsx` | Muestra el bloqueo "Cuenta requerida para reservar" y no permite enviar. |
-| Servidor | `src/server/services/reservas/clients.ts` | `enviarSolicitudReservaCliente()` vuelve a comprobar la sesión y lanza un error si no existe. |
+| Servidor | `src/server/services/reservas/clients.ts` | `enviarSolicitudReservaCliente()` vuelve a comprobar la sesión, el paquete y el límite de pendientes. Devuelve un resultado estructurado en vez de lanzar errores esperados. |
 | Repositorio | `src/server/repositories/estudio.ts` | `obtenerPerfilClienteActual()` lee la fila de `clientes` ligada al `auth.users` de la sesión; si aún no existe, arma el perfil desde Auth sin escribir en la base. La fila se crea al reservar con `solicitar_reserva()`. |
 | Header | `src/components/layout/SiteHeader.tsx` | Recibe `sesionActiva` desde el layout y muestra `Entrar` o `Salir`. |
 
@@ -52,6 +58,10 @@ Action no registra la reserva sin sesión.
    Server Action responde con el error de cuenta requerida.
 6. Vaciar `estudio / tarifa_hora` desde el panel: el botón de reserva se deshabilita y, si se
    fuerza la RPC, responde con el error de tarifa no configurada.
+7. Enviar una solicitud y, sin confirmarla, intentar otra: el botón se deshabilita y el
+   servidor responde que ya existe una solicitud pendiente.
+8. Desactivar el paquete elegido mientras el modal está abierto y enviar: aparece el mensaje
+   de paquete no disponible, no el error genérico de React.
 
 ## 5. Notas
 
@@ -67,5 +77,7 @@ Action no registra la reserva sin sesión.
   la autoridad: sin sesión válida, la Server Action y la RPC rechazan la reserva.
 - El servidor ya no escribe `clientes` ni `tarifa_hora` con `service_role` desde el repositorio:
   la sincronización del perfil ocurre en la RPC y el valor de la tarifa lo administra el panel.
-- El tope de reservas pendientes por cliente sigue en la migración `000022`.
-- Orden de despliegue: aplicar `000041` antes de desplegar esta versión del frontend.
+- El tope de reservas pendientes nació en `000022`; `000043` lo deja en una solicitud
+  pendiente por cliente y conserva la configuración desde el panel.
+- Orden de despliegue: aplicar `000041` y `000043` antes de desplegar esta versión del
+  frontend.

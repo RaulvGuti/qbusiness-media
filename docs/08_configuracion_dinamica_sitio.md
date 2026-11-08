@@ -47,7 +47,7 @@ las migraciones ya aplicadas.
 | `ubicacion` | `direccion` | Dirección en footer, home, contacto y mapa. |
 | `ubicacion` | `link_google_maps` | Enlace del botón “Abrir en Google Maps”. |
 | `menu` | `whatsapp_cta` | Mensaje que se envía al abrir WhatsApp. |
-| `estudio` | `tarifa_hora`, `hora_apertura`, `hora_cierre`, `max_pendientes_por_cliente` | Parámetros de renta; se editan en la misma pantalla. |
+| `estudio` | `tarifa_hora`, `hora_apertura`, `hora_cierre`, `max_pendientes_por_cliente` | Parámetros de renta; se editan en la misma pantalla. El máximo de solicitudes pendientes inicia en `1`. |
 
 ## Placeholders
 

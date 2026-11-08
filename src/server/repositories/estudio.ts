@@ -435,7 +435,7 @@ function mapearConfiguracionEstudio(filas: ConfiguracionRow[]): ConfiguracionEst
         ? tarifaNum
         : null,
     maxPendientesPorCliente:
-      Number.isFinite(maxPendRaw) && maxPendRaw > 0 ? maxPendRaw : 3,
+      Number.isFinite(maxPendRaw) && maxPendRaw > 0 ? maxPendRaw : 1,
     horaApertura: mapa.get('hora_apertura') || '08:00',
     horaCierre: mapa.get('hora_cierre') || '18:00',
   };
@@ -881,7 +881,7 @@ export async function obtenerConfiguracionEstudio(): Promise<ConfiguracionEstudi
   if (!tieneConexionSupabase()) {
     return {
       tarifaHora: 500,
-      maxPendientesPorCliente: 3,
+      maxPendientesPorCliente: 1,
       horaApertura: '08:00',
       horaCierre: '18:00',
     };
