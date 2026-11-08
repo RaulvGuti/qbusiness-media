@@ -48,6 +48,7 @@ export default async function Page() {
       cliente={cliente}
       reservas={reservas}
       resenasPropias={resenasPropias}
+      ahoraIso={new Date().toISOString()}
     />
   );
 }

@@ -291,6 +291,7 @@ Migraciones existentes (`supabase/migrations/`):
 | `000040_estudio_tarifa_y_clientes_reserva.sql` | Tarifa del salón en `configuracion_sitio` y respaldo del perfil de cliente al reservar |
 | `000041_estudio_tarifa_estricta.sql` | Rechaza la reserva si la tarifa por hora está vacía, en cero o es negativa |
 | `000042_paquetes_y_descuento_lealtad.sql` | Paquetes de renta, paquete congelado y descuento de lealtad en `reservas`, y nueva firma de `solicitar_reserva()` |
+| `000043_una_pendiente_por_cliente.sql` | Limita a una solicitud pendiente futura por cliente (configurable, valor inicial `1`) |
 
 Decisiones ya tomadas que hay que respetar:
 

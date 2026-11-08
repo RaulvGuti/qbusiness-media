@@ -347,9 +347,9 @@ export const PESTANAS: PestanaConfig[] = [
           {
             grupo: 'estudio',
             clave: 'max_pendientes_por_cliente',
-            etiqueta: 'Máximo de reservas pendientes por cliente',
+            etiqueta: 'Máximo de solicitudes pendientes por cliente',
             tipo: 'numero',
-            defecto: '3',
+            defecto: '1',
           },
         ],
       },
@@ -500,7 +500,7 @@ export function construirConfiguracionSitio(
         : null,
     maxPendientesPorCliente: Number.isFinite(maxPendientes)
       ? maxPendientes
-      : 3,
+      : 1,
   };
 }
 
@@ -610,10 +610,10 @@ export function validarValor(campo: CampoConfig, valor: string): string {
     case 'numero':
       if (
         campo.clave === 'max_pendientes_por_cliente' &&
-        !/^\d+$/.test(limpio)
+        (!/^\d+$/.test(limpio) || Number(limpio) < 1)
       ) {
         throw new Error(
-          `"${campo.etiqueta}" debe ser un número entero.`,
+          `"${campo.etiqueta}" debe ser un número entero mayor o igual a 1.`,
         );
       }
       if (

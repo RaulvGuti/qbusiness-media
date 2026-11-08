@@ -96,7 +96,8 @@ ningún archivo ya creado; se agregó una migración que ajusta lo que estaba ma
 - **`inventario_equipos`** — equipos rentables con `cantidad_total`, `precio_por_hora` y `activo`.
   El panel puede crear, editar y activar/desactivar; el sitio público solo muestra los activos.
 - **`configuracion_sitio`** — pares `(grupo, clave)` con `valor` de texto. Se usa para el
-  límite de pendientes (`estudio / max_pendientes_por_cliente`) y el horario de atención
+  límite de solicitudes pendientes (`estudio / max_pendientes_por_cliente`, valor inicial
+  `1` desde `000043`) y el horario de atención
   (`estudio / hora_apertura`, `estudio / hora_cierre`). La fila histórica
   `estudio / tarifa_hora` se conserva por compatibilidad, pero ya no se usa para cobrar. La
   migración 000034 deja las seis claves iniciales de `contacto`, `redes` y `ubicacion` con

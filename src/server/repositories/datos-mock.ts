@@ -851,7 +851,7 @@ export const destacadosMock: Destacado[] = [
 
 export const configuracionMock: ConfigSitio[] = [
   { id: 'config-0001', grupo: 'estudio', clave: 'tarifa_hora', valor: '500', actualizadoEn: '2026-08-01T12:00:00Z' },
-  { id: 'config-0002', grupo: 'estudio', clave: 'max_pendientes_por_cliente', valor: '3', actualizadoEn: '2026-08-01T12:00:00Z' },
+  { id: 'config-0002', grupo: 'estudio', clave: 'max_pendientes_por_cliente', valor: '1', actualizadoEn: '2026-08-01T12:00:00Z' },
   { id: 'config-0003', grupo: 'estudio', clave: 'hora_apertura', valor: '08:00', actualizadoEn: '2026-08-01T12:00:00Z' },
   { id: 'config-0004', grupo: 'estudio', clave: 'hora_cierre', valor: '18:00', actualizadoEn: '2026-08-01T12:00:00Z' },
   { id: 'config-0005', grupo: 'contacto', clave: 'correo', valor: 'contacto@qbusinessmedia.gt', actualizadoEn: '2026-08-01T12:00:00Z' },
