@@ -154,7 +154,7 @@ function PaqueteFila({
 
   return (
     <div className="grid gap-3 rounded-2xl border border-[#262626] bg-[#111] p-4 sm:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] sm:items-end">
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Nombre
         <input
           className={CAMPO}
@@ -164,7 +164,7 @@ function PaqueteFila({
           maxLength={80}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Horas
         <input
           className={CAMPO}
@@ -178,7 +178,7 @@ function PaqueteFila({
         />
         <small className={styles.help}>{etiquetaHoras(Number(form.horas) || 0)}</small>
       </label>
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Precio (Q)
         <input
           className={CAMPO}
@@ -190,7 +190,7 @@ function PaqueteFila({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Orden
         <input
           className={CAMPO}
@@ -275,7 +275,7 @@ function NuevoPaquete({
 
   return (
     <div className="grid gap-3 rounded-2xl border border-dashed border-[#3a3a3a] p-4 sm:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] sm:items-end">
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Nombre
         <input
           className={CAMPO}
@@ -286,7 +286,7 @@ function NuevoPaquete({
           placeholder="Paquete 2 horas"
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Horas
         <input
           className={CAMPO}
@@ -299,7 +299,7 @@ function NuevoPaquete({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Precio (Q)
         <input
           className={CAMPO}
@@ -311,7 +311,7 @@ function NuevoPaquete({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-zinc-400">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-400">
         Orden
         <input
           className={CAMPO}

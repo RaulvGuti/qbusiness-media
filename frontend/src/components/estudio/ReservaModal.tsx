@@ -274,7 +274,7 @@ export default function ReservaModal({
                 <span className={ETIQUETA}>
                   Hora fin (según paquete)
                 </span>
-                <div className="flex min-h-11 items-center rounded-xl border border-[#52525b] bg-[#0d0d0d] px-3.5 text-sm font-semibold text-qbInk">
+                <div className="flex items-center rounded-xl border border-[#52525b] bg-[#0d0d0d] px-3.5 py-2.5 text-sm font-semibold text-qbInk">
                   {horaFinCalculada ?? '—'}
                 </div>
                 <p className="text-[11px] text-zinc-400">

@@ -784,7 +784,7 @@ const s: Record<string, CSSProperties> = {
   count: { fontWeight: 400, opacity: 0.5, fontSize: 14 },
   grid2: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 },
   field: { display: "grid", gap: 6 },
-  label: { fontSize: 13, color: "#a1a1aa" },
+  label: { fontSize: 14, fontWeight: 600, color: "#a1a1aa" },
 
   ruta: {
     marginTop: 16,

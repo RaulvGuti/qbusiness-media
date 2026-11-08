@@ -325,7 +325,7 @@ export default function SolicitudApoyoForm({ tieneSesion }: Props) {
         <div className="lg:col-span-3 p-6 sm:p-8 flex items-center">
           <div className="w-full rounded-2xl border border-qbBorder bg-black/20 p-6 sm:p-8 text-center space-y-4">
             <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-qbTerracotta/10">
-              <Icon name="lock" className="text-qbTerracotta text-2xl" />
+              <Icon name="lock" className="text-zinc-400 text-2xl" />
             </div>
             <h4 className="text-lg font-bold text-qbInk">
               Inicia sesión para llenar la solicitud

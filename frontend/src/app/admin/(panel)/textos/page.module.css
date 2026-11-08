@@ -40,7 +40,8 @@
   gap: 6px;
 }
 .field label {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
   color: #a1a1aa;
 }
 .full {
