@@ -270,7 +270,7 @@ export default function ReviewModal({
             {error ? (
               <p
                 role="alert"
-                className="text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3"
+                className="text-xs font-semibold text-red-400 bg-red-950/40 border border-red-800/50 rounded-xl px-4 py-3"
               >
                 {error}
               </p>

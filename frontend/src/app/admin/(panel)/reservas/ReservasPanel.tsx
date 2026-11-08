@@ -43,13 +43,6 @@ const CLASE_ESTADO: Record<EstadoReserva, string> = {
   cancelada: styles.estadoCancelada,
 };
 
-const CLASE_PAGO: Record<EstadoPagoReserva, string> = {
-  pendiente: styles.estadoPendiente,
-  comprobante_subido: styles.pagoComprobante,
-  pagado: styles.estadoCompletada,
-  rechazado: styles.estadoCancelada,
-};
-
 const textoEstado = (estado: EstadoReserva) =>
   ESTADOS.find((e) => e.clave === estado)?.texto ?? estado;
 
@@ -191,7 +184,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                       value={r.estado}
                       aria-label={`Estado de la reserva de ${r.nombre}`}
                       onChange={(e) => cambiarEstado(r.id, e.target.value as EstadoReserva)}
-                      className={`${styles.select} ${CLASE_ESTADO[r.estado]}`}
+                      className={styles.select}
                     >
                       {ESTADOS.map((e) => (
                         <option key={e.clave} value={e.clave}>
@@ -206,7 +199,7 @@ export function ReservasPanel({ reservasIniciales, fechasIniciales }: Props) {
                       value={r.estadoPago}
                       aria-label={`Estado de pago de la reserva de ${r.nombre}`}
                       onChange={(e) => cambiarPago(r.id, e.target.value as EstadoPagoReserva)}
-                      className={`${styles.select} ${CLASE_PAGO[r.estadoPago]}`}
+                      className={styles.select}
                     >
                       {ESTADOS_PAGO.map((e) => (
                         <option key={e.clave} value={e.clave}>

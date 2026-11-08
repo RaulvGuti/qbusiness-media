@@ -124,7 +124,7 @@ export default function RentalCalculator({
 
   if (paquetes.length === 0) {
     return (
-      <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
+      <div className="rounded-3xl border border-amber-800/50 bg-amber-950/40 p-6 text-sm text-amber-300">
         <p className="font-bold">Renta temporalmente no disponible</p>
         <p className="mt-1">
           Todavía no hay paquetes de renta configurados. El administrador debe

@@ -82,12 +82,16 @@
 .select,
 .input {
   width: 100%;
-  padding: 9px 10px;
-  border: 1px solid #3a3a3a;
-  border-radius: 10px;
-  background: #171717;
-  color: #f2f2f2;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #52525b;
+  border-radius: 0.75rem;
+  background: #0d0d0d;
+  color: #fff;
   font-size: 13px;
+}
+
+.select {
+  padding-right: 2.25rem;
 }
 
 .select:focus,
@@ -97,8 +101,8 @@
 }
 
 .select option {
-  background: #171717;
-  color: #f2f2f2;
+  background: #0d0d0d;
+  color: #fff;
 }
 
 .badge {

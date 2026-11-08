@@ -191,7 +191,7 @@ export function ResenasPanel({ resenasIniciales }: ResenasPanelProps) {
       </div>
 
       {error && (
-        <p role="alert" style={{ color: "#dc2626", marginBottom: 16 }}>
+        <p role="alert" style={{ color: "#f87171", marginBottom: 16 }}>
           {error}
         </p>
       )}

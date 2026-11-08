@@ -263,7 +263,7 @@ export default function ReservaModal({
                 <span className="text-sm font-semibold text-qbInk">
                   Hora fin (según paquete)
                 </span>
-                <div className="flex min-h-11 items-center rounded-xl border border-qbBorder bg-qbLinen px-3 text-sm font-semibold text-qbInk">
+                <div className="flex min-h-11 items-center rounded-xl border border-[#52525b] bg-[#0d0d0d] px-3.5 text-sm font-semibold text-qbInk">
                   {horaFinCalculada ?? '—'}
                 </div>
                 <p className="text-[11px] text-qbMuted">
@@ -287,7 +287,7 @@ export default function ReservaModal({
           </div>
 
           {error && (
-            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+            <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/50 rounded-xl p-3">
               {error}
             </p>
           )}
