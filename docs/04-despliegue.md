@@ -46,6 +46,27 @@ Este es el punto que más confunde, y la causa de varios fallos de build.
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | En runtime | Sitio público |
 | `NEXT_PUBLIC_SITE_URL` | En runtime | Solo para enlaces de recuperación de contraseña |
 
+### Producción en Cloudflare: Build variables
+
+El repositorio **no incluye ningún archivo `.env`**: `.gitignore` ignora `.env` y
+`.env.*` completos (solo se versionan `.env.example` y `.env.template` como plantillas).
+En producción, Cloudflare inyecta las variables durante el build y el runtime:
+
+| Dónde se configura | Variables | Cuándo se aplican |
+| --- | --- | --- |
+| Cloudflare → Build variables (Variables and Secrets) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_CDN_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_WHATSAPP_NUMBER` | Durante `next build`; se incrustan en el bundle |
+| Cloudflare → Variables and Secrets (runtime) | `SUPABASE_SERVICE_ROLE_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_MOCK` | En cada petición del Worker |
+
+El código lee todo con `process.env.*` (ver `src/lib/supabase/` y
+`src/server/supabase/`), así que no necesita archivos de secretos dentro del
+repositorio. Si una `NEXT_PUBLIC_*` cambia en el panel, hay que **volver a ejecutar el
+build** para que el valor nuevo quede incrustado. Las credenciales privadas se configuran
+como *secrets* del panel (nunca como `NEXT_PUBLIC_*` ni en un archivo versionado).
+
+> Un `.env.production` u otro `.env.*` versionado hace fallar el workflow
+> `validar-pr.yml`, que bloquea esos archivos en el diff. Si aparece uno, quitarle el
+> rastreo con `git rm --cached <archivo>` y confirmar que `.gitignore` lo cubre.
+
 ### Por qué `NEXT_PUBLIC_*` son especiales
 
 Las variables `NEXT_PUBLIC_*` se **reemplazan por su valor durante el build**. No se leen
@@ -205,7 +226,9 @@ que la imagen apunte al proyecto real.
 
 ## 7. Resumen de lo que hay que revisar antes de publicar
 
-1. `.env.local` y el `.env` de la raíz tienen los valores reales de Supabase.
+1. En local, `.env.local` y el `.env` de la raíz tienen los valores reales de Supabase.
+   En producción, las variables están cargadas en el panel de Cloudflare (Build variables
+   y Secrets); no se versiona ningún `.env`.
 2. `npm run check` pasa.
 3. Si se cambió una variable `NEXT_PUBLIC_*`, la imagen se **reconstruyó**.
 4. La `SUPABASE_SERVICE_ROLE_KEY` nunca se metió en un `ARG`/`ENV` de build ni en un

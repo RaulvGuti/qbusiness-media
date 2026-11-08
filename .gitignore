@@ -68,9 +68,11 @@ compose.override.yml
 venv/
 __pycache__/
 
-# env files (can opt-in for committing if needed)
+# env files: NUNCA se versionan (ni .env, ni .env.local, ni .env.production).
+# En produccion las variables las inyecta el panel de Cloudflare (Build
+# variables) o los build.args de Docker, no un archivo del repositorio.
 .env*
-!.env.production
+.env.*
 # La plantilla SI se versiona: sin ella nadie puede arrancar el proyecto,
 # y la CI (workflows/build.yml) la necesita para validar docker compose.
 !.env.example
@@ -88,3 +90,4 @@ __pycache__/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
