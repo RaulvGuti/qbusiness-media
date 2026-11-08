@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "setup": "node ../scripts/setup.mjs",
+    "setup": "node scripts/setup.mjs",
     "dev": "next dev",
     "build": "next build",
     "build:cloudflare": "opennextjs-cloudflare build",
@@ -15,8 +15,8 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "check": "npm run lint && npm run typecheck && npm run build",
-    "docker:up": "docker compose -f ../compose.yml up -d",
-    "docker:down": "docker compose -f ../compose.yml down"
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
   "engines": {
     "node": ">=20.9"

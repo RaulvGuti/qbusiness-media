@@ -1,5 +1,0 @@
-# Cloudflare Workers / OpenNext (solo artefactos locales de compilación)
-.open-next/
-.wrangler/
-.dev.vars*
-cloudflare-env.d.ts

@@ -44,7 +44,7 @@ Reglas de asignación:
 | Gestión de cuentas del equipo | Sí | No |
 | Buckets `galeria` y `logos` (escritura) | Sí | No |
 
-La matriz vive en un solo archivo del frontend: `frontend/src/lib/permisos.ts`. El menú, los
+La matriz vive en un solo archivo del frontend: `src/lib/permisos.ts`. El menú, los
 accesos rápidos del dashboard y los guards de página leen de ahí.
 
 ## 3. Qué hace la migración `000038`
@@ -110,14 +110,14 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
 
 ## 5. Cómo se aplica en Next.js
 
-- **`frontend/src/lib/permisos.ts`**: etiquetas, matriz y secciones del menú.
-- **`frontend/src/server/auth/require-admin.ts`**: valida sesión de Supabase y fila en
+- **`src/lib/permisos.ts`**: etiquetas, matriz y secciones del menú.
+- **`src/server/auth/require-admin.ts`**: valida sesión de Supabase y fila en
   `administradores`, y devuelve el perfil con su rol. `requireAdminPrincipal()` añade la
   exigencia de rol.
-- **`frontend/src/server/auth/panel.ts`**: guards de render. `exigirStaffPanel()` manda al
+- **`src/server/auth/panel.ts`**: guards de render. `exigirStaffPanel()` manda al
   login si no hay sesión; `exigirAdminPrincipalPanel()` manda al dashboard con aviso si el
   rol no alcanza.
-- **`frontend/src/app/admin/(panel)/layout.tsx`**: valida sesión y equipo antes de renderizar
+- **`src/app/admin/(panel)/layout.tsx`**: valida sesión y equipo antes de renderizar
   cualquier pantalla del panel.
 - **Páginas exclusivas** (`galeria`, `textos`, `destacados`): llaman a
   `exigirAdminPrincipalPanel()` antes de consultar datos. El inventario de equipo se
@@ -127,13 +127,13 @@ Archivo: `supabase/migrations/000038_roles_y_permisos_administrativos.sql`.
 - **Perfil** (`/admin/perfil`): lee la fila real del usuario conectado. El principal ve además
   el equipo, puede crear cuentas, cambiar roles y quitar accesos; la secretaria ve su cuenta,
   su rol y el resumen de lo que puede hacer.
-- **`frontend/src/app/(site)/login/page.tsx`**: login público solo para clientes. Después de
+- **`src/app/(site)/login/page.tsx`**: login público solo para clientes. Después de
   autenticar, comprueba si la cuenta está en `administradores`; si lo está, cierra la sesión
   local y solo muestra el aviso de que no hay acceso administrativo desde ese login.
-- **`frontend/src/proxy.ts`**: si no hay sesión válida, redirige `/admin/*` a `/admin` antes de
+- **`src/proxy.ts`**: si no hay sesión válida, redirige `/admin/*` a `/admin` antes de
   renderizar. No decide permisos: eso queda en el layout y en cada página, que sí consultan
   la base de datos.
-- **`frontend/src/server/services/admin-seguimiento.ts`**: dejó de usar el service role sin
+- **`src/server/services/admin-seguimiento.ts`**: dejó de usar el service role sin
   sesión. Ahora exige personal autenticado y consulta con la sesión del usuario, de modo que
   la RLS también aplica. Ya no devuelve datos ficticios cuando falla la base de datos.
 

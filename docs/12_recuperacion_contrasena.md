@@ -27,13 +27,13 @@ confirmación que crea la sesión antes de mostrar el formulario.
    - **Recomendada:** `/auth/confirm?token_hash=...&type=recovery`.
    - **Por defecto (PKCE):** Supabase valida el enlace y redirige a
      `/auth/confirm?code=...`.
-4. `frontend/src/app/auth/confirm/route.ts` valida el enlace:
+4. `src/app/auth/confirm/route.ts` valida el enlace:
    - con `token_hash` llama a `verifyOtp({ type: "recovery", token_hash })`;
    - con `code` llama a `exchangeCodeForSession(code, { flowId })` cuando el enlace trae
      `sb_flow_id`;
    - guarda las cookies de sesión en la respuesta;
    - redirige a `/restablecer-contrasena?recuperacion=1`.
-5. `frontend/src/app/restablecer-contrasena/page.tsx` comprueba que exista una sesión válida y
+5. `src/app/restablecer-contrasena/page.tsx` comprueba que exista una sesión válida y
    consulta si la cuenta está en `administradores`.
 6. El formulario pide la contraseña nueva y su confirmación, exige un mínimo de 8 caracteres
    y llama a `supabase.auth.updateUser({ password })`.
@@ -49,12 +49,12 @@ La pantalla nunca muestra el enlace a `/admin` a una cuenta que no esté en
 
 | Archivo | Cambio |
 | --- | --- |
-| `frontend/src/app/auth/confirm/route.ts` | Ruta nueva: confirma `token_hash` o `code`, crea la sesión y redirige a la pantalla compartida. |
-| `frontend/src/app/restablecer-contrasena/page.tsx` | Pantalla pública nueva: valida la sesión y el rol, y muestra el aviso o el formulario. |
-| `frontend/src/app/restablecer-contrasena/FormularioRestablecer.tsx` | Formulario de contraseña nueva, confirmación, `updateUser` y cierre de sesiones. |
-| `frontend/src/app/(site)/login/page.tsx` | El enlace de recuperación apunta a `/auth/confirm`. |
-| `frontend/src/app/admin/page.tsx` | El enlace de recuperación apunta a `/auth/confirm`. |
-| `frontend/src/server/actions/auth.ts` | `recoverPasswordAction` también apunta a `/auth/confirm`. |
+| `src/app/auth/confirm/route.ts` | Ruta nueva: confirma `token_hash` o `code`, crea la sesión y redirige a la pantalla compartida. |
+| `src/app/restablecer-contrasena/page.tsx` | Pantalla pública nueva: valida la sesión y el rol, y muestra el aviso o el formulario. |
+| `src/app/restablecer-contrasena/FormularioRestablecer.tsx` | Formulario de contraseña nueva, confirmación, `updateUser` y cierre de sesiones. |
+| `src/app/(site)/login/page.tsx` | El enlace de recuperación apunta a `/auth/confirm`. |
+| `src/app/admin/page.tsx` | El enlace de recuperación apunta a `/auth/confirm`. |
+| `src/server/actions/auth.ts` | `recoverPasswordAction` también apunta a `/auth/confirm`. |
 
 No hay migración de base de datos. La contraseña sigue viviendo cifrada en
 `auth.users.encrypted_password` y se cambia con `updateUser`, que exige una sesión válida.
@@ -137,7 +137,7 @@ la política de contraseñas del proyecto).
    el botón de acceso lleva a `/admin` y no a `/login`.
 6. Probar un enlace vencido, uno ya usado y uno manipulado: deben mostrar **Enlace no válido**.
 7. Probar una contraseña de menos de 8 caracteres y una confirmación distinta.
-8. Ejecutar `npm run check` dentro de `frontend/`.
+8. Ejecutar `npm run check` desde la raíz.
 
 ## 7. Diagnóstico rápido
 

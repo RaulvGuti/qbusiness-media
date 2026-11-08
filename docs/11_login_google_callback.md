@@ -14,7 +14,7 @@ respondía 404: la sesión nunca se creaba.
 1. En `/login`, `handleGoogleLogin` llama a `supabase.auth.signInWithOAuth` con:
    `redirectTo = ${origin}/auth/callback?next=<destino>`.
 2. Google autentica y Supabase redirige a `/auth/callback?code=...&next=...`.
-3. `frontend/src/app/auth/callback/route.ts` (Route Handler `GET`):
+3. `src/app/auth/callback/route.ts` (Route Handler `GET`):
    - valida que `next` sea una ruta interna (`/...`, sin `//`);
    - crea un cliente `@supabase/ssr` con las cookies de la petición;
    - ejecuta `exchangeCodeForSession(code)`;
@@ -29,8 +29,8 @@ Las rutas permitidas para `next` salen de `normalizarDestino()` en `login/page.t
 
 | Archivo | Cambio |
 | --- | --- |
-| `frontend/src/app/auth/callback/route.ts` | Ruta nueva: intercambia el código OAuth por sesión. |
-| `frontend/src/app/(site)/login/page.tsx` | `redirectTo` con `?next=`, aviso para `?error=oauth`. |
+| `src/app/auth/callback/route.ts` | Ruta nueva: intercambia el código OAuth por sesión. |
+| `src/app/(site)/login/page.tsx` | `redirectTo` con `?next=`, aviso para `?error=oauth`. |
 
 ## 4. Configuración manual en Supabase
 

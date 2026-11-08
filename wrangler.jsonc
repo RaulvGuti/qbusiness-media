@@ -20,6 +20,14 @@
       "bucket_name": "qbusiness-media-opennext-cache"
     }
   ],
+  "previews": {
+    "r2_buckets": [
+      {
+        "binding": "NEXT_INC_CACHE_R2_BUCKET",
+        "bucket_name": "qbusiness-media-cache-preview"
+      }
+    ]
+  },
   "observability": {
     "enabled": true
   }

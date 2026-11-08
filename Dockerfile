@@ -1,15 +1,15 @@
 # 1. Dependencias
 FROM node:25-alpine AS deps
 RUN apk add --no-cache libc6-compat
-WORKDIR /app/frontend
+WORKDIR /app
 
-COPY frontend/package.json frontend/package-lock.json* ./
+COPY package.json package-lock.json* ./
 RUN npm ci
 
 # 2. Builder
 FROM node:25-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -28,8 +28,7 @@ ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_CDN_URL
 
-# La aplicacion Next.js vive en frontend/
-WORKDIR /app/frontend
+WORKDIR /app
 RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then \
       echo "AVISO: NEXT_PUBLIC_SUPABASE_URL no llego al build." >&2; \
       echo "       La imagen usara un proyecto de ejemplo y el login no funcionara." >&2; \
@@ -49,11 +48,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/frontend/public ./public
+COPY --from=builder /app/public ./public
 
 # Aprovechar output standalone de Next.js
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 

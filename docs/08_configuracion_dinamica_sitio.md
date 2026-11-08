@@ -9,12 +9,12 @@ las migraciones ya aplicadas.
 - La migración [`000039_configuracion_textos_sitio.sql`](../supabase/migrations/000039_configuracion_textos_sitio.sql)
   amplía los grupos permitidos de `configuracion_sitio` con `general` y `sobre`, y deja
   valores iniciales para todo el contenido que antes estaba escrito en los componentes.
-- `frontend/src/lib/config-sitio.ts` es la fuente única del catálogo: pestañas, etiquetas,
+- `src/lib/config-sitio.ts` es la fuente única del catálogo: pestañas, etiquetas,
   tipos de campo, valores por defecto, parseo de listas, interpolación de placeholders y
   validación.
-- `frontend/src/server/repositories/configuracion.ts` lee y escribe la tabla real. Si no hay
+- `src/server/repositories/configuracion.ts` lee y escribe la tabla real. Si no hay
   credenciales de Supabase, usa los datos mock para que el panel siga funcionando en local.
-- `frontend/src/server/actions/configuracion.ts` guarda los cambios con la sesión del
+- `src/server/actions/configuracion.ts` guarda los cambios con la sesión del
   administrador (nunca con `service_role`). RLS vuelve a exigir `admin_principal`.
 - El layout público carga la configuración una vez por petición con `cache()` y la pasa a
   header, modal, footer, home y contacto. El nav principal del header sigue hardcodeado por
@@ -100,9 +100,9 @@ color terracota). Si el administrador borra el placeholder, el texto se muestra 
 
 1. Crear una migración nueva con el siguiente número y sembrar el valor por defecto. No
    editar una migración ya aplicada.
-2. Agregar la clave al grupo correspondiente en `PESTANAS` de `frontend/src/lib/config-sitio.ts`
+2. Agregar la clave al grupo correspondiente en `PESTANAS` de `src/lib/config-sitio.ts`
    con su `defecto`, etiqueta y tipo.
-3. Agregar la propiedad a `ConfiguracionSitio` en `frontend/src/types/config.ts` y mapearla en
+3. Agregar la propiedad a `ConfiguracionSitio` en `src/types/config.ts` y mapearla en
    `construirConfiguracionSitio()`.
 4. Consumirla desde el componente que la muestra.
-5. Verificar con `npm run lint`, `npm run typecheck` y `npm run build` desde `frontend/`.
+5. Verificar con `npm run lint`, `npm run typecheck` y `npm run build` desde la raíz.

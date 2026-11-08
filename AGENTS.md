@@ -49,9 +49,9 @@ difusión y ausencia de un canal para apoyo social.
   comprobantes privados. No hay otra base de datos.
 - **Resend** para correos y enlaces `wa.me` para WhatsApp (aún sin activar).
 - **Docker** (`Dockerfile` + `compose.yml`) como forma alternativa de levantar y entregar.
-- **La aplicación Next.js vive en `frontend/`**: ahí están `package.json`, `next.config.ts`,
-  `src/` y `public/`, y ahí se corren los comandos de `npm`.
-- **Rutas de importación**: `@/` apunta a `frontend/src/`.
+- **La aplicación Next.js vive en la raíz del repositorio**: ahí están `package.json`,
+  `next.config.ts`, `src/` y `public/`, y ahí se corren los comandos de `npm`.
+- **Rutas de importación**: `@/` apunta a `src/`.
 - **Salida de Next.js**: `output: "standalone"`, pensado para contenedor.
 
 Decisiones y su porqué: `docs/01-decisiones-tecnicas.md`.
@@ -61,34 +61,33 @@ Decisiones y su porqué: `docs/01-decisiones-tecnicas.md`.
 ## 3. Estructura y dónde tocar
 
 ```
-frontend/           La aplicación Next.js. Aquí se corre `npm`.
-  src/app/          Páginas y rutas. App Router. Server Components por defecto.
-  src/components/   Piezas visuales reutilizables. "layout/" chrome del sitio, "ui/" básicos.
-  src/lib/          Utilidades puras y el cliente de Supabase del navegador.
-  src/server/
-    ├─ supabase/    Tres clientes: navegador, servidor (con sesión) y admin (service role).
-    ├─ repositories/ Consultas a la base de datos. Sin lógica de negocio.
-    └─ services/    Reglas de negocio: validar una reserva, notificar un lead, calcular precio.
-  src/types/        Tipos compartidos entre servidor y cliente.
-  src/proxy.ts      Renueva la sesión en cada petición. Único lugar donde se refrescan cookies.
-  Package.json      Dependencias y comandos npm (dev, build, check, setup).
-  .env.local        Variables locales (no se versiona).
+src/app/            Páginas y rutas. App Router. Server Components por defecto.
+src/components/     Piezas visuales reutilizables. "layout/" chrome del sitio, "ui/" básicos.
+src/lib/            Utilidades puras y el cliente de Supabase del navegador.
+src/server/
+  ├─ supabase/      Tres clientes: navegador, servidor (con sesión) y admin (service role).
+  ├─ repositories/  Consultas a la base de datos. Sin lógica de negocio.
+  └─ services/      Reglas de negocio: validar una reserva, notificar un lead, calcular precio.
+src/types/          Tipos compartidos entre servidor y cliente.
+src/proxy.ts        Renueva la sesión en cada petición. Único lugar donde se refrescan cookies.
+package.json        Dependencias y comandos npm (dev, build, check, setup).
+.env.local          Variables locales (no se versiona).
 supabase/migrations/ Archivos .sql numerados. La única forma de cambiar la base de datos.
 docs/               Decisiones, avances y manuales de este proyecto.
 .github/            Issues, plantillas, etiquetas y automatizaciones.
-Dockerfile          Imagen del sitio (build desde la raíz, app en frontend/).
+Dockerfile          Imagen del sitio (build desde la raíz).
 compose.yml         Sitio + PostgreSQL en contenedores.
-scripts/setup.mjs   Lo que ejecuta `npm run setup` (desde frontend/).
+scripts/setup.mjs   Lo que ejecuta `npm run setup`.
 ```
 
 Reglas de ubicación:
 
-- Un componente que se usa en más de una página va a `frontend/src/components/`.
-- Toda consulta a la base de datos va en `frontend/src/server/repositories/`, nunca dentro
+- Un componente que se usa en más de una página va a `src/components/`.
+- Toda consulta a la base de datos va en `src/server/repositories/`, nunca dentro
   de un componente.
 - Toda regla de negocio (no se solapan horarios, no se reserva un equipo cancelado, no se
-  publica una reseña sin reserva completada) va en `frontend/src/server/services/`.
-- Nada de lógica de datos dentro de `frontend/src/app/`: la página coordina, el repositorio
+  publica una reseña sin reserva completada) va en `src/server/services/`.
+- Nada de lógica de datos dentro de `src/app/`: la página coordina, el repositorio
   consulta, el servicio decide.
 
 ---
@@ -142,7 +141,7 @@ Reglas de ubicación:
   Component, nunca a Git, nunca a un canal de chat.
 - Las variables con prefijo `NEXT_PUBLIC_` viajan al navegador: ahí solo va la URL y la
   clave pública (`anon`).
-- Los valores reales viven en `frontend/.env.local`, que Git ignora. `.env.example` sí se
+- Los valores reales viven en `.env.local`, que Git ignora. `.env.example` sí se
   versiona y solo lleva valores de ejemplo.
 - Si una llave se filtra: se revoca en Supabase, se genera otra, se avisa al equipo y se
   documenta en `docs/`.
@@ -153,8 +152,8 @@ Reglas de ubicación:
 
 - Toda lectura o escritura de datos va del lado del servidor (Server Components, Server
   Actions o Route Handlers). Los Client Components piden datos, no los consultan.
-- El cliente de `frontend/src/lib/supabase/client.ts` usa la clave pública y está sujeto a
-  RLS. El cliente admin de `frontend/src/server/supabase/admin.ts` se reserva para servidor y
+- El cliente de `src/lib/supabase/client.ts` usa la clave pública y está sujeto a
+  RLS. El cliente admin de `src/server/supabase/admin.ts` se reserva para servidor y
   salta RLS: usarlo solo con justificación.
 - Los datos de un cliente (nombre, teléfono, correo) no se exponen en listados públicos ni
   se registran en la consola del navegador.
@@ -164,11 +163,11 @@ Reglas de ubicación:
 ### 4.6 Next.js
 
 - La versión instalada es la 16 y cambia respecto a lo conocido. Antes de escribir código de
-  Next.js, leer la guía correspondiente en `frontend/node_modules/next/dist/docs/`.
-- La renovación de sesión vive en `frontend/src/proxy.ts`. No reimplementarla en otro lado ni
+  Next.js, leer la guía correspondiente en `node_modules/next/dist/docs/`.
+- La renovación de sesión vive en `src/proxy.ts`. No reimplementarla en otro lado ni
   borrar ese archivo.
 - Imágenes y videos del portafolio van a Cloudflare R2; no se versionan en
-  `frontend/public/` ni se suben al repositorio. Las credenciales de R2 son solo del
+  `public/` ni se suben al repositorio. Las credenciales de R2 son solo del
   servidor y el navegador sube con una URL firmada.
 
 ---
@@ -216,7 +215,7 @@ final, archivos grandes, llaves privadas y commits directos en `main`.
 
 ## 6. Comandos de verificación
 
-Los comandos se corren **dentro de `frontend/`** (ahí vive `package.json`):
+Los comandos se corren **en la raíz del repositorio** (ahí vive `package.json`):
 
 ```bash
 npm run lint        # estilo del código
@@ -234,10 +233,10 @@ cambio, se documenta en el PR; no se salta la verificación.
 
 1. Buscar o crear la tarea en las incidencias de GitHub (`.github/ISSUE_TEMPLATE`).
 2. Actualizar `develop` y crear la rama: `git checkout -b feat/mi-tarea`.
-3. Leer `frontend/node_modules/next/dist/docs/` si el trabajo toca Next.js.
+3. Leer `node_modules/next/dist/docs/` si el trabajo toca Next.js.
 4. Escribir código y, si hay base de datos, la migración nueva en `supabase/migrations/`.
 5. Documentar en `docs/` si el cambio es importante, y agregar el enlace al índice.
-6. Verificar: `npm run check` (desde `frontend/`).
+6. Verificar: `npm run check` desde la raíz.
 7. Commit con el formato del punto 5.
 8. Subir la rama y abrir el PR a `develop`, llenando la plantilla.
 9. Resolver los comentarios de revisión y responder preguntas de los compañeros.
@@ -306,13 +305,13 @@ Decisiones ya tomadas que hay que respetar:
 - El equipo interno tiene dos roles (000038): `admin_principal` (acceso total) y
   `secretaria` (contactos, apoyo social, reseñas y reservas). El contenido, las tarifas, la
   configuración y las cuentas son exclusivos del principal. La matriz vive en
-  `frontend/src/lib/permisos.ts` y se repite en RLS y triggers.
+  `src/lib/permisos.ts` y se repite en RLS y triggers.
 
 Estado actual:
 
 - **RLS activo en las 20 tablas** de `public` (migración 000020 y siguientes).
 - **Roles del panel** desde 000038: el layout y cada página sensible validan sesión y rol con
-  `frontend/src/server/auth/`; el proxy solo adelanta la redirección sin sesión.
+  `src/server/auth/`; el proxy solo adelanta la redirección sin sesión.
 - **Cloudflare R2** es el almacén nuevo de la galería (`archivos_galeria.ruta_storage`
   guarda la URL pública final). Los buckets de Supabase `galeria` y `logos` (000027) se
   conservan para archivos legacy; `comprobantes` (000031) sigue privado para pagos.

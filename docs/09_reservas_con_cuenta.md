@@ -22,12 +22,12 @@ formulario aceptaba datos sueltos de cualquier visitante.
 
 | Capa | Archivo | Qué hace |
 | --- | --- | --- |
-| Página | `frontend/src/app/(site)/renta/page.tsx` | Pide el catálogo y el perfil con `obtenerCatalogoEstudioCliente()` y pasa `cliente` a la vista. |
-| Vista | `frontend/src/app/(site)/renta/Vista.tsx` | Si no hay `cliente.id`, el botón lleva al registro en vez de abrir el modal. |
-| Modal | `frontend/src/components/estudio/ReservaModal.tsx` | Muestra el bloqueo "Cuenta requerida para reservar" y no permite enviar. |
-| Servidor | `frontend/src/server/services/reservas/clients.ts` | `enviarSolicitudReservaCliente()` vuelve a comprobar la sesión y lanza un error si no existe. |
-| Repositorio | `frontend/src/server/repositories/estudio.ts` | `obtenerPerfilClienteActual()` lee la fila de `clientes` ligada al `auth.users` de la sesión; si aún no existe, arma el perfil desde Auth sin escribir en la base. La fila se crea al reservar con `solicitar_reserva()`. |
-| Header | `frontend/src/components/layout/SiteHeader.tsx` | Recibe `sesionActiva` desde el layout y muestra `Entrar` o `Salir`. |
+| Página | `src/app/(site)/renta/page.tsx` | Pide el catálogo y el perfil con `obtenerCatalogoEstudioCliente()` y pasa `cliente` a la vista. |
+| Vista | `src/app/(site)/renta/Vista.tsx` | Si no hay `cliente.id`, el botón lleva al registro en vez de abrir el modal. |
+| Modal | `src/components/estudio/ReservaModal.tsx` | Muestra el bloqueo "Cuenta requerida para reservar" y no permite enviar. |
+| Servidor | `src/server/services/reservas/clients.ts` | `enviarSolicitudReservaCliente()` vuelve a comprobar la sesión y lanza un error si no existe. |
+| Repositorio | `src/server/repositories/estudio.ts` | `obtenerPerfilClienteActual()` lee la fila de `clientes` ligada al `auth.users` de la sesión; si aún no existe, arma el perfil desde Auth sin escribir en la base. La fila se crea al reservar con `solicitar_reserva()`. |
+| Header | `src/components/layout/SiteHeader.tsx` | Recibe `sesionActiva` desde el layout y muestra `Entrar` o `Salir`. |
 
 La validación del servidor es la que manda: aunque alguien manipule el cliente, la Server
 Action no registra la reserva sin sesión.

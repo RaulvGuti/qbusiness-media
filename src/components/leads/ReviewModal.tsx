@@ -127,7 +127,7 @@ export default function ReviewModal({
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-xl bg-qbLinen hover:bg-qbChalkHover text-qbMuted hover:text-qbInk border border-qbBorder transition"
+            className="p-2 rounded-xl bg-qbLinen hover:bg-qbChalkHover text-zinc-400 hover:text-qbInk border border-qbBorder transition"
             aria-label="Cerrar modal"
           >
             <Icon name="xmark" />
@@ -137,7 +137,7 @@ export default function ReviewModal({
         {bloqueo ? (
           <div className="p-8 text-center space-y-4">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-qbLinen border border-qbBorder">
-              <Icon name="lock" className="text-qbMuted text-xl" />
+              <Icon name="lock" className="text-zinc-400 text-xl" />
             </div>
             <p className="text-sm text-qbMuted max-w-sm mx-auto">{bloqueo}</p>
             {hrefInicioSesion ? (
