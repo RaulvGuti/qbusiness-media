@@ -3,6 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
+import {
+  AYUDA,
+  CAMPO,
+  ETIQUETA,
+} from "@/lib/estilos-formulario";
 import { obtenerSupabase, obtenerSupabaseAdmin } from "@/lib/supabase/client";
 
 const MINIMO_CARACTERES = 8;
@@ -99,7 +104,7 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
           <h2 className="text-lg font-bold text-white">
             Contraseña actualizada
           </h2>
-          <p className="text-sm text-[#8a8a8a]">
+          <p className="text-sm text-zinc-400">
             La contraseña de {correo} se cambió correctamente. Cerramos la
             sesión para que entres con la nueva contraseña.
           </p>
@@ -112,7 +117,7 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
         </Link>
         <Link
           href="/"
-          className="block text-sm text-[#8a8a8a] transition hover:text-white"
+          className="block text-sm text-zinc-400 transition hover:text-white"
         >
           Volver al inicio
         </Link>
@@ -125,7 +130,7 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
       <div className="space-y-2">
         <label
           htmlFor="restablecer-contrasena"
-          className="text-sm font-semibold text-white"
+          className={ETIQUETA}
         >
           Nueva contraseña
         </label>
@@ -139,9 +144,9 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
           value={form.password}
           onChange={handleChange}
           placeholder="••••••••"
-          className="w-full rounded-xl border border-[#3f3f46] bg-[#171717] px-4 py-3 text-sm text-white transition placeholder:text-[#71717a] focus:border-white focus:outline-none"
+          className={CAMPO}
         />
-        <p className="text-[11px] text-[#8a8a8a]">
+        <p className={AYUDA}>
           Mínimo {MINIMO_CARACTERES} caracteres.
         </p>
       </div>
@@ -149,7 +154,7 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
       <div className="space-y-2">
         <label
           htmlFor="restablecer-confirmacion"
-          className="text-sm font-semibold text-white"
+          className={ETIQUETA}
         >
           Confirmar contraseña
         </label>
@@ -163,7 +168,7 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
           value={form.confirmacion}
           onChange={handleChange}
           placeholder="••••••••"
-          className="w-full rounded-xl border border-[#3f3f46] bg-[#171717] px-4 py-3 text-sm text-white transition placeholder:text-[#71717a] focus:border-white focus:outline-none"
+          className={CAMPO}
         />
       </div>
 
@@ -191,7 +196,7 @@ export function FormularioRestablecer({ correo, esAdmin }: Props) {
       <div className="pt-1 text-center">
         <Link
           href={esAdmin ? "/admin" : "/login"}
-          className="text-sm text-[#8a8a8a] transition hover:text-white"
+          className="text-sm text-zinc-400 transition hover:text-white"
         >
           {esAdmin
             ? "Volver al acceso administrativo"

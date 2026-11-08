@@ -11,6 +11,7 @@ import {
   PORCENTAJE_DESCUENTO_LEALTAD,
   etiquetaHoras,
 } from "@/lib/estudio-paquetes";
+import { CAMPO } from "@/lib/estilos-formulario";
 import type { PaqueteEstudio, PaqueteEstudioInput } from "@/types/estudio";
 import shared from "../panel.module.css";
 import styles from "./page.module.css";
@@ -153,20 +154,20 @@ function PaqueteFila({
 
   return (
     <div className="grid gap-3 rounded-2xl border border-[#262626] bg-[#111] p-4 sm:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] sm:items-end">
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Nombre
         <input
-          className={styles.input}
+          className={CAMPO}
           value={form.nombre}
           onChange={(e) => cambiar("nombre", e.target.value)}
           onKeyDown={evitarEnter}
           maxLength={80}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Horas
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0.5"
           max="24"
@@ -177,10 +178,10 @@ function PaqueteFila({
         />
         <small className={styles.help}>{etiquetaHoras(Number(form.horas) || 0)}</small>
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Precio (Q)
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0"
           step="0.01"
@@ -189,10 +190,10 @@ function PaqueteFila({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Orden
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           step="1"
           value={form.orden}
@@ -217,7 +218,7 @@ function PaqueteFila({
         >
           {paquete.activo ? "Desactivar" : "Activar"}
         </button>
-        <span className="text-center text-[11px] text-[#8a8a8a]">
+        <span className="text-center text-[11px] text-zinc-400">
           {paquete.activo ? "Activo" : "Inactivo"}
         </span>
       </div>
@@ -274,10 +275,10 @@ function NuevoPaquete({
 
   return (
     <div className="grid gap-3 rounded-2xl border border-dashed border-[#3a3a3a] p-4 sm:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] sm:items-end">
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Nombre
         <input
-          className={styles.input}
+          className={CAMPO}
           value={form.nombre}
           onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
           onKeyDown={evitarEnter}
@@ -285,10 +286,10 @@ function NuevoPaquete({
           placeholder="Paquete 2 horas"
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Horas
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0.5"
           max="24"
@@ -298,10 +299,10 @@ function NuevoPaquete({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Precio (Q)
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0"
           step="0.01"
@@ -310,10 +311,10 @@ function NuevoPaquete({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Orden
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           step="1"
           value={form.orden}

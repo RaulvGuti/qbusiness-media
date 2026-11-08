@@ -6,6 +6,7 @@ import {
   cambiarActivoEquipoAction,
   guardarEquipoAction,
 } from "@/server/services/equipos/admin";
+import { CAMPO } from "@/lib/estilos-formulario";
 import type { EquipoEstudio, EquipoEstudioInput } from "@/types/estudio";
 import shared from "../panel.module.css";
 import styles from "./page.module.css";
@@ -135,29 +136,29 @@ function EquipoFila({
 
   return (
     <div className="grid gap-3 rounded-2xl border border-[#262626] bg-[#111] p-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1.6fr)_repeat(2,minmax(0,0.7fr))_auto] sm:items-end">
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Nombre
         <input
-          className={styles.input}
+          className={CAMPO}
           value={form.nombre}
           onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
           onKeyDown={evitarEnter}
           maxLength={120}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Descripción
         <input
-          className={styles.input}
+          className={CAMPO}
           value={form.descripcion}
           onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Stock
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0"
           step="1"
@@ -166,10 +167,10 @@ function EquipoFila({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Precio/hora (Q)
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0"
           step="0.01"
@@ -195,7 +196,7 @@ function EquipoFila({
         >
           {equipo.activo ? "Desactivar" : "Activar"}
         </button>
-        <span className="text-center text-[11px] text-[#8a8a8a]">
+        <span className="text-center text-[11px] text-zinc-400">
           {equipo.activo ? "Activo" : "Inactivo"}
         </span>
       </div>
@@ -258,10 +259,10 @@ function NuevoEquipo({
 
   return (
     <div className="grid gap-3 rounded-2xl border border-dashed border-[#3a3a3a] p-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1.6fr)_repeat(2,minmax(0,0.7fr))_auto] sm:items-end">
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Nombre
         <input
-          className={styles.input}
+          className={CAMPO}
           value={form.nombre}
           onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
           onKeyDown={evitarEnter}
@@ -269,19 +270,19 @@ function NuevoEquipo({
           placeholder="Cámara Sony FX3"
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Descripción
         <input
-          className={styles.input}
+          className={CAMPO}
           value={form.descripcion ?? ""}
           onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Stock
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0"
           step="1"
@@ -292,10 +293,10 @@ function NuevoEquipo({
           onKeyDown={evitarEnter}
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-[#8a8a8a]">
+      <label className="flex flex-col gap-1 text-xs text-zinc-400">
         Precio/hora (Q)
         <input
-          className={styles.input}
+          className={CAMPO}
           type="number"
           min="0"
           step="0.01"

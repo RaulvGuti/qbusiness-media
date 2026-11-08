@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { descuentoLealtad, etiquetaHoras } from '@/lib/estudio-paquetes';
+import { CAMPO_CORTO } from '@/lib/estilos-formulario';
 import type {
   EquipoEstudio,
   PaqueteEstudio,
@@ -126,7 +127,7 @@ export default function RentalCalculator({
     return (
       <div className="rounded-3xl border border-amber-800/50 bg-amber-950/40 p-6 text-sm text-amber-300">
         <p className="font-bold">Renta temporalmente no disponible</p>
-        <p className="mt-1">
+        <p className="mt-1 accent-zinc-400">
           Todavía no hay paquetes de renta configurados. El administrador debe
           crear al menos un paquete activo antes de recibir reservas.
         </p>
@@ -141,7 +142,7 @@ export default function RentalCalculator({
           <h3 className="text-lg font-bold text-qbInk">
             {modo === 'equipo' ? 'Reserva tu equipo' : 'Calculadora de renta'}
           </h3>
-          <p className="text-sm text-qbMuted">
+          <p className="text-sm text-zinc-400">
             Elige un paquete. Sus horas fijan el inicio y el fin de la reserva.
           </p>
         </div>
@@ -163,7 +164,7 @@ export default function RentalCalculator({
               >
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="text-sm font-bold text-qbInk">{p.nombre}</span>
-                  <span className="text-xs font-semibold text-qbMuted">
+                  <span className="text-xs font-semibold text-zinc-400">
                     {etiquetaHoras(p.horas)}
                   </span>
                 </div>
@@ -200,7 +201,7 @@ export default function RentalCalculator({
           </h4>
           <div className="space-y-3">
             {servicios.length === 0 && (
-              <p className="text-sm text-qbMuted">No hay servicios extra disponibles.</p>
+              <p className="text-sm text-zinc-400">No hay servicios extra disponibles.</p>
             )}
             {servicios.map((s) => {
               const seleccionado = Boolean(serviciosSeleccionados[s.id]);
@@ -217,17 +218,17 @@ export default function RentalCalculator({
                         type="checkbox"
                         checked={seleccionado}
                         onChange={() => toggleServicio(s.id)}
-                        className="mt-1"
+                        className="mt-1 accent-zinc-400"
                       />
                       <span className="space-y-1">
                         <span className="block text-sm font-bold text-qbInk">
                           {s.nombre}
                         </span>
-                        <span className="block text-xs font-semibold text-qbMuted">
+                        <span className="block text-xs font-semibold text-zinc-400">
                           Q{Number(s.precioPorHora).toFixed(2)}/h
                         </span>
                         {s.descripcion && (
-                          <span className="block text-xs text-qbMuted">
+                          <span className="block text-xs text-zinc-400">
                             {s.descripcion}
                           </span>
                         )}
@@ -250,7 +251,7 @@ export default function RentalCalculator({
         </h4>
         <div className="space-y-3">
           {equipos.length === 0 && (
-            <p className="text-sm text-qbMuted">
+            <p className="text-sm text-zinc-400">
               No hay equipos disponibles para agregar.
             </p>
           )}
@@ -267,20 +268,20 @@ export default function RentalCalculator({
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-bold text-qbInk">{e.nombre}</span>
-                      <span className="text-xs font-semibold text-qbMuted">
+                      <span className="text-xs font-semibold text-zinc-400">
                         Q{Number(e.precioPorHora).toFixed(2)}/h
                       </span>
-                      <span className="text-[11px] text-qbMuted">
+                      <span className="text-[11px] text-zinc-400">
                         Disponibles: {e.cantidadTotal}
                       </span>
                     </div>
                     {e.descripcion && (
-                      <p className="text-xs text-qbMuted">{e.descripcion}</p>
+                      <p className="text-xs text-zinc-400">{e.descripcion}</p>
                     )}
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-qbMuted">
+                    <label className="text-xs font-medium text-zinc-400">
                       Cantidad
                     </label>
                     <input
@@ -296,7 +297,7 @@ export default function RentalCalculator({
                           e.cantidadTotal,
                         )
                       }
-                      className="w-20 text-sm"
+                      className={`${CAMPO_CORTO} w-20`}
                     />
                     <span className="min-w-[70px] text-right text-sm font-semibold text-qbInk">
                       Q{(e.precioPorHora * cantidad * horas).toFixed(2)}
@@ -315,7 +316,7 @@ export default function RentalCalculator({
         </h4>
         <dl className="space-y-2 text-sm">
           <div className="flex items-center justify-between">
-            <dt className="text-qbMuted">
+            <dt className="text-zinc-400">
               {paquete?.nombre ?? 'Paquete'} ({etiquetaHoras(horas)})
             </dt>
             <dd className="font-semibold text-qbInk">
@@ -329,13 +330,13 @@ export default function RentalCalculator({
             </div>
           )}
           <div className="flex items-center justify-between">
-            <dt className="text-qbMuted">Servicios extra</dt>
+            <dt className="text-zinc-400">Servicios extra</dt>
             <dd className="font-semibold text-qbInk">
               Q{subtotalServicios.toFixed(2)}
             </dd>
           </div>
           <div className="flex items-center justify-between">
-            <dt className="text-qbMuted">Equipo rentable</dt>
+            <dt className="text-zinc-400">Equipo rentable</dt>
             <dd className="font-semibold text-qbInk">
               Q{subtotalEquipos.toFixed(2)}
             </dd>
@@ -347,7 +348,7 @@ export default function RentalCalculator({
             </dd>
           </div>
         </dl>
-        <p className="text-[11px] text-qbMuted">
+        <p className="text-[11px] text-zinc-400">
           * Estimado. El precio final lo calcula el servidor al confirmar la
           reserva.
         </p>

@@ -3,6 +3,11 @@
 import { useId, useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { guardarConfiguracionSitio } from "@/server/actions/configuracion";
+import {
+  CAMPO,
+  CAMPO_AREA,
+  CAMPO_FECHA,
+} from "@/lib/estilos-formulario";
 import type { CambioConfigSitio, GrupoConfig } from "@/types/config";
 import type { EquipoEstudio, PaqueteEstudio } from "@/types/estudio";
 import shared from "../panel.module.css";
@@ -122,7 +127,7 @@ export function TextosForm({
                       {esLargo ? (
                         <textarea
                           id={id}
-                          className={styles.input}
+                          className={CAMPO_AREA}
                           value={valores[key] ?? ""}
                           style={{ minHeight: c.alto ?? 80 }}
                           aria-describedby={ayudaId}
@@ -134,7 +139,9 @@ export function TextosForm({
                       ) : (
                         <input
                           id={id}
-                          className={styles.input}
+                          className={
+                            tipoInput(c.tipo) === "time" ? CAMPO_FECHA : CAMPO
+                          }
                           type={tipoInput(c.tipo)}
                           value={valores[key] ?? ""}
                           aria-describedby={ayudaId}

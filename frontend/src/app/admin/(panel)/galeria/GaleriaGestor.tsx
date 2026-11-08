@@ -11,6 +11,11 @@ import {
   type SetStateAction,
 } from "react";
 import { useToast } from "@/components/ui/Toast";
+import {
+  CAMPO,
+  CAMPO_AREA,
+  CAMPO_SELECT,
+} from "@/lib/estilos-formulario";
 import { resolverUrlArchivo } from "@/lib/utils/galeria-publica";
 import {
   actualizarEstadoCarpeta,
@@ -458,7 +463,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
         <div style={s.grid2}>
           <label style={s.field}>
             <span style={s.label}>Módulo</span>
-            <select style={s.select} value={moduloId} onChange={(e) => cambiarModulo(e.target.value)}>
+            <select className={CAMPO_SELECT} value={moduloId} onChange={(e) => cambiarModulo(e.target.value)}>
               <option value="">Selecciona un módulo</option>
               {MODULOS_GESTOR.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -470,7 +475,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
           <label style={s.field}>
             <span style={s.label}>Carpeta</span>
             <select
-              style={{ ...s.select, opacity: modulo ? 1 : 0.5 }}
+              className={CAMPO_SELECT} style={{ opacity: modulo ? 1 : 0.5 }}
               value={carpetaId}
               disabled={!modulo}
               onChange={(e) => cambiarCarpeta(e.target.value)}
@@ -528,7 +533,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
 
         <div style={s.linkRow}>
           <input
-            style={s.input}
+            className={CAMPO}
             placeholder="Enlace de YouTube o Vimeo"
             value={enlace}
             onChange={(e) => setEnlace(e.target.value)}
@@ -570,7 +575,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
                   })()}
                 </div>
                 <input
-                  style={s.pie}
+                  className={CAMPO}
                   placeholder="Pie de foto"
                   value={a.pieFoto ?? ""}
                   onChange={(e) => actualizarItem(a.id, { pieFoto: e.target.value })}
@@ -714,18 +719,18 @@ function ModalCarpeta({
         <div style={s.grid2}>
           <label style={s.field}>
             <span style={s.label}>Nombre</span>
-            <input style={s.input} value={nombre} onChange={(e) => setNombre(e.target.value)} autoFocus required />
+            <input className={CAMPO} value={nombre} onChange={(e) => setNombre(e.target.value)} autoFocus required />
           </label>
           <label style={s.field}>
             <span style={s.label}>Etiqueta</span>
-            <input style={s.input} value={etiqueta} onChange={(e) => setEtiqueta(e.target.value)} />
+            <input className={CAMPO} value={etiqueta} onChange={(e) => setEtiqueta(e.target.value)} />
           </label>
         </div>
 
         <label style={{ ...s.field, marginTop: 14 }}>
           <span style={s.label}>Descripción</span>
           <textarea
-            style={{ ...s.input, minHeight: 90, resize: "vertical" }}
+            className={CAMPO_AREA}
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
           />
@@ -733,7 +738,7 @@ function ModalCarpeta({
 
         <label style={{ ...s.field, marginTop: 14, maxWidth: "50%" }}>
           <span style={s.label}>Filtro</span>
-          <input style={s.input} value={filtro} onChange={(e) => setFiltro(e.target.value)} />
+          <input className={CAMPO} value={filtro} onChange={(e) => setFiltro(e.target.value)} />
         </label>
 
         <div style={s.modalAcciones}>
@@ -773,31 +778,14 @@ const s: Record<string, CSSProperties> = {
   },
   dot: { width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "inline-block" },
   h1: { fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 800, margin: 0, letterSpacing: "-.02em" },
-  sub: { color: "rgba(255,255,255,.55)", margin: 0 },
+  sub: { color: "#a1a1aa", margin: 0 },
   card: { background: "#0e0e0e", border: borde, borderRadius: 18, padding: 24 },
   h2: { fontSize: 18, fontWeight: 700, margin: "0 0 16px" },
   count: { fontWeight: 400, opacity: 0.5, fontSize: 14 },
   grid2: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 },
   field: { display: "grid", gap: 6 },
-  label: { fontSize: 13, color: "rgba(255,255,255,.55)" },
-  select: {
-    background: "#0d0d0d",
-    color: "#fff",
-    border: "1px solid #52525b",
-    borderRadius: 12,
-    padding: "0.625rem 2.25rem 0.625rem 0.875rem",
-    font: "inherit",
-  },
-  input: {
-    background: "#0d0d0d",
-    color: "#fff",
-    border: "1px solid #52525b",
-    borderRadius: 12,
-    padding: "0.625rem 0.875rem",
-    font: "inherit",
-    width: "100%",
-    boxSizing: "border-box",
-  },
+  label: { fontSize: 13, color: "#a1a1aa" },
+
   ruta: {
     marginTop: 16,
     border: "1px dashed rgba(255,255,255,.18)",
@@ -832,7 +820,7 @@ const s: Record<string, CSSProperties> = {
     fontSize: 14,
     cursor: "pointer",
   },
-  btnOff: { background: "#3a3a3a", color: "rgba(255,255,255,.55)", cursor: "not-allowed" },
+  btnOff: { background: "#3a3a3a", color: "#a1a1aa", cursor: "not-allowed" },
   btnGhost: {
     background: "transparent",
     color: "#fff",
@@ -849,7 +837,7 @@ const s: Record<string, CSSProperties> = {
     padding: "28px 16px",
     textAlign: "center",
     fontSize: 13,
-    color: "rgba(255,255,255,.55)",
+    color: "#a1a1aa",
   },
   gridArchivos: {
     listStyle: "none",
@@ -882,18 +870,7 @@ const s: Record<string, CSSProperties> = {
     padding: "2px 10px",
     borderRadius: 999,
   },
-  pie: {
-    width: "100%",
-    boxSizing: "border-box",
-    background: "transparent",
-    color: "#fff",
-    border: 0,
-    borderBottom: borde,
-    padding: "10px 12px",
-    fontSize: 12,
-    font: "inherit",
-    outline: "none",
-  },
+
   acciones: { display: "flex", gap: 6, padding: 10 },
   btnMini: {
     flex: 1,

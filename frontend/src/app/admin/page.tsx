@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import Link from 'next/link';
+import { CAMPO, ETIQUETA } from '@/lib/estilos-formulario';
 import { obtenerSupabaseAdmin } from '@/lib/supabase/client';
 
 export default function AdminLoginPage() {
@@ -85,7 +86,7 @@ export default function AdminLoginPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
             Panel Administrativo
           </h1>
-          <p className="text-sm text-[#8a8a8a]">
+          <p className="text-sm text-zinc-400">
             Acceso exclusivo y protegido para la empresa. Sin registro público.
           </p>
         </div>
@@ -95,7 +96,7 @@ export default function AdminLoginPage() {
           className="bg-[#0d0d0d] border border-[#262626] rounded-3xl shadow-2xl p-6 sm:p-8 space-y-5"
         >
           <div className="space-y-2">
-            <label htmlFor="admin-email" className="text-sm font-semibold text-white">
+            <label htmlFor="admin-email" className={ETIQUETA}>
               Correo electrónico corporativo
             </label>
             <input
@@ -106,13 +107,13 @@ export default function AdminLoginPage() {
               value={form.email}
               onChange={handleChange}
               placeholder="admin@qbusinessmedia.com"
-              className="w-full bg-[#171717] border border-[#262626] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white transition"
+              className={CAMPO}
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <label htmlFor="admin-password" className="text-sm font-semibold text-white">
+              <label htmlFor="admin-password" className={ETIQUETA}>
                 Contraseña
               </label>
               <button
@@ -131,7 +132,7 @@ export default function AdminLoginPage() {
               value={form.password}
               onChange={handleChange}
               placeholder="••••••••"
-              className="w-full bg-[#171717] border border-[#262626] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white transition"
+              className={CAMPO}
             />
           </div>
 
@@ -159,7 +160,7 @@ export default function AdminLoginPage() {
           <div className="text-center pt-2">
             <Link
               href="/"
-              className="text-sm text-[#8a8a8a] hover:text-white transition"
+              className="text-sm text-zinc-400 hover:text-white transition"
             >
               Volver al inicio
             </Link>

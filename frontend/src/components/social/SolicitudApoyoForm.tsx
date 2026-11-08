@@ -3,6 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
+import {
+  CAMPO,
+  CAMPO_AREA,
+  CAMPO_FECHA,
+  CAMPO_SELECT,
+  ETIQUETA,
+} from '@/lib/estilos-formulario';
 
 /*
   Campos del formulario → columnas de solicitudes_apoyo_social:
@@ -25,13 +32,6 @@ const initialForm = {
   descripcionProyecto: '',
   aceptaTerminos: false, // solo validación en pantalla, no se guarda
 };
-
-/** Campo con borde tenue para distinguir lo que se puede editar. */
-const campo =
-  'w-full rounded-xl border border-qbBorder bg-black/30 px-3.5 py-2.5 text-sm text-qbInk ' +
-  'placeholder:text-qbMuted transition-colors hover:border-qbMuted focus:border-qbMuted focus:outline-none';
-
-const etiqueta = 'block text-[11px] font-bold uppercase tracking-wide text-qbInk';
 
 const incluye = [
   'Producción de video y foto solidaria',
@@ -184,13 +184,13 @@ export default function SolicitudApoyoForm({ tieneSesion }: Props) {
           <Seccion n="1" titulo="Organización y contacto" />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
-              <label htmlFor="nombreEntidad" className={etiqueta}>
+              <label htmlFor="nombreEntidad" className={ETIQUETA}>
                 Nombre de la organización / fundación *
               </label>
               <input
                 id="nombreEntidad"
                 name="nombreEntidad"
-                className={campo}
+                className={CAMPO}
                 required
                 value={form.nombreEntidad}
                 onChange={handleChange}
@@ -198,13 +198,13 @@ export default function SolicitudApoyoForm({ tieneSesion }: Props) {
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <label htmlFor="tipoEntidad" className={etiqueta}>
+              <label htmlFor="tipoEntidad" className={ETIQUETA}>
                 Tipo de organización
               </label>
               <select
                 id="tipoEntidad"
                 name="tipoEntidad"
-                className={`${campo} [&>option]:bg-qbChalk [&>option]:text-qbInk`}
+                className={CAMPO_SELECT}
                 value={form.tipoEntidad}
                 onChange={handleChange}
               >
@@ -216,40 +216,40 @@ export default function SolicitudApoyoForm({ tieneSesion }: Props) {
               </select>
             </div>
             <div className="space-y-2">
-              <label htmlFor="personaContacto" className={etiqueta}>
+              <label htmlFor="personaContacto" className={ETIQUETA}>
                 Nombre de la persona de contacto *
               </label>
               <input
                 id="personaContacto"
                 name="personaContacto"
-                className={campo}
+                className={CAMPO}
                 required
                 value={form.personaContacto}
                 onChange={handleChange}
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="telefono" className={etiqueta}>
+              <label htmlFor="telefono" className={ETIQUETA}>
                 Teléfono / WhatsApp
               </label>
               <input
                 id="telefono"
                 name="telefono"
-                className={campo}
+                className={CAMPO}
                 value={form.telefono ?? ''}
                 onChange={handleChange}
                 placeholder="+502 5123-4567"
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <label htmlFor="correo" className={etiqueta}>
+              <label htmlFor="correo" className={ETIQUETA}>
                 Correo electrónico *
               </label>
               <input
                 id="correo"
                 name="correo"
                 type="email"
-                className={campo}
+                className={CAMPO}
                 required
                 value={form.correo}
                 onChange={handleChange}
@@ -263,26 +263,26 @@ export default function SolicitudApoyoForm({ tieneSesion }: Props) {
         <div className="space-y-4">
           <Seccion n="2" titulo="Proyecto" />
           <div className="space-y-2 sm:max-w-xs">
-            <label htmlFor="fechaEvento" className={etiqueta}>
+            <label htmlFor="fechaEvento" className={ETIQUETA}>
               Fecha tentativa del evento
             </label>
             <input
               id="fechaEvento"
               name="fechaEvento"
               type="date"
-              className={campo}
+              className={CAMPO_FECHA}
               value={form.fechaEvento ?? ''}
               onChange={handleChange}
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="descripcionProyecto" className={etiqueta}>
+            <label htmlFor="descripcionProyecto" className={ETIQUETA}>
               Descripción del proyecto y apoyo requerido *
             </label>
             <textarea
               id="descripcionProyecto"
               name="descripcionProyecto"
-              className={`${campo} resize-y`}
+              className={CAMPO_AREA}
               required
               rows={5}
               value={form.descripcionProyecto ?? ''}
@@ -293,14 +293,14 @@ export default function SolicitudApoyoForm({ tieneSesion }: Props) {
         </div>
 
         <div className="space-y-4">
-          <label className="flex items-start gap-2 text-xs text-qbMuted cursor-pointer">
+          <label className="flex items-start gap-2 text-xs text-zinc-400 cursor-pointer">
             <input
               type="checkbox"
               name="aceptaTerminos"
               required
               checked={form.aceptaTerminos}
               onChange={handleChange}
-              className="mt-0.5"
+              className="mt-0.5 accent-zinc-400"
             />
             <span>Acepto los términos y condiciones para proyectos pro-bono de QBusiness Media.</span>
           </label>
