@@ -101,7 +101,7 @@ Sin CORS, la firma se genera pero el `PUT` desde el navegador falla.
 
 ## 5. Modo mock
 
-`frontend/.env.example` trae credenciales de ejemplo y `R2_MOCK="true"`.
+`.env.example` trae credenciales de ejemplo y `R2_MOCK="true"`.
 
 En modo mock:
 
@@ -142,7 +142,6 @@ esta migración y no requiere cambiar el esquema.
 ## 7. Verificación
 
 ```bash
-cd frontend
 npm run check
 ```
 

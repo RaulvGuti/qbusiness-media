@@ -35,7 +35,7 @@ el cliente necesita saber para usar el sitio.
 
 ## Trabajo interno en curso
 
-- La restructuración del código (la app se movió a `frontend/`, se unificaron los layouts
-  de grupo y se consolidaron los estilos) se sigue en `../restructuracion/`, una **carpeta
+- La restructuración del código (la app se movió a la raíz, se unificaron los layouts de
+  grupo y se consolidaron los estilos) se sigue en `../restructuracion/`, una **carpeta
   local ignorada por Git**: no se versiona y el enlace solo funciona en la máquina de quien
   la tenga.

@@ -16,7 +16,7 @@ export { admin, clients, supabaseHelper };
 
 /**
  * Diagnóstico rápido desde consola:
- *   cd frontend && node ../scripts/reservas/index.mjs
+ *   node scripts/reservas/index.mjs
  *
  * Regla AGENTS.md §4.5: nunca imprime datos personales de clientes
  * (nombres, teléfonos ni correos) en la consola; solo conteos e identificadores.
@@ -26,7 +26,7 @@ async function diagnosticarModuloReservas() {
 
   if (!supabaseHelper.tieneCredencialesSupabase()) {
     console.log(
-      "  --   frontend/.env.local aún tiene valores de ejemplo o no está configurado.",
+      "  --   .env.local aún tiene valores de ejemplo o no está configurado.",
     );
     console.log(
       "  OK   Estructura de módulos cargada correctamente:",

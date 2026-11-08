@@ -23,12 +23,12 @@ su pago; el sitio no procesa pagos en línea ni cobra con tarjeta.
 
 ## Implementación
 
-- `frontend/src/server/repositories/dashboard.ts`: consulta las RPC y calcula la semana.
+- `src/server/repositories/dashboard.ts`: consulta las RPC y calcula la semana.
   Recibe el cliente autenticado de `exigirStaffPanel()`, así que cada consulta corre con la
   sesión real y las políticas RLS se aplican.
-- `frontend/src/app/admin/(panel)/dashboard/page.tsx`: pinta los contadores, la actividad y
+- `src/app/admin/(panel)/dashboard/page.tsx`: pinta los contadores, la actividad y
   la gráfica. La página es dinámica (`force-dynamic`) para no reutilizar datos viejos.
-- `frontend/src/app/admin/(panel)/dashboard/page.module.css`: la cuadrícula de tarjetas se
+- `src/app/admin/(panel)/dashboard/page.module.css`: la cuadrícula de tarjetas se
   adapta a cinco elementos.
 
 Si una consulta falla, el dashboard muestra ceros o una lista vacía y registra solo el
@@ -38,7 +38,7 @@ código de error; nunca imprime nombres, correos ni teléfonos.
 
 `dashboard_resumen()` y `actividad_reciente()` exigen pertenencia al equipo (`es_admin()`).
 Los dos roles del panel (`admin_principal` y `secretaria`) pueden ver el dashboard; los
-accesos rápidos siguen filtrándose con `frontend/src/lib/permisos.ts`.
+accesos rápidos siguen filtrándose con `src/lib/permisos.ts`.
 
 ## Cómo probarlo
 
@@ -47,4 +47,4 @@ accesos rápidos siguen filtrándose con `frontend/src/lib/permisos.ts`.
 3. Crea o cambia el estado de un registro y recarga el dashboard: el contador y la actividad
    deben reflejarlo.
 4. Sin sesión, `/admin/dashboard` debe redirigir a `/admin`.
-5. Desde `frontend/`, ejecuta `npm run check`.
+5. Desde la raíz, ejecuta `npm run check`.
