@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/lib/estilos-formulario';
 import { calcularHoraFin } from '@/lib/estudio-paquetes';
 import type { PerfilUsuario } from '@/types/config';
+import type { ResultadoSolicitudReserva } from '@/types/estudio';
 
 export interface ReservaModalData {
   paqueteId: string | null;
@@ -43,7 +45,7 @@ interface ReservaModalProps {
   resumen: ReservaModalData;
   /** Perfil del cliente autenticado; si es `null`, se bloquea el envío y se envía a registro. */
   cliente?: PerfilUsuario | null;
-  onSubmit?: (form: ReservaModalForm) => void | Promise<void>;
+  onSubmit?: (form: ReservaModalForm) => Promise<ResultadoSolicitudReserva>;
 }
 
 const initialForm: ReservaModalForm = {
@@ -71,8 +73,108 @@ export default function ReservaModal({
   }));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const onCloseRef = useRef(onClose);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  const handleClose = useCallback(() => {
+    setForm({
+      ...initialForm,
+      nombre: cliente?.nombreCompleto ?? '',
+      correo: cliente?.correo ?? '',
+      telefono: cliente?.telefono ?? '',
+    });
+    setError(null);
+    onCloseRef.current();
+  }, [cliente]);
+
+  const handleCloseRef = useRef(handleClose);
+
+  useEffect(() => {
+    handleCloseRef.current = handleClose;
+  }, [handleClose]);
+
+  // Bloquea el scroll del documento para que la página de atrás no se mueva
+  // mientras el modal está abierto.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const body = document.body;
+    const overflowAnterior = body.style.overflow;
+    const paddingAnterior = body.style.paddingRight;
+    const anchoBarra = window.innerWidth - document.documentElement.clientWidth;
+
+    body.style.overflow = 'hidden';
+    if (anchoBarra > 0) {
+      body.style.paddingRight = `${anchoBarra}px`;
+    }
+
+    return () => {
+      body.style.overflow = overflowAnterior;
+      body.style.paddingRight = paddingAnterior;
+    };
+  }, [isOpen]);
+
+  // Foco inicial, cierre con Escape y trampa de foco con Tab.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const elementoAnterior = document.activeElement as HTMLElement | null;
+    const obtenerEnfocables = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((elemento) => elemento.getAttribute('aria-hidden') !== 'true');
+
+    const primerCampo = panel.querySelector<HTMLElement>(
+      'input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+    );
+    (primerCampo ?? obtenerEnfocables()[0] ?? panel).focus();
+
+    const alPresionarTecla = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        handleCloseRef.current();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const enfocables = obtenerEnfocables();
+      if (enfocables.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const primero = enfocables[0];
+      const ultimo = enfocables[enfocables.length - 1];
+
+      if (event.shiftKey && document.activeElement === primero) {
+        event.preventDefault();
+        ultimo.focus();
+      } else if (!event.shiftKey && document.activeElement === ultimo) {
+        event.preventDefault();
+        primero.focus();
+      }
+    };
+
+    document.addEventListener('keydown', alPresionarTecla);
+
+    return () => {
+      document.removeEventListener('keydown', alPresionarTecla);
+      elementoAnterior?.focus();
+    };
+  }, [isOpen]);
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const usuarioRegistrado = Boolean(cliente?.id);
 
@@ -113,7 +215,15 @@ export default function ReservaModal({
         setError('La hora de fin debe ser posterior a la hora de inicio.');
         return;
       }
-      await onSubmit?.({ ...form, horaFin: horaFinCalculada });
+
+      const resultado = await onSubmit?.({ ...form, horaFin: horaFinCalculada });
+      if (!resultado) {
+        setError('No se pudo registrar la solicitud de reserva.');
+        return;
+      }
+      if (!resultado.ok) {
+        setError(resultado.mensaje);
+      }
     } catch (err) {
       setError(
         err instanceof Error
@@ -125,28 +235,27 @@ export default function ReservaModal({
     }
   };
 
-  const handleClose = () => {
-    setForm({
-      ...initialForm,
-      nombre: cliente?.nombreCompleto ?? '',
-      correo: cliente?.correo ?? '',
-      telefono: cliente?.telefono ?? '',
-    });
-    setError(null);
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overscroll-none">
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
         aria-hidden
       />
-      <div className="relative w-full max-w-2xl bg-qbChalk rounded-3xl shadow-xl border border-qbBorder overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reserva-modal-title"
+        tabIndex={-1}
+        className="relative w-full max-w-2xl bg-qbChalk rounded-3xl shadow-xl border border-qbBorder max-h-[90dvh] overflow-y-auto overscroll-contain outline-none"
+      >
         <div className="flex items-start justify-between p-6 border-b border-qbBorder">
           <div className="space-y-1">
-            <h2 className="text-lg sm:text-xl font-bold text-qbInk">
+            <h2
+              id="reserva-modal-title"
+              className="text-lg sm:text-xl font-bold text-qbInk"
+            >
               Solicitar reserva de estudio
             </h2>
             <p className="text-sm text-zinc-400">
@@ -299,7 +408,10 @@ export default function ReservaModal({
           </div>
 
           {error && (
-            <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/50 rounded-xl p-3">
+            <p
+              role="alert"
+              className="text-xs text-red-400 bg-red-950/40 border border-red-800/50 rounded-xl p-3"
+            >
               {error}
             </p>
           )}
@@ -367,6 +479,7 @@ export default function ReservaModal({
         </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

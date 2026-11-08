@@ -17,6 +17,7 @@ import type {
   EquipoEstudio,
   PaqueteEstudio,
   ReservaEstudio,
+  ResultadoSolicitudReserva,
   ServicioEstudio,
 } from '@/types/estudio';
 import type { ResenaClienteResumen } from '@/types/resenas';
@@ -43,6 +44,8 @@ interface VistaProps {
   reservas?: ReservaEstudio[];
   /** Reseñas propias para indicar qué reservas ya fueron reseñadas. */
   resenasPropias?: ResenaClienteResumen[];
+  /** Momento del render en el servidor, para comparar vigencias sin usar Date.now en el cliente. */
+  ahoraIso: string;
 }
 
 const defaultResumen: ReservaModalData = {
@@ -293,9 +296,19 @@ export function Vista({
   cliente = null,
   reservas = [],
   resenasPropias = [],
+  ahoraIso,
 }: VistaProps) {
   const router = useRouter();
   const sinPaquetes = paquetes.length === 0;
+  const ahora = new Date(ahoraIso).getTime();
+
+  // Solo una solicitud pendiente futura por cuenta. Una reserva confirmada,
+  // cancelada o completada no bloquea una nueva solicitud.
+  const solicitudPendiente = reservas.find(
+    (reserva) =>
+      reserva.estado === 'pendiente' &&
+      new Date(reserva.fechaHoraFin).getTime() > ahora,
+  );
 
   const [pestana, setPestana] = useState<'estudio' | 'equipo'>('estudio');
   const [modalOpen, setModalOpen] = useState(false);
@@ -370,35 +383,74 @@ export function Vista({
       router.push('/login?registro=1&next=/renta');
       return;
     }
-    if (sinPaquetes || !resumen.paqueteId) {
+    if (sinPaquetes || !resumen.paqueteId || solicitudPendiente) {
       return;
     }
     setModalOpen(true);
   };
 
-  const handleReserva = async (form: ReservaModalForm) => {
+  const handleReserva = async (
+    form: ReservaModalForm,
+  ): Promise<ResultadoSolicitudReserva> => {
     if (!usuarioRegistrado) {
       router.push('/login?registro=1&next=/renta');
-      return;
+      return {
+        ok: false,
+        codigo: 'SESION_REQUERIDA',
+        mensaje: 'Debes iniciar sesión con tu cuenta para reservar el estudio.',
+      };
     }
     if (!resumen.paqueteId) {
-      throw new Error('Selecciona un paquete de renta antes de enviar la solicitud.');
+      return {
+        ok: false,
+        codigo: 'DATOS_INVALIDOS',
+        mensaje: 'Selecciona un paquete de renta antes de enviar la solicitud.',
+      };
     }
-    await enviarSolicitudReservaCliente({
-      nombre: form.nombre,
-      correo: form.correo,
-      telefono: form.telefono,
-      fecha: form.fecha,
-      horaInicio: form.horaInicio,
-      horaFin: form.horaFin,
-      paqueteId: resumen.paqueteId,
-      notas: form.notas || undefined,
-      servicios: resumen.serviciosIds,
-      equipos: resumen.equipos,
-    });
-    setModalOpen(false);
-    setExito(true);
-    router.refresh();
+    if (solicitudPendiente) {
+      return {
+        ok: false,
+        codigo: 'LIMITE_PENDIENTES',
+        mensaje:
+          'Ya tienes una solicitud pendiente. Espera a que el equipo la confirme o cancélala antes de solicitar otra.',
+      };
+    }
+
+    try {
+      const resultado = await enviarSolicitudReservaCliente({
+        nombre: form.nombre,
+        correo: form.correo,
+        telefono: form.telefono,
+        fecha: form.fecha,
+        horaInicio: form.horaInicio,
+        horaFin: form.horaFin,
+        paqueteId: resumen.paqueteId,
+        notas: form.notas || undefined,
+        servicios: resumen.serviciosIds,
+        equipos: resumen.equipos,
+      });
+
+      if (!resultado.ok) {
+        // Si el paquete se desactivó mientras el formulario estaba abierto,
+        // refresca el catálogo para que el cliente elija uno vigente.
+        if (resultado.codigo === 'PAQUETE_NO_DISPONIBLE') {
+          router.refresh();
+        }
+        return resultado;
+      }
+
+      setModalOpen(false);
+      setExito(true);
+      router.refresh();
+      return resultado;
+    } catch {
+      return {
+        ok: false,
+        codigo: 'ERROR_INESPERADO',
+        mensaje:
+          'No se pudo completar la solicitud de reserva. Inténtalo de nuevo o contacta al equipo.',
+      };
+    }
   };
 
   return (
@@ -536,12 +588,18 @@ export function Vista({
             <button
               type="button"
               onClick={handleClickReservar}
-              disabled={sinPaquetes || !resumen.paqueteId}
+              disabled={sinPaquetes || !resumen.paqueteId || Boolean(solicitudPendiente)}
               className="w-full mt-2 px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <Icon name={usuarioRegistrado ? "calendar" : "lock"} className="mr-2" />
               {usuarioRegistrado ? "Solicitar reserva" : "Regístrate para reservar"}
             </button>
+            {solicitudPendiente && (
+              <p className="text-[11px] text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-xl px-3 py-2 text-center">
+                Ya tienes una solicitud pendiente. Espera a que el equipo la
+                confirme o cancélala antes de solicitar otra.
+              </p>
+            )}
             {!usuarioRegistrado && (
               <p className="text-[11px] text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-xl px-3 py-2 text-center">
                 Debes tener una cuenta registrada e iniciar sesión para solicitar una reserva del estudio.

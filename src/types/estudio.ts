@@ -120,6 +120,28 @@ export interface SolicitarReservaInput {
   equipos: { equipoId: string; cantidad: number }[];
 }
 
+/** Motivos esperados de una solicitud de reserva fallida. */
+export type CodigoResultadoReserva =
+  | 'SESION_REQUERIDA'
+  | 'PAQUETE_NO_DISPONIBLE'
+  | 'LIMITE_PENDIENTES'
+  | 'HORARIO_NO_DISPONIBLE'
+  | 'SERVICIO_NO_DISPONIBLE'
+  | 'EQUIPO_NO_DISPONIBLE'
+  | 'DATOS_INVALIDOS'
+  | 'ERROR_INESPERADO';
+
+/**
+ * Resultado serializable de `enviarSolicitudReservaCliente`.
+ *
+ * Los errores esperados se devuelven como datos para que el mensaje llegue al
+ * navegador. Lanzarlos desde una Server Action hace que producción los oculte
+ * detrás de un error genérico de React.
+ */
+export type ResultadoSolicitudReserva =
+  | { ok: true; reservaId: string }
+  | { ok: false; codigo: CodigoResultadoReserva; mensaje: string };
+
 /** Retorno de la RPC horarios_ocupados (000018). tipo: RESERVA | BLOQUEO. */
 export interface HorarioOcupado {
   inicio: string;
@@ -131,6 +153,7 @@ export interface HorarioOcupado {
 export interface ConfiguracionEstudio {
   /** Legado: se conserva para compatibilidad, pero ya no se usa para cobrar. */
   tarifaHora: number | null;
+  /** Máximo de solicitudes pendientes futuras; por defecto 1. */
   maxPendientesPorCliente: number;
   horaApertura: string;
   horaCierre: string;

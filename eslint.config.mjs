@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Restos de la estructura anterior; la aplicación vive en la raíz.
+    "frontend/**",
   ]),
 ]);
 

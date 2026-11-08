@@ -302,7 +302,7 @@ export function mapearConfiguracionEstudio(filas = []) {
   return {
     tarifaHora: Number.isFinite(tarifaNum) ? tarifaNum : null,
     maxPendientesPorCliente:
-      Number.isFinite(maxPendRaw) && maxPendRaw > 0 ? maxPendRaw : 3,
+      Number.isFinite(maxPendRaw) && maxPendRaw > 0 ? maxPendRaw : 1,
     horaApertura: mapa.get("hora_apertura") || "08:00",
     horaCierre: mapa.get("hora_cierre") || "18:00",
   };
