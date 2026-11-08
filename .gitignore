@@ -70,6 +70,7 @@ __pycache__/
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.production
 # La plantilla SI se versiona: sin ella nadie puede arrancar el proyecto,
 # y la CI (workflows/build.yml) la necesita para validar docker compose.
 !.env.example
