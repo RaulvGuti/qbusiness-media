@@ -59,6 +59,9 @@ en tiempo de ejecución. Consecuencia práctica:
 Por eso el `Dockerfile` las recibe como **argumentos de build** (`build.args` en
 `compose.yml`) y no solo como variables de entorno del contenedor.
 
+> Si se cambia una `NEXT_PUBLIC_*`, hace falta un **build nuevo**: reintentar el deploy con
+> el mismo bundle no vuelve a incrustar los valores.
+
 Las variables `NEXT_PUBLIC_*` son **públicas**: la URL del proyecto, la clave `anon`
 (sujeta a RLS) y el dominio del CDN de R2. Pasarlas como argumento de build no expone
 ningún secreto. Las credenciales de R2 (`CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
