@@ -93,7 +93,7 @@ export function Vista({
       </div>
 
       {tieneSesion && bloqueo ? (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="rounded-2xl border border-amber-800/50 bg-amber-950/40 p-4 text-sm text-amber-300">
           <p>{bloqueo}</p>
           <Link
             href="/renta"
@@ -107,7 +107,7 @@ export function Vista({
       {mensajeExito ? (
         <p
           role="status"
-          className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3"
+          className="text-xs font-semibold text-emerald-300 bg-emerald-950/40 border border-emerald-800/50 rounded-xl px-4 py-3"
         >
           {mensajeExito}
         </p>

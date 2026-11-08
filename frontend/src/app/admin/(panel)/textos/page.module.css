@@ -48,10 +48,11 @@
 }
 .input {
   width: 100%;
-  padding: 10px 12px;
-  background: #171717;
-  border: 1px solid #262626;
-  border-radius: 12px;
+  padding: 0.625rem 0.875rem;
+  background: #0d0d0d;
+  border: 1px solid #52525b;
+  border-radius: 0.75rem;
+  color: #fff;
 }
 .input:focus {
   border-color: #fff;
@@ -80,10 +81,10 @@ textarea.input {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 10px 12px;
-  background: #171717;
-  border: 1px solid #262626;
-  border-radius: 12px;
+  padding: 0.625rem 0.875rem;
+  background: #0d0d0d;
+  border: 1px solid #52525b;
+  border-radius: 0.75rem;
   cursor: pointer;
   text-align: left;
 }

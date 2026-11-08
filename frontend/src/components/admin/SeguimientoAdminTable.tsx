@@ -181,8 +181,8 @@ export default function SeguimientoAdminTable({
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                       registro.origen === "apoyo_social"
-                        ? "bg-purple-100 text-purple-800 border border-purple-200"
-                        : "bg-blue-100 text-blue-800 border border-blue-200"
+                        ? "bg-purple-950/40 text-purple-300 border border-purple-800/50"
+                        : "bg-blue-950/40 text-blue-300 border border-blue-800/50"
                     }`}
                   >
                     {registro.origen === "apoyo_social"

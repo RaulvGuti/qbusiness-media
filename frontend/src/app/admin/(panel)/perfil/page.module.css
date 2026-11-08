@@ -118,11 +118,11 @@
   vertical-align: middle;
 }
 .tabla select {
-  padding: 8px 10px;
-  background: #171717;
-  border: 1px solid #262626;
-  border-radius: 10px;
-  color: #f2f2f2;
+  padding: 0.625rem 2.25rem 0.625rem 0.875rem;
+  background: #0d0d0d;
+  border: 1px solid #52525b;
+  border-radius: 0.75rem;
+  color: #fff;
   font-size: 13px;
 }
 .tabla select:focus {

@@ -93,12 +93,17 @@
     color: #000000 !important;
 }
 
-.sitio input[type="text"],
-.sitio input[type="email"],
-.sitio input[type="tel"],
-.sitio input[type="password"],
-.sitio input[type="date"],
-.sitio input[type="file"],
+.sitio
+    input:not(
+        [type="checkbox"],
+        [type="radio"],
+        [type="submit"],
+        [type="button"],
+        [type="reset"],
+        [type="range"],
+        [type="color"],
+        [type="hidden"]
+    ),
 .sitio select,
 .sitio textarea {
     background-color: #0d0d0d !important;
@@ -110,11 +115,21 @@
     transition: border-color 0.2s ease-in-out !important;
 }
 
-.sitio input[type="text"]:focus,
-.sitio input[type="email"]:focus,
-.sitio input[type="tel"]:focus,
-.sitio input[type="password"]:focus,
-.sitio input[type="date"]:focus,
+.sitio select {
+    padding-right: 2.25rem !important;
+}
+
+.sitio
+    input:not(
+        [type="checkbox"],
+        [type="radio"],
+        [type="submit"],
+        [type="button"],
+        [type="reset"],
+        [type="range"],
+        [type="color"],
+        [type="hidden"]
+    ):focus,
 .sitio select:focus,
 .sitio textarea:focus {
     border-color: #ffffff !important;
