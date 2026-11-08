@@ -66,7 +66,7 @@ Lo que se agregó:
 Para que los formularios públicos guarden en Supabase, el servidor necesita
 `SUPABASE_SERVICE_ROLE_KEY`:
 
-- En local: `frontend/.env.local`.
+- En local: `.env.local`.
 - En Docker/producción: el `.env` de la raíz que consume `compose.yml`.
 - Nunca debe llevar el prefijo `NEXT_PUBLIC_` ni llegar al navegador.
 
@@ -86,7 +86,7 @@ actualiza; la invalidación cubre las navegaciones nuevas del sitio.
 
 ## Verificación
 
-Desde `frontend/`:
+Desde la raíz:
 
 ```bash
 npm run lint

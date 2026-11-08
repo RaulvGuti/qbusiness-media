@@ -1,0 +1,349 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Icon } from '@/components/ui/Icon';
+import {
+  CAMPO,
+  CAMPO_AREA,
+  CAMPO_FECHA,
+  CAMPO_SELECT,
+  ETIQUETA,
+} from '@/lib/estilos-formulario';
+
+/*
+  Campos del formulario → columnas de solicitudes_apoyo_social:
+    nombreEntidad        → nombre_entidad
+    personaContacto      → persona_contacto
+    correo               → correo
+    telefono             → telefono
+    descripcionProyecto  → descripcion_proyecto
+    tipoEntidad          → tipo_organizacion
+    fechaEvento          → fecha_tentativa
+  estado, gestionado_por_id, notificado_en y creado_en los maneja el sistema.
+*/
+const initialForm = {
+  nombreEntidad: '',
+  personaContacto: '',
+  correo: '',
+  telefono: '',
+  tipoEntidad: 'fundacion',
+  fechaEvento: '',
+  descripcionProyecto: '',
+  aceptaTerminos: false, // solo validación en pantalla, no se guarda
+};
+
+const incluye = [
+  'Producción de video y foto solidaria',
+  'Equipo y horas de producción',
+  'Difusión gratuita en nuestros canales',
+];
+
+const pasos = [
+  { n: '1', titulo: 'Envías tu solicitud', texto: 'Con los datos de tu organización y del proyecto.' },
+  { n: '2', titulo: 'La revisamos', texto: 'Evaluamos la colaboración técnica posible.' },
+  { n: '3', titulo: 'Te contactamos', texto: 'Te respondemos con la decisión y los siguientes pasos.' },
+];
+
+function Seccion({ n, titulo }: { n: string; titulo: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-qbBorder text-[11px] font-bold text-qbInk">
+        {n}
+      </span>
+      <h4 className="text-xs font-bold uppercase tracking-wider text-qbInk">{titulo}</h4>
+      <span className="h-px flex-1 bg-qbBorder" aria-hidden />
+    </div>
+  );
+}
+
+interface Props {
+  /** El formulario solo se habilita con sesión; el contenido de la página es público. */
+  tieneSesion: boolean;
+}
+
+export default function SolicitudApoyoForm({ tieneSesion }: Props) {
+  const [form, setForm] = useState(initialForm);
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    setForm((prev) => ({ ...prev, [name]: val }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEnviando(true);
+    try {
+      const respuesta = await fetch("/api/api/solicitudes-apoyo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const resultado = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(resultado.error || "No se pudo enviar la solicitud.");
+      }
+
+      setEnviado(true);
+      setForm(initialForm);
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error al enviar la solicitud.",
+      );
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+
+  if (enviado) {
+    return (
+      <div className="bg-qbChalk border border-qbBorder rounded-3xl p-8 sm:p-12 text-center space-y-4 shadow-sm">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-qbSage/10">
+          <Icon name="check-circle" className="text-qbSage text-2xl" />
+        </div>
+        <h3 className="text-xl font-bold text-qbInk">Solicitud enviada</h3>
+        <p className="text-sm text-qbMuted max-w-xl mx-auto">
+          Gracias por tu solicitud de apoyo social. Revisaremos tu información y
+          te contactaremos a la brevedad.
+        </p>
+        <button
+          type="button"
+          onClick={() => setEnviado(false)}
+          className="px-4 py-2 bg-qbChalk border border-qbBorder text-qbInk hover:bg-qbChalkHover rounded-xl text-xs font-semibold transition"
+        >
+          Enviar otra solicitud
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-qbChalk border border-qbBorder rounded-3xl overflow-hidden shadow-sm grid lg:grid-cols-5">
+      {/* Panel informativo */}
+      <aside className="lg:col-span-2 bg-black/30 border-b lg:border-b-0 lg:border-r border-qbBorder p-6 sm:p-8 space-y-8">
+        <div className="space-y-2">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-qbMuted">
+            Formulario oficial
+          </span>
+          <h3 className="text-xl sm:text-2xl font-extrabold text-qbInk leading-tight">
+            Solicitud de Apoyo para Fundaciones
+          </h3>
+          <p className="text-sm text-qbMuted">
+            Completa este formulario para evaluar la colaboración técnica de tu institución.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-qbInk">
+            ¿Qué incluye el apoyo?
+          </h4>
+          <ul className="space-y-2">
+            {incluye.map((t) => (
+              <li key={t} className="flex items-start gap-2 text-sm text-qbMuted">
+                <Icon name="check" className="mt-0.5 text-qbSage" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-qbInk">¿Cómo funciona?</h4>
+          <ol className="space-y-4">
+            {pasos.map((p) => (
+              <li key={p.n} className="flex gap-3">
+                <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-qbInk text-[11px] font-bold text-qbChalk">
+                  {p.n}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-qbInk">{p.titulo}</p>
+                  <p className="text-xs text-qbMuted">{p.texto}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </aside>
+
+      {/* Formulario: el contenido de la página es público, pero la solicitud
+          solo se puede llenar con una sesión iniciada. */}
+      {tieneSesion ? (
+        <form onSubmit={handleSubmit} className="lg:col-span-3 p-6 sm:p-8 space-y-8">
+        {/* 1 · Organización y contacto */}
+        <div className="space-y-4">
+          <Seccion n="1" titulo="Organización y contacto" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
+              <label htmlFor="nombreEntidad" className={ETIQUETA}>
+                Nombre de la organización / fundación *
+              </label>
+              <input
+                id="nombreEntidad"
+                name="nombreEntidad"
+                className={CAMPO}
+                required
+                value={form.nombreEntidad}
+                onChange={handleChange}
+                placeholder="Ej. Bomberos Voluntarios 5.ª Cía."
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <label htmlFor="tipoEntidad" className={ETIQUETA}>
+                Tipo de organización
+              </label>
+              <select
+                id="tipoEntidad"
+                name="tipoEntidad"
+                className={CAMPO_SELECT}
+                value={form.tipoEntidad}
+                onChange={handleChange}
+              >
+                <option value="fundacion">Fundación</option>
+                <option value="institucion">Institución</option>
+                <option value="ong">ONG</option>
+                <option value="bomberos">Cuerpo de Bomberos Voluntarios</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="personaContacto" className={ETIQUETA}>
+                Nombre de la persona de contacto *
+              </label>
+              <input
+                id="personaContacto"
+                name="personaContacto"
+                className={CAMPO}
+                required
+                value={form.personaContacto}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="telefono" className={ETIQUETA}>
+                Teléfono / WhatsApp
+              </label>
+              <input
+                id="telefono"
+                name="telefono"
+                className={CAMPO}
+                value={form.telefono ?? ''}
+                onChange={handleChange}
+                placeholder="+502 5123-4567"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <label htmlFor="correo" className={ETIQUETA}>
+                Correo electrónico *
+              </label>
+              <input
+                id="correo"
+                name="correo"
+                type="email"
+                className={CAMPO}
+                required
+                value={form.correo}
+                onChange={handleChange}
+                placeholder="contacto@fundacion.org"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 2 · Proyecto */}
+        <div className="space-y-4">
+          <Seccion n="2" titulo="Proyecto" />
+          <div className="space-y-2 sm:max-w-xs">
+            <label htmlFor="fechaEvento" className={ETIQUETA}>
+              Fecha tentativa del evento
+            </label>
+            <input
+              id="fechaEvento"
+              name="fechaEvento"
+              type="date"
+              className={CAMPO_FECHA}
+              value={form.fechaEvento ?? ''}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="descripcionProyecto" className={ETIQUETA}>
+              Descripción del proyecto y apoyo requerido *
+            </label>
+            <textarea
+              id="descripcionProyecto"
+              name="descripcionProyecto"
+              className={CAMPO_AREA}
+              required
+              rows={5}
+              value={form.descripcionProyecto ?? ''}
+              onChange={handleChange}
+              placeholder="Actividad, población objetivo, tipo de material audiovisual solicitado..."
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <label className="flex items-start gap-2 text-xs text-zinc-400 cursor-pointer">
+            <input
+              type="checkbox"
+              name="aceptaTerminos"
+              required
+              checked={form.aceptaTerminos}
+              onChange={handleChange}
+              className="mt-0.5 accent-zinc-400"
+            />
+            <span>Acepto los términos y condiciones para proyectos pro-bono de QBusiness Media.</span>
+          </label>
+
+          <button
+            type="submit"
+            disabled={enviando}
+            className="w-full px-6 py-3 bg-qbInk text-qbChalk hover:opacity-90 rounded-xl text-xs font-bold uppercase tracking-wide transition flex items-center justify-center disabled:opacity-60"
+          >
+            {enviando ? (
+              <>Enviando solicitud...</>
+            ) : (
+              <>
+                <Icon name="paper-plane" className="mr-2" />
+                Enviar solicitud de apoyo
+              </>
+            )}
+          </button>
+        </div>
+        </form>
+      ) : (
+        <div className="lg:col-span-3 p-6 sm:p-8 flex items-center">
+          <div className="w-full rounded-2xl border border-qbBorder bg-black/20 p-6 sm:p-8 text-center space-y-4">
+            <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-qbTerracotta/10">
+              <Icon name="lock" className="text-zinc-400 text-2xl" />
+            </div>
+            <h4 className="text-lg font-bold text-qbInk">
+              Inicia sesión para llenar la solicitud
+            </h4>
+            <p className="text-sm text-qbMuted max-w-md mx-auto">
+              Puedes ver los eventos y la información de apoyo social sin
+              cuenta. Para enviar una solicitud, inicia sesión o crea una
+              cuenta y vuelve a esta página.
+            </p>
+            <Link
+              href="/login?next=/apoyo"
+              className="inline-flex items-center justify-center px-6 py-3 bg-qbInk text-qbChalk hover:opacity-90 rounded-xl text-xs font-bold uppercase tracking-wide transition"
+            >
+              Iniciar sesión
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

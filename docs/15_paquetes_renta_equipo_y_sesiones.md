@@ -44,7 +44,7 @@ solicitar_reserva(
 - El descuento es del **25%** y se mantiene en las reservas siguientes mientras el historial
   siga cumpliendo.
 - La regla vive en dos lugares que deben coincidir:
-  - `frontend/src/lib/estudio-paquetes.ts` (`descuentoLealtad`) para el estimado del
+  - `src/lib/estudio-paquetes.ts` (`descuentoLealtad`) para el estimado del
     navegador.
   - La función `solicitar_reserva()` para el valor definitivo.
 
@@ -73,12 +73,12 @@ reservas.
   formulario y el mismo paquete obligatorio; la diferencia es que prioriza el catálogo de
   equipos y oculta los servicios del salón.
 - Un equipo inactivo no aparece ni se puede reservar, pero se conserva para el historial.
-- Las acciones están en `frontend/src/server/services/equipos/admin.ts` y revalidan
+- Las acciones están en `src/server/services/equipos/admin.ts` y revalidan
   `/admin/textos` y `/renta`.
 
 ## 5. Contactos fuera del panel
 
-- Se eliminó la página `frontend/src/app/admin/(panel)/contactos`, su entrada del menú, su
+- Se eliminó la página `src/app/admin/(panel)/contactos`, su entrada del menú, su
   acceso rápido y su permiso.
 - El dashboard ya no muestra el contador “Mensajes nuevos” ni la actividad de contactos.
 - **Los leads y sus notas se conservan en la base de datos** y los endpoints internos siguen
@@ -102,15 +102,15 @@ Consecuencias:
   `obtenerSupabase()`.
 - El servidor tiene dos clientes: `createSupabaseServerClient()` y
   `createSupabaseStaffClient()`. Las consultas del panel usan el segundo.
-- `frontend/src/proxy.ts` refresca las dos cookies en cada petición.
+- `src/proxy.ts` refresca las dos cookies en cada petición.
 - Todos los cierres de sesión usan `signOut({ scope: 'local' })` para no revocar el refresh
   token del otro ámbito.
 - La recuperación de contraseña del panel viaja con `?ambito=admin` y `/auth/confirm` guarda
   la sesión temporal en `qb-admin-auth-token`.
 
-Archivos principales: `frontend/src/lib/auth-cookies.ts`,
-`frontend/src/server/supabase/server.ts`, `frontend/src/lib/supabase/client.ts` y
-`frontend/src/proxy.ts`.
+Archivos principales: `src/lib/auth-cookies.ts`,
+`src/server/supabase/server.ts`, `src/lib/supabase/client.ts` y
+`src/proxy.ts`.
 
 ## 7. Cómo aplicar y verificar
 
@@ -130,4 +130,4 @@ Archivos principales: `frontend/src/lib/auth-cookies.ts`,
    404.
 8. Iniciar sesión en `/admin` y en `/login` con cuentas distintas; cerrar una y comprobar que
    la otra sigue activa.
-9. Ejecutar `npm run check` dentro de `frontend/`.
+9. Ejecutar `npm run check` desde la raíz.

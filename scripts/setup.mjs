@@ -54,33 +54,33 @@ if (git.status !== 0) {
 }
 
 heading("Variables de entorno");
-// La aplicacion Next.js vive en frontend/: la plantilla y el .env.local real
+// La aplicacion Next.js vive en la raiz: la plantilla y el .env.local real
 // tienen que estar junto a next.config.ts para que Next las lea.
-const envExample = join(root, "frontend", ".env.example");
-const envLocal = join(root, "frontend", ".env.local");
+const envExample = join(root, ".env.example");
+const envLocal = join(root, ".env.local");
 
 if (!existsSync(envExample)) {
-  warn("No se encontro frontend/.env.example.");
+  warn("No se encontro .env.example en la raiz.");
 } else if (existsSync(envLocal)) {
-  skip("frontend/.env.local ya existe, no se modifica");
+  skip(".env.local ya existe, no se modifica");
 } else {
   copyFileSync(envExample, envLocal);
-  ok("frontend/.env.local creado desde frontend/.env.example (reemplaza los valores de ejemplo)");
+  ok(".env.local creado desde .env.example (reemplaza los valores de ejemplo)");
 }
 
 // Docker Compose lee sus variables de interpolacion desde el `.env` de la
-// RAIZ del repositorio, no desde frontend/.env.local. Sin este archivo,
-// `docker compose build` no recibe los valores de Supabase y la imagen sale
-// con el proyecto de ejemplo incrustado en el bundle del navegador.
+// raiz. Sin este archivo, `docker compose build` no recibe los valores de
+// Supabase y la imagen sale con el proyecto de ejemplo incrustado en el bundle
+// del navegador.
 const envRoot = join(root, ".env");
 
 if (!existsSync(envExample)) {
-  warn("No se encontro frontend/.env.example, no se puede crear el .env de la raiz.");
+  warn("No se encontro .env.example, no se puede crear el .env de la raiz.");
 } else if (existsSync(envRoot)) {
   skip(".env de la raiz ya existe, no se modifica");
 } else {
   copyFileSync(envExample, envRoot);
-  ok(".env de la raiz creado desde frontend/.env.example (lo usa docker compose)");
+  ok(".env de la raiz creado desde .env.example (lo usa docker compose)");
 }
 
 heading("Hooks de pre-commit");

@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, "..", "..");
-const envLocalPath = join(rootDir, "frontend", ".env.local");
+const envLocalPath = join(rootDir, ".env.local");
 
-// La aplicación y sus dependencias viven en frontend/ (AGENTS.md §2).
-const requireFromFrontend = createRequire(join(rootDir, "frontend", "package.json"));
-const { createClient } = requireFromFrontend("@supabase/supabase-js");
+// La aplicación y sus dependencias viven en la raíz (AGENTS.md §2).
+const requireFromRoot = createRequire(join(rootDir, "package.json"));
+const { createClient } = requireFromRoot("@supabase/supabase-js");
 
 /**
- * Carga las variables de frontend/.env.local en process.env si aún no están
+ * Carga las variables de .env.local en process.env si aún no están
  * definidas en el proceso actual.
  */
 export function cargarEntornoLocal() {
@@ -44,7 +44,7 @@ export function cargarEntornoLocal() {
 
 /**
  * Verifica si las credenciales públicas de Supabase están configuradas
- * con valores reales (distintos a los de frontend/.env.example).
+ * con valores reales (distintos a los de .env.example).
  */
 export function tieneCredencialesSupabase() {
   cargarEntornoLocal();
@@ -71,7 +71,7 @@ export function crearClienteSupabase(accessToken) {
 
   if (!url || !anonKey) {
     throw new Error(
-      "Faltan NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY en frontend/.env.local",
+      "Faltan NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local",
     );
   }
 
@@ -102,7 +102,7 @@ export function crearClienteSupabaseAdmin() {
 
   if (!url || !serviceRoleKey) {
     throw new Error(
-      "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en frontend/.env.local",
+      "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local",
     );
   }
 
@@ -199,7 +199,7 @@ export function construirTimestampGuatemala(fecha, hora) {
 
 /* ==========================================================================
  * Mapeadores de filas SQL (snake_case) a objetos del frontend (camelCase)
- * Alineados a frontend/src/types/estudio.ts y migraciones 000004–000029
+ * Alineados a src/types/estudio.ts y migraciones 000004–000029
  * ========================================================================== */
 
 export function mapearServicio(row) {

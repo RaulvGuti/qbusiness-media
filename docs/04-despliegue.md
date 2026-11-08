@@ -10,17 +10,16 @@ Es la referencia para publicar el sitio y para diagnosticar un build que falla.
 
 | Forma | Para qué sirve | Dónde vive la configuración |
 | --- | --- | --- |
-| Desarrollo local (`npm run dev`) | Trabajar en el código | `frontend/.env.local` |
+| Desarrollo local (`npm run dev`) | Trabajar en el código | `.env.local` |
 | Contenedores (`docker compose up -d`) | Replicar cómo se entrega al cliente | `.env` en la **raíz** del repo |
 
-Next.js lee los archivos de entorno desde la carpeta donde vive `next.config.ts`, es decir
-`frontend/`. **Docker Compose, en cambio, interpola sus variables desde el `.env` de la
-raíz del repositorio.** Son dos archivos distintos con el mismo contenido, y por eso
-`npm run setup` crea los dos.
+Next.js lee los archivos de entorno desde la raíz del repositorio, donde vive
+`next.config.ts`. **Docker Compose también interpola sus variables desde esa misma raíz.**
+Son dos archivos distintos con el mismo contenido, y por eso `npm run setup` crea los dos.
 
 ```
-frontend/.env.local   -> lo lee Next.js (npm run dev, npm run build)
-.env (raíz)           -> lo lee docker compose (build y runtime)
+.env.local   -> lo lee Next.js (npm run dev, npm run build)
+.env         -> lo lee docker compose (build y runtime)
 ```
 
 > El `.env` de la raíz está en `.gitignore`. No se versiona, y no debe versionarse: ahí
@@ -84,13 +83,12 @@ recompilar con los valores reales.
 ## 3. Desarrollo local
 
 ```bash
-cd frontend
 npm install
-npm run setup   # crea frontend/.env.local y el .env de la raíz
+npm run setup   # crea .env.local y el .env de la raíz
 npm run dev
 ```
 
-`npm run setup` copia `frontend/.env.example` a los dos archivos. **Hay que reemplazar los
+`npm run setup` copia `.env.example` a los dos archivos. **Hay que reemplazar los
 valores de ejemplo** por los reales de Supabase (Project Settings → API):
 
 | Variable | De dónde sale |
@@ -105,7 +103,6 @@ El detalle está en [`16_almacenamiento_cloudflare_r2.md`](./16_almacenamiento_c
 Verificación antes de entregar cualquier trabajo:
 
 ```bash
-cd frontend
 npm run check   # lint + tipos + build
 ```
 
@@ -166,15 +163,14 @@ durante el build y `@supabase/ssr` lanzaba
 cliente del navegador.
 
 Hoy el cliente de Supabase del navegador se crea **al usarlo, no al importar el módulo**
-(`frontend/src/lib/supabase/client.ts`), así que el build ya no depende de que existan
+(`src/lib/supabase/client.ts`), así que el build ya no depende de que existan
 esas variables. Aun así, hay que pasarlas como `build.args` para que el bundle apunte al
 proyecto correcto.
 
 **Cómo diagnosticar:** reproducir el build sin las variables y leer el error completo.
 
 ```bash
-# En una copia de frontend/ sin .env.local
-cd frontend
+# En una copia del repositorio sin .env.local
 npm run build
 ```
 
@@ -198,7 +194,7 @@ depende de los `build.args`, y no de un archivo de entorno copiado.
 | `validar-pr.yml` | Formato del título del PR y archivos con credenciales. |
 
 El workflow `build.yml` crea un `.env` temporal en la raíz a partir de
-`frontend/.env.example` antes de construir. Como los valores de ejemplo son una URL
+`.env.example` antes de construir. Como los valores de ejemplo son una URL
 válida, la imagen compila: lo que se valida en la CI es que el `Dockerfile` funciona, no
 que la imagen apunte al proyecto real.
 
@@ -206,8 +202,8 @@ que la imagen apunte al proyecto real.
 
 ## 7. Resumen de lo que hay que revisar antes de publicar
 
-1. `frontend/.env.local` y el `.env` de la raíz tienen los valores reales de Supabase.
-2. `cd frontend && npm run check` pasa.
+1. `.env.local` y el `.env` de la raíz tienen los valores reales de Supabase.
+2. `npm run check` pasa.
 3. Si se cambió una variable `NEXT_PUBLIC_*`, la imagen se **reconstruyó**.
 4. La `SUPABASE_SERVICE_ROLE_KEY` nunca se metió en un `ARG`/`ENV` de build ni en un
    archivo versionado.

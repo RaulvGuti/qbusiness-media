@@ -2,6 +2,10 @@
 # carpetas que no hacen falta dentro de la imagen.
 **/node_modules
 **/.next
+.open-next
+.wrangler
+.dev.vars*
+*.log
 next-env.d.ts
 *.tsbuildinfo
 .git

@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #f2f2f2;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-jakarta), Inter, system-ui, sans-serif;
+
+  --color-qbLinen: #000000;
+  --color-qbChalk: #0d0d0d;
+  --color-qbChalkHover: #1a1a1a;
+  --color-qbBorder: #27272a;
+  --color-qbBorderDark: #3f3f46;
+  --color-qbInk: #ffffff;
+  --color-qbMuted: #e4e4e7;
+  --color-qbTerracotta: #ffffff;
+  --color-qbTerracottaHover: #e4e4e7;
+  --color-qbSage: #d4d4d8;
+  --color-qbSageHover: #ffffff;
+  --color-qbIndigo: #181818;
+  --color-qbIndigoHover: #2a2a2a;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+input:where(
+    :not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="file"],
+      [type="range"],
+      [type="color"],
+      [type="hidden"]
+    )
+  ),
+select,
+textarea {
+  background-color: #0d0d0d;
+  color: #ffffff;
+  border: 1px solid #52525b;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease-in-out;
+}
+
+input:where(
+    :not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="file"],
+      [type="range"],
+      [type="color"],
+      [type="hidden"]
+    )
+  ):focus,
+select:focus,
+textarea:focus {
+  border-color: #ffffff;
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #a1a1aa;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.75rem;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #0d0d0d;
+  color: #ffffff;
+}
+
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  accent-color: #a1a1aa;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="week"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+/* Oculta la barra de scroll manteniendo el desplazamiento (nav horizontal). */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bloque de pagina estandar: misma geometria que tenian los page.module.css
+   duplicados (.page { display:flex; flex-direction:column; gap:2rem }). */
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ffffff;
+}
