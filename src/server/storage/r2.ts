@@ -64,12 +64,8 @@ function obtenerClienteR2(): S3Client {
 
   cliente = new S3Client({
     region: 'auto',
-    endpoint: `https://${cuenta}.r2.cloudflarestorage.com`,
+    endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId, secretAccessKey },
-    // El SDK v3 calcula un CRC32 del cuerpo al firmar. Como la firma se hace
-    // sin el archivo (el navegador lo envía después), ese checksum queda vacío
-    // y R2 rechaza el PUT. Con WHEN_REQUIRED solo se calcula si la operación
-    // realmente lo exige.
     requestChecksumCalculation: 'WHEN_REQUIRED',
     responseChecksumValidation: 'WHEN_REQUIRED',
   });
