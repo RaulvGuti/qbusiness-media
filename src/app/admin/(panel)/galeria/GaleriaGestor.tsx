@@ -18,6 +18,13 @@ import {
 } from "@/lib/estilos-formulario";
 import { resolverUrlArchivo } from "@/lib/utils/galeria-publica";
 import {
+  ACCEPT_GALERIA,
+  MENSAJE_FORMATO_NO_PERMITIDO,
+  mensajeTamanoExcedido,
+  tipoGaleriaPermitido,
+  type TipoGaleriaPermitido,
+} from "@/lib/utils/galeria-mime";
+import {
   actualizarEstadoCarpeta,
   actualizarPieFoto,
   crearCarpetaGaleria,
@@ -26,7 +33,13 @@ import {
   registrarArchivoGaleria,
   reordenarArchivos,
 } from "@/server/repositories/galeria";
-import type { ArchivoGaleria, CarpetaGaleria, Empresa } from "@/types/portafolio";
+import type {
+  ArchivoGaleria,
+  CarpetaGaleria,
+  Empresa,
+  FirmaSubidaGaleria,
+  ResultadoGaleria,
+} from "@/types/portafolio";
 
 /* ------------------------------------------------------------------ */
 /* Tipos y constantes                                                  */
@@ -57,8 +70,15 @@ interface Props {
 
 const BUCKET = "galeria";
 
-const mensajeDe = (e: unknown, porDefecto: string) =>
-  e instanceof Error && e.message ? e.message : porDefecto;
+const mensajeDe = (e: unknown, porDefecto: string) => {
+  if (
+    e instanceof TypeError &&
+    /fetch|network|failed to fetch/i.test(e.message)
+  ) {
+    return "No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.";
+  }
+  return e instanceof Error && e.message ? e.message : porDefecto;
+};
 
 /* ------------------------------------------------------------------ */
 /* Utilidades                                                          */
@@ -69,10 +89,13 @@ const clasificar = (w: number, h: number): Orientacion =>
 
 type Medidas = { orientacion: Orientacion; ancho: number; alto: number };
 
-function detectarMedidas(file: File, url: string): Promise<Medidas> {
+function detectarMedidas(
+  url: string,
+  tipo: "imagen" | "video",
+): Promise<Medidas> {
   return new Promise((resolve) => {
     const porDefecto: Medidas = { orientacion: "horizontal", ancho: 0, alto: 0 };
-    if (file.type.startsWith("video/")) {
+    if (tipo === "video") {
       const v = document.createElement("video");
       v.preload = "metadata";
       v.onloadedmetadata = () => {
@@ -105,40 +128,40 @@ function urlDe(a: ArchivoGaleria): string | undefined {
   return a.urlExterna ?? undefined;
 }
 
-interface FirmaSubida {
-  key: string;
-  publicUrl: string;
-  uploadUrl: string | null;
-  headers: Record<string, string>;
-  mock: boolean;
-}
-
 async function firmarSubida(datos: {
   carpetaId: string;
   tipoMime: string;
   tamano: number;
-}): Promise<FirmaSubida> {
+}): Promise<FirmaSubidaGaleria> {
   const respuesta = await fetch("/api/api/galeria", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(datos),
   });
 
-  const cuerpo = (await respuesta.json().catch(() => ({}))) as Partial<FirmaSubida> & {
-    error?: string;
-  };
+  const cuerpo = (await respuesta.json().catch(() => null)) as
+    | ResultadoGaleria<FirmaSubidaGaleria>
+    | null;
 
-  if (!respuesta.ok || !cuerpo.key || !cuerpo.publicUrl) {
-    throw new Error(cuerpo.error ?? "No se pudo preparar la subida.");
+  if (!cuerpo) {
+    throw new Error(
+      "El servidor no devolvió una respuesta válida. Inténtalo de nuevo.",
+    );
   }
 
-  return {
-    key: cuerpo.key,
-    publicUrl: cuerpo.publicUrl,
-    uploadUrl: cuerpo.uploadUrl ?? null,
-    headers: cuerpo.headers ?? {},
-    mock: Boolean(cuerpo.mock),
-  };
+  if (!respuesta.ok || !cuerpo.ok) {
+    throw new Error(
+      cuerpo.ok
+        ? "No se pudo preparar la subida."
+        : cuerpo.mensaje || "No se pudo preparar la subida.",
+    );
+  }
+
+  if (!cuerpo.data.key || !cuerpo.data.publicUrl) {
+    throw new Error("El servidor no devolvió la información de la subida.");
+  }
+
+  return cuerpo.data;
 }
 
 async function borrarObjetoSubido(key: string): Promise<void> {
@@ -229,12 +252,36 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
       toast("Primero elige o crea una carpeta");
       return;
     }
-    const validos = Array.from(lista).filter(
-      (f) => f.type.startsWith("image/") || f.type.startsWith("video/"),
-    );
+    const validos: { file: File; tipo: TipoGaleriaPermitido }[] = [];
+    const rechazados: string[] = [];
+
+    for (const file of Array.from(lista)) {
+      const tipo = tipoGaleriaPermitido(file.type, file.name);
+
+      if (!tipo) {
+        rechazados.push(`${file.name}: ${MENSAJE_FORMATO_NO_PERMITIDO}`);
+        continue;
+      }
+
+      if (file.size > tipo.maxBytes) {
+        rechazados.push(`${file.name}: ${mensajeTamanoExcedido(tipo)}`);
+        continue;
+      }
+
+      validos.push({ file, tipo });
+    }
+
     if (validos.length === 0) {
-      toast("Solo se aceptan fotos o videos");
+      toast(rechazados[0] ?? "Solo se aceptan fotos o videos compatibles");
       return;
+    }
+
+    if (rechazados.length > 0) {
+      toast(
+        rechazados.length === 1
+          ? rechazados[0]
+          : `${rechazados.length} archivos no son compatibles y se omitieron.`,
+      );
     }
 
     setSubiendo(true);
@@ -243,15 +290,15 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
     let ultimoError = "";
 
     // En serie: así el primero que se registre es el que queda como portada.
-    for (const file of validos) {
+    for (const { file, tipo } of validos) {
       const preview = URL.createObjectURL(file);
       let keySubida: string | null = null;
       try {
-        const medidas = await detectarMedidas(file, preview);
+        const medidas = await detectarMedidas(preview, tipo.tipo);
 
         const firma = await firmarSubida({
           carpetaId: carpeta.id,
-          tipoMime: file.type,
+          tipoMime: tipo.mime,
           tamano: file.size,
         });
         keySubida = firma.key;
@@ -261,20 +308,27 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
             throw new Error("R2 no devolvió una URL de subida.");
           }
 
-          const respuesta = await fetch(firma.uploadUrl, {
-            method: "PUT",
-            headers: firma.headers,
-            body: file,
-          });
+          let respuesta: Response;
+          try {
+            respuesta = await fetch(firma.uploadUrl, {
+              method: "PUT",
+              headers: firma.headers,
+              body: file,
+            });
+          } catch {
+            throw new Error(
+              "No se pudo conectar con Cloudflare R2. Revisa el CORS del bucket o tu conexión.",
+            );
+          }
 
           if (!respuesta.ok) {
             throw new Error(`R2 rechazó la subida (${respuesta.status}).`);
           }
         }
 
-        const archivo = await registrarArchivoGaleria({
+        const resultado = await registrarArchivoGaleria({
           carpetaId: carpeta.id,
-          tipo: file.type.startsWith("video/") ? "video" : "imagen",
+          tipo: tipo.tipo,
           // La tabla sigue recibiendo una cadena: ahora es la URL final.
           rutaStorage: firma.publicUrl,
           nombreOriginal: file.name,
@@ -282,7 +336,12 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
           anchoPx: medidas.ancho || null,
           altoPx: medidas.alto || null,
         });
-        nuevos.push(archivo);
+
+        if (!resultado.ok) {
+          throw new Error(resultado.mensaje);
+        }
+
+        nuevos.push(resultado.data);
         keySubida = null; // ya quedó registrado: no hay que borrarlo
       } catch (e) {
         fallos++;
@@ -329,7 +388,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
       info.plataforma === "youtube" ? `https://img.youtube.com/vi/${info.id}/hqdefault.jpg` : null;
 
     try {
-      const nuevo = await registrarArchivoGaleria({
+      const resultado = await registrarArchivoGaleria({
         carpetaId: carpeta.id,
         tipo: "enlace",
         urlExterna: enlace.trim(),
@@ -337,7 +396,13 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
         nombreOriginal: null,
         orientacion: "horizontal",
       });
-      setArchivos((prev) => [...prev, nuevo]);
+
+      if (!resultado.ok) {
+        toast(resultado.mensaje);
+        return;
+      }
+
+      setArchivos((prev) => [...prev, resultado.data]);
       setEnlace("");
       toast("Enlace agregado");
     } catch (e) {
@@ -509,7 +574,9 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
           onDrop={onDrop}
         >
           <p style={s.dropTitle}>Arrastra fotos o videos aquí</p>
-          <p style={s.dropHint}>o usa el botón · cualquier proporción, se conserva la original</p>
+          <p style={s.dropHint}>
+            JPG, PNG, WebP, GIF, AVIF, MP4, WebM o MOV · cualquier proporción, se conserva la original
+          </p>
           <button
             type="button"
             style={s.btnLight}
@@ -522,7 +589,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
             ref={inputRef}
             type="file"
             multiple
-            accept="image/*,video/*"
+            accept={ACCEPT_GALERIA}
             hidden
             onChange={(e) => {
               if (e.target.files?.length) void procesarArchivos(e.target.files);

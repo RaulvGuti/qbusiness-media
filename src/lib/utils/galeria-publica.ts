@@ -8,14 +8,32 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export const esUuid = (valor: string): boolean => UUID_RE.test(valor);
 
 /**
+ * Normaliza una URL base: quita espacios y barras finales. Así se evita
+ * generar URLs con doble barra al unir el CDN o Supabase con una ruta.
+ */
+export function normalizarUrlBase(valor: string | null | undefined): string {
+  return (valor ?? '').trim().replace(/\/+$/, '');
+}
+
+/** Une una base normalizada con una ruta sin duplicar la barra. */
+export function unirUrl(base: string | null | undefined, ruta: string): string {
+  const baseLimpia = normalizarUrlBase(base);
+  const rutaLimpia = ruta.replace(/^\/+/, '');
+
+  if (!baseLimpia) return rutaLimpia;
+  return rutaLimpia ? `${baseLimpia}/${rutaLimpia}` : baseLimpia;
+}
+
+/**
  * URL pública legacy de un objeto de Supabase Storage.
  * Las subidas nuevas van a Cloudflare R2 y guardan la URL final en la base.
  */
 export function construirUrlStorage(bucket: string, ruta: string): string | null {
-  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '');
+  const base = normalizarUrlBase(process.env.NEXT_PUBLIC_SUPABASE_URL);
   if (!base || !ruta) return null;
+
   const rutaCodificada = ruta.split('/').map(encodeURIComponent).join('/');
-  return `${base}/storage/v1/object/public/${bucket}/${rutaCodificada}`;
+  return unirUrl(base, `storage/v1/object/public/${bucket}/${rutaCodificada}`);
 }
 
 /** true si el valor ya es una URL absoluta. */

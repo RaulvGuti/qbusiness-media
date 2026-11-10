@@ -80,3 +80,37 @@ export type FiltroPortafolio =
   | 'vertical'
   | 'horizontal'
   | 'cuadrada';
+
+/** Motivos esperados de una operación de galería fallida. */
+export type CodigoResultadoGaleria =
+  | 'SIN_SESION'
+  | 'SIN_PERMISO'
+  | 'DATOS_INVALIDOS'
+  | 'MIME_NO_PERMITIDO'
+  | 'ARCHIVO_MUY_GRANDE'
+  | 'CARPETA_INVALIDA'
+  | 'SIN_CONFIGURACION'
+  | 'ERROR_BD'
+  | 'ERROR_R2'
+  | 'ERROR_RED'
+  | 'ERROR_INESPERADO';
+
+/**
+ * Resultado serializable de las acciones de galería.
+ *
+ * Los errores esperados se devuelven como datos para que el mensaje llegue al
+ * navegador; lanzarlos desde una Server Action hace que producción los oculte
+ * detrás de un error genérico de React.
+ */
+export type ResultadoGaleria<T> =
+  | { ok: true; data: T }
+  | { ok: false; codigo: CodigoResultadoGaleria; mensaje: string };
+
+/** Datos que el navegador necesita para subir un archivo a R2. */
+export interface FirmaSubidaGaleria {
+  key: string;
+  publicUrl: string;
+  uploadUrl: string | null;
+  headers: Record<string, string>;
+  mock: boolean;
+}
