@@ -223,6 +223,7 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
 
   const cambiarCarpeta = (id: string) => {
     if (id === NUEVA) {
+      if (moduloId === "inicio") return;
       setModal(true);
       return;
     }
@@ -551,7 +552,9 @@ export function GaleriaGestor({ carpetas, setCarpetas, archivos, setArchivos, se
                   {c.nombre}
                 </option>
               ))}
-              <option value={NUEVA}>+ Crear una carpeta</option>
+              {moduloId !== "inicio" && (
+                <option value={NUEVA}>+ Crear una carpeta</option>
+              )}
             </select>
           </label>
         </div>
