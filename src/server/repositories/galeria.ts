@@ -7,9 +7,11 @@ import {
 import type {
   ArchivoGaleria,
   CarpetaGaleria,
+  CodigoResultadoGaleria,
   Destacado,
   Empresa,
   ModuloCarpeta,
+  ResultadoGaleria,
 } from '@/types/portafolio';
 import { archivosMock, carpetasMock, destacadosMock, empresasMock } from './datos-mock';
 import {
@@ -78,6 +80,58 @@ function fallar(error: { code?: string; message?: string }, porDefecto: string):
     throw new Error('Ya existe un registro con esos datos.');
   }
   throw new Error(mensaje || porDefecto);
+}
+
+function falloGaleria(
+  codigo: CodigoResultadoGaleria,
+  mensaje: string,
+): ResultadoGaleria<never> {
+  return { ok: false, codigo, mensaje };
+}
+
+function clasificarErrorRegistro(
+  error: unknown,
+): ResultadoGaleria<never> {
+  if (!(error instanceof Error)) {
+    return falloGaleria(
+      'ERROR_INESPERADO',
+      'No se pudo registrar el archivo. Inténtalo de nuevo.',
+    );
+  }
+
+  const mensaje = error.message.trim();
+  const normalizado = mensaje.toLowerCase();
+
+  if (normalizado.includes('no está configurado')) {
+    return falloGaleria(
+      'SIN_CONFIGURACION',
+      'La base de datos no está configurada. Avisa al equipo.',
+    );
+  }
+
+  if (
+    normalizado.includes('permiso') ||
+    normalizado.includes('sesión') ||
+    normalizado.includes('sesion') ||
+    normalizado.includes('row-level security')
+  ) {
+    return falloGaleria(
+      'SIN_PERMISO',
+      'No tienes permisos suficientes o tu sesión expiró. Vuelve a iniciar sesión.',
+    );
+  }
+
+  if (normalizado.includes('carpeta')) {
+    return falloGaleria(
+      'CARPETA_INVALIDA',
+      'La carpeta ya no existe o no tienes acceso a ella.',
+    );
+  }
+
+  return falloGaleria(
+    'ERROR_INESPERADO',
+    'No se pudo registrar el archivo. Inténtalo de nuevo.',
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -708,24 +762,66 @@ interface RegistrarArchivoInput {
  * recibe la URL pública final o, en filas legacy, la ruta de Supabase Storage.
  * El primero que no sea enlace queda como portada si la carpeta aún no tiene una.
  */
-export async function registrarArchivoGaleria(input: RegistrarArchivoInput): Promise<ArchivoGaleria> {
-  exigirConexion();
-  const supabase = await createSupabaseStaffClient();
+export async function registrarArchivoGaleria(
+  input: RegistrarArchivoInput,
+): Promise<ResultadoGaleria<ArchivoGaleria>> {
+  try {
+    exigirConexion();
+    const supabase = await createSupabaseStaffClient();
 
-  const { data, error } = await supabase.rpc('agregar_archivo_galeria', {
-    p_carpeta_id: input.carpetaId,
-    p_tipo: input.tipo,
-    p_ruta_storage: input.rutaStorage ?? null,
-    p_url_externa: input.urlExterna ?? null,
-    p_url_miniatura: input.urlMiniatura ?? null,
-    p_nombre_original: input.nombreOriginal ?? null,
-    p_orientacion: input.orientacion,
-    p_ancho_px: input.anchoPx ?? null,
-    p_alto_px: input.altoPx ?? null,
-  });
-  if (error) fallar(error, 'No se pudo registrar el archivo.');
+    const { data, error } = await supabase.rpc('agregar_archivo_galeria', {
+      p_carpeta_id: input.carpetaId,
+      p_tipo: input.tipo,
+      p_ruta_storage: input.rutaStorage ?? null,
+      p_url_externa: input.urlExterna ?? null,
+      p_url_miniatura: input.urlMiniatura ?? null,
+      p_nombre_original: input.nombreOriginal ?? null,
+      p_orientacion: input.orientacion,
+      p_ancho_px: input.anchoPx ?? null,
+      p_alto_px: input.altoPx ?? null,
+    });
 
-  return mapearArchivo((Array.isArray(data) ? data[0] : data) as ArchivoRow);
+    if (error) {
+      const mensaje = (error.message ?? '').trim();
+      if (error.code === '42501' || mensaje.includes('row-level security')) {
+        return falloGaleria(
+          'SIN_PERMISO',
+          'No tienes permisos suficientes o tu sesión expiró. Vuelve a iniciar sesión.',
+        );
+      }
+      if (error.code === '23505') {
+        return falloGaleria(
+          'DATOS_INVALIDOS',
+          'Ya existe un archivo con esos datos en la carpeta.',
+        );
+      }
+
+      console.error(
+        'No se pudo registrar el archivo en la galería:',
+        error.code ?? 'sin código',
+      );
+      return falloGaleria(
+        'ERROR_BD',
+        'No se pudo registrar el archivo. Inténtalo de nuevo.',
+      );
+    }
+
+    const fila = (Array.isArray(data) ? data[0] : data) as
+      | ArchivoRow
+      | null
+      | undefined;
+
+    if (!fila) {
+      return falloGaleria(
+        'ERROR_BD',
+        'La base de datos no devolvió el archivo registrado.',
+      );
+    }
+
+    return { ok: true, data: mapearArchivo(fila) };
+  } catch (e) {
+    return clasificarErrorRegistro(e);
+  }
 }
 
 export async function actualizarPieFoto(id: string, pieFoto: string): Promise<void> {

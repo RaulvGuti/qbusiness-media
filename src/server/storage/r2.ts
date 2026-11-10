@@ -4,6 +4,11 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import {
+  normalizarUrlBase,
+  unirUrl,
+} from '@/lib/utils/galeria-publica';
+import type { FirmaSubidaGaleria } from '@/types/portafolio';
 
 /**
  * Cliente de Cloudflare R2.
@@ -19,7 +24,7 @@ function bucketR2(): string {
 }
 
 function cdnR2(): string {
-  return (process.env.NEXT_PUBLIC_CDN_URL?.trim() ?? '').replace(/\/+$/, '');
+  return normalizarUrlBase(process.env.NEXT_PUBLIC_CDN_URL);
 }
 
 let cliente: S3Client | null = null;
@@ -61,6 +66,12 @@ function obtenerClienteR2(): S3Client {
     region: 'auto',
     endpoint: `https://${cuenta}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId, secretAccessKey },
+    // El SDK v3 calcula un CRC32 del cuerpo al firmar. Como la firma se hace
+    // sin el archivo (el navegador lo envía después), ese checksum queda vacío
+    // y R2 rechaza el PUT. Con WHEN_REQUIRED solo se calcula si la operación
+    // realmente lo exige.
+    requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED',
   });
 
   return cliente;
@@ -84,7 +95,7 @@ export function construirUrlPublicaR2(key: string): string {
     );
   }
 
-  return `${base}/${ruta}`;
+  return unirUrl(base, ruta);
 }
 
 /** Extrae la key de una URL pública de R2. Devuelve null si no es de R2. */
@@ -92,7 +103,10 @@ export function claveDesdeUrlR2(url: string): string | null {
   const base = cdnR2();
   if (!base || !url.startsWith(`${base}/`)) return null;
 
-  const sinQuery = url.slice(base.length + 1).split(/[?#]/)[0];
+  const sinQuery = url
+    .slice(base.length)
+    .replace(/^\/+/, '')
+    .split(/[?#]/)[0];
   if (!sinQuery) return null;
 
   try {
@@ -102,19 +116,13 @@ export function claveDesdeUrlR2(url: string): string | null {
   }
 }
 
-export interface FirmaSubidaR2 {
-  key: string;
-  publicUrl: string;
-  uploadUrl: string | null;
-  headers: Record<string, string>;
-  mock: boolean;
-}
+export type FirmaSubidaR2 = FirmaSubidaGaleria;
 
 /** Firma una subida PUT temporal. En modo mock no llama a R2. */
 export async function crearFirmaSubidaR2(input: {
   key: string;
   contentType: string;
-}): Promise<FirmaSubidaR2> {
+}): Promise<FirmaSubidaGaleria> {
   const publicUrl = construirUrlPublicaR2(input.key);
   const headers: Record<string, string> = {
     'Content-Type': input.contentType,

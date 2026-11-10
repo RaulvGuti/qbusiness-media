@@ -29,7 +29,10 @@ Storage se siguen mostrando y borrando como antes.
 
 2. El servidor valida sesión admin_principal, carpeta, tipo y tamaño.
    Devuelve:
-   { key, publicUrl, uploadUrl, headers, mock }
+   { ok: true, data: { key, publicUrl, uploadUrl, headers, mock } }
+
+   Si algo falla, devuelve un error serializable:
+   { ok: false, codigo, mensaje }
 
 3. El navegador sube el archivo directo a R2:
    PUT uploadUrl
@@ -42,6 +45,23 @@ Storage se siguen mostrando y borrando como antes.
    archivos_galeria.ruta_storage =
    https://cdn.tu-dominio.com/galeria/<carpeta-id>/<uuid>.jpg
 ```
+
+### Checksum del SDK
+
+La firma se genera sin el cuerpo del archivo. El SDK de AWS v3, por defecto,
+calcula un CRC32 del cuerpo vacío y lo incluye en la URL firmada. R2 rechaza el
+`PUT` posterior porque el checksum no corresponde con la imagen.
+
+El cliente S3 de `src/server/storage/r2.ts` usa:
+
+```ts
+requestChecksumCalculation: 'WHEN_REQUIRED',
+responseChecksumValidation: 'WHEN_REQUIRED',
+```
+
+Así el checksum solo se calcula cuando la operación realmente lo exige. Si
+vuelve a aparecer `x-amz-checksum-crc32=AAAAAA==` en la URL firmada, el cambio
+se perdió o hay otra instancia del cliente S3 sin estas opciones.
 
 Si el paso 4 falla, el navegador llama a `DELETE /api/api/galeria` con la `key`
 para borrar el objeto huérfano.
@@ -69,6 +89,26 @@ Al eliminar un archivo desde el panel, `eliminarArchivoGaleria()`:
 Las credenciales de R2 **nunca** llevan el prefijo `NEXT_PUBLIC_` y nunca se pasan
 como `build.args` de Docker. `NEXT_PUBLIC_CDN_URL` sí es pública y se incrusta en
 el build, así que si cambia hay que reconstruir la imagen.
+
+`NEXT_PUBLIC_CDN_URL` se normaliza en `src/lib/utils/galeria-publica.ts`: se
+quitan los espacios y las barras finales antes de unirla con la key del archivo.
+Así no se generan URLs con doble barra.
+
+### Formatos permitidos
+
+La lista vive en `src/lib/utils/galeria-mime.ts` y la usan el `accept` del input
+y la validación del servidor:
+
+| Tipo | MIME | Tamaño máximo |
+| --- | --- | --- |
+| Imagen | `image/jpeg`, `image/png`, `image/webp`, `image/gif`, `image/avif` | 20 MB |
+| Video | `video/mp4` (MP4/M4V), `video/webm`, `video/quicktime` | 500 MB |
+
+No se aceptan HEIC/HEIF, TIFF, BMP, RAW, 3GP ni MKV. HEIC/HEIF se rechaza
+con un mensaje claro porque los navegadores no los muestran de forma
+consistente; conviene convertir esas fotos a JPG o WebP antes de subirlas. Las
+extensiones `.m4v` y los MIME `image/jpg` y `video/x-m4v` se normalizan a su
+tipo canónico cuando el navegador los envía.
 
 ---
 
@@ -107,7 +147,8 @@ En modo mock:
 
 - No se llama a Cloudflare.
 - La ruta de firma devuelve `uploadUrl: null` y una `publicUrl` construida con
-  `NEXT_PUBLIC_CDN_URL`; si esa variable no existe, usa `https://cdn.ejemplo.com`.
+  `NEXT_PUBLIC_CDN_URL`; si esa variable no existe, usa
+  `https://r2-mock.invalid/...`.
 - El navegador omite el `PUT` y registra la URL de ejemplo en la base.
 - Sirve para probar el flujo completo sin cuenta de R2.
 
@@ -152,3 +193,6 @@ Pruebas manuales:
 3. Subir un video y comprobar que la subida va directo a R2, no a Next.js.
 4. Eliminar el archivo y confirmar que desaparece de R2 y de `archivos_galeria`.
 5. Abrir una carpeta con archivos legacy y confirmar que siguen visibles.
+6. Confirmar que la URL firmada no incluye `x-amz-checksum-crc32=AAAAAA==`.
+7. Intentar subir un HEIC/HEIF y comprobar que se rechaza con un mensaje claro,
+   no con `Failed to fetch`.
